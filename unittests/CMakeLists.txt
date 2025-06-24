@@ -1,0 +1,12 @@
+
+
+add_executable(UTmatrix23 main.cpp vector.cpp)
+set_property(TARGET UTmatrix23 PROPERTY CXX_STANDARD 23)
+target_compile_options(UTmatrix23 PRIVATE -Wall 
+    $<$<CONFIG:Debug>:-g -O0>
+    $<$<CONFIG:Release>: -O2>
+)
+
+target_link_options(UTmatrix23 PRIVATE )
+target_include_directories(UTmatrix23 PRIVATE ../include )
+target_link_libraries(UTmatrix23 gtest)
