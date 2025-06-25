@@ -140,7 +140,7 @@ typedef Matrix<double,        DiagonalSubsciptor>        DiagonalMatrix;
 typedef Matrix<double,     TriDiagonalSubsciptor>     TriDiagonalMatrix;
 // typedef Matrix<double, BandedSubsciptor> BandedMatrix; // 
 
-template <isMatrix M, isVector V> auto operator*(const M& m, const V& v)
+auto operator*(const isMatrix auto& m, const isVector auto& v)
 {
     auto rows=m.rows();
     auto mv=v.indices() | std::views::transform([rows,v](size_t i) {return rows[i] * v;});
@@ -148,7 +148,7 @@ template <isMatrix M, isVector V> auto operator*(const M& m, const V& v)
     return VectorView(std::move(mv), v.indices());
 }
 
-template <isVector V, isMatrix M> auto operator*(const V& v,const M& m)
+auto operator*(const isVector auto& v,const isMatrix auto& m)
 {
     auto cols=m.cols();
     auto vm=v.indices() | std::views::transform([cols,v](size_t j) {return v * cols[j];});
@@ -205,7 +205,7 @@ private:
     S itsSubscriptor; //packing for the product.
 };
 
-template <isMatrix A, isMatrix B> auto operator*(const A& a,const B& b)
+auto operator*(const isMatrix auto& a,const isMatrix auto& b)
 {
     assert(a.nc() == b.nr() && "Matrix dimensions do not match for multiplication");
     static_assert(isMatrix<MatrixProductView<decltype(a.rows()),decltype(b.rows()),decltype(a.subscriptor())>>,"Matrix-Matrix multiplication should satisfy isMatrix concept requirements");
@@ -265,13 +265,13 @@ private:
 
 
 
-template <isMatrix A, isMatrix B> auto operator+(const A& a,const B& b)
+auto operator+(const isMatrix auto& a,const isMatrix auto& b)
 {
     static_assert(isMatrix<MatrixOpView<decltype(a),decltype(b),decltype([](const auto& ia, const auto& ib){return ia+ib;})>>,"Matrix-Matrix addition should satisfy isMatrix concept requirements");
     return MatrixOpView(a,b,[](const auto& ia, const auto& ib){return ia+ib;});                    
 }
 
-template <isMatrix A, isMatrix B> auto operator-(const A& a,const B& b)
+auto operator-(const isMatrix auto& a,const isMatrix auto& b)
 {
     return MatrixOpView(a,b,[](const auto& ia, const auto& ib){return ia-ib;});                    
 }

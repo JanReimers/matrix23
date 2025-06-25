@@ -165,7 +165,7 @@ struct intersection
 };
 
 
-template <isVector A, isVector B> auto operator*(const A& a, const B& b)
+auto operator*(const isVector auto& a, const isVector auto& b)
 {
     intersection inter(a.indices(),b.indices());
     auto va=a | std::views::drop(inter.drop1) | std::views::take(inter.indices.size());
@@ -173,27 +173,30 @@ template <isVector A, isVector B> auto operator*(const A& a, const B& b)
     return inner_product(va,vb);
 }
 
-template <isVector A, isVector B> auto operator+(const A& a, const B& b)
+auto operator+(const isVector auto& a, const isVector auto& b)
 {
     assert(a.size() == b.size() && "Vectors must be of the sam  e size for addition");
     auto ab=std::views::zip_transform([](const auto& ia, const auto& ib) { return ia + ib; },a,b);
     return VectorView(std::move(ab));
 }
-template <isVector A, isVector B> auto operator-(const A& a, const B& b)
+auto operator-(const isVector auto& a, const isVector auto& b)
 {
     assert(a.size() == b.size() && "Vectors must be of the sam  e size for addition");
     return VectorView(std::views::zip_transform([](const auto& ia, const auto& ib) { return ia - ib; },a,b));
 }
 
-template <isVector A> auto operator*(const A& a, const std::ranges::range_value_t<A>& b)
+// This obviously useful concept should be in the std:: but it is not!
+template <typename T> concept arithmetic = std::integral<T> || std::floating_point<T>;
+
+auto operator*(const isVector auto& a, const arithmetic auto& b)
 {
     return VectorView(std::views::transform(a,[b](const auto& ia) { return ia*b; }));
 }
-template <isVector A> auto operator*(const std::ranges::range_value_t<A>& b,const A& a)
+auto operator*(const arithmetic auto& b,const isVector auto& a)
 {
     return VectorView(std::views::transform(a,[b](const auto& ia) { return b*ia; }));
 }
-template <isVector A> auto operator/(const A& a, const std::ranges::range_value_t<A>& b)
+auto operator/(const isVector auto& a, const arithmetic auto& b)
 {
     return VectorView(std::views::transform(a,[b](const auto& ia) { return ia/b; }));
 }

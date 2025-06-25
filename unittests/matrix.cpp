@@ -211,8 +211,11 @@ TEST_F(MatrixTests, DotProducts)
 
 TEST_F(MatrixTests, MatriProducts)
 {
+
     using::matrix23::TriDiagonalMatrix;
     using::matrix23::Vector;
+    static_assert(matrix23::isMatrix<TriDiagonalMatrix>);
+
     TriDiagonalMatrix A{{1,2,0,0,0},
                         {5,6,7,0,0},
                         {0,8,9,10,0,0},
@@ -263,6 +266,7 @@ TEST_F(MatrixTests, MatriProducts)
 TEST_F(MatrixTests, MatriOps)
 {
     using::matrix23::TriDiagonalMatrix;
+    using::matrix23::FullMatrix;
     using::matrix23::Vector;
     TriDiagonalMatrix A{{1,2,0,0,0},
                         {5,6,7,0,0},
@@ -272,5 +276,7 @@ TEST_F(MatrixTests, MatriOps)
 
     TriDiagonalMatrix AA=A+A;
     AA.print();
+    // FullMatrix ApAA=A+A*A;
+    // ApAA.print();
     // print2D(plus.rows());
 }
