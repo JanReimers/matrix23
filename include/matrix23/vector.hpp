@@ -60,7 +60,7 @@ template <class T, template <class> class Data> class GenVector
 public:
     GenVector() : data(0) {};
     GenVector(size_t n) : data(n) {}
-    GenVector(std::initializer_list<T> init) : data(init.size()) {assign_from(init);}
+    GenVector(const std::initializer_list<T>& init) : data(init.size()) {assign_from(init);}
     template <std::ranges::range R> 
     GenVector(const R& range) : data(range.size()) {assign_from(range);}
     template <std::ranges::range R> 
@@ -118,7 +118,7 @@ public:
     // }
 
     
-private:
+protected:
     template <std::ranges::range R> void assign_from(const R& range)
     {
         size_t i=0;
@@ -130,12 +130,8 @@ private:
 
 template <class T> class Vector : public GenVector<T,std::valarray>
 {
-    using base=GenVector<T,std::valarray>;
 public:
-    using base::GenVector; //inherit constructors
-    // Vector() : base() {} //default constructor
-    // Vector(size_t n) : base(n) {} //size constructor
-    // Vector(std::initializer_list<T> init) : base(init) {} //initializer list constructor
+    using GenVector<T,std::valarray>::GenVector; //inherit constructors
 };
 
 template <std::ranges::range Range1,std::ranges::range Range2> auto inner_product(const Range1& a, const Range2& b)
