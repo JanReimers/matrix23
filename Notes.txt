@@ -1,0 +1,7 @@
+
+-Numerous overloaded operators (+ - *scalar etc) for Vector return a VectorView<std::ranges::viewable_range R>
+ where R vaies depending on oporator history. We return VectorView instead of viewable_range so that all operators
+ only got called for isVector arguments.
+ Since these are all 1D operations, It would nice to use the same overloaded ops for Matrix + Matrix.  But then they need to return
+ a MatrixView instead of a VectorView.  On idea is for Matrix and MatrixView to define a type view_t = MatrixView<R>
+ but matrix does not know R it just knows template <std::ranges::viewable_range R> MatrixView

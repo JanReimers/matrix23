@@ -20,12 +20,13 @@ concept isVector = requires (V v)
 template <std::ranges::viewable_range R> class VectorView
 {
 public:
-    typedef std::ranges::iota_view<size_t,size_t> iota_view;  
-    // VectorView(R&& r, const iota_view& indices)
-    // : range(std::forward<R>(r)), itsIndices(indices)
-    // {
-    //     assert(size() == std::ranges::size(range) && "VectorView stop index out of range");
-    // }
+    typedef std::ranges::iota_view<size_t,size_t> iota_view; 
+    
+    VectorView(R&& r, const iota_view& indices)
+    : range(std::forward<R>(r)), itsIndices(indices)
+    {
+        assert(size() == std::ranges::size(range) && "VectorView stop index out of range");
+    }
     // VectorView(R& r, const iota_view& indices)
     // : range(std::forward<R>(r)), itsIndices(indices)
     // {

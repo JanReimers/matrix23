@@ -61,3 +61,25 @@ TEST_F(VectorTests, Operators)
     Vector<double> v5=v4*2+v2-v1*v4*v2+8*v1*v4*v1;
     EXPECT_EQ(v5,(il{62, 256.5, 451, 645.5, 840}));
 }
+
+#include <numeric> // need to include <numeric> for std::ranges::iota! ?
+TEST_F(VectorTests, Intrsections)
+{
+    using matrix23::VectorView;
+    using matrix23::intersection;
+    using matrix23::inner_product;
+    std::valarray<int> v(15);
+    std::ranges::iota(v,0); // need to include <numeric> for std::ranges::iota! ?
+    auto i1=std::views::iota(size_t(3), size_t(8+1));
+    auto i2=std::views::iota(size_t(4), size_t(10+1));
+    auto v1v=v | std::views::drop(i1.front()) | std::views::take(i1.size());
+    auto v2v=v | std::views::drop(i2.front()) | std::views::take(i2.size());
+    auto v1=VectorView(std::move(v1v),i1); // Full view of the valarray
+    auto v2=VectorView(std::move(v2v),i2); // Full view of the valarray
+  
+    intersection inter(i1,i2);
+    auto v1_intersection=v1 | std::views::drop(inter.drop1) | std::views::take(inter.indices.size());
+    auto v2_intersection=v2 | std::views::drop(inter.drop2) | std::views::take(inter.indices.size());
+    int dot=inner_product(v1_intersection,v2_intersection);
+    EXPECT_EQ(dot, 4*4 + 5*5 + 6*6 + 7*7 + 8*8); 
+}
