@@ -8,9 +8,9 @@ namespace matrix23
 {
 
 template <class M> 
-concept isMatrix = requires (M m,size_t i, size_t j)
+concept isMatrix = requires (M m,size_t i, size_t j, std::remove_cvref_t<M>::value_t t)
 {
-    m.operator()(i, j);
+    t=m.operator()(i, j);
     m.rows();
     m.cols();
     m.subscriptor();
@@ -144,6 +144,7 @@ template <isMatrix M, isVector V> auto operator*(const M& m, const V& v)
 {
     auto rows=m.rows();
     auto mv=v.indices() | std::views::transform([rows,v](size_t i) {return rows[i] * v;});
+    static_assert(isVector<VectorView<decltype(mv)>>,"Matrix-vector multiplication should satisfy isVector concept requirements");
     return VectorView(std::move(mv), v.indices());
 }
 
@@ -151,6 +152,7 @@ template <isVector V, isMatrix M> auto operator*(const V& v,const M& m)
 {
     auto cols=m.cols();
     auto vm=v.indices() | std::views::transform([cols,v](size_t j) {return v * cols[j];});
+    static_assert(isVector<VectorView<decltype(vm)>>,"Matrix-vector multiplication should satisfy isVector concept requirements");
     return VectorView(std::move(vm), v.indices());
 }
 
@@ -158,7 +160,7 @@ template <std::ranges::viewable_range R, std::ranges::viewable_range C, class S>
 {
 public:
     typedef std::ranges::range_value_t<R> Rv; //rows value type which is a column range.
-    typedef std::ranges::range_value_t<Rv> T; //column range value type which should be scalar (double etc.)
+    typedef std::ranges::range_value_t<Rv> value_t; //column range value type which should be scalar (double etc.)
     MatrixProductView(const R& _rows, const C& _cols,S _subsciptor )
     : a_rows(_rows), b_cols(_cols), itsSubscriptor(_subsciptor)
     {
@@ -170,7 +172,7 @@ public:
     size_t nr  () const { return std::ranges::size(a_rows); }
     size_t nc  () const { return std::ranges::size(b_cols); }
 
-    T operator()(size_t i, size_t j) const
+    value_t operator()(size_t i, size_t j) const
     {
         // assert(subsciptor.is_stored(i,j) && "Index out of range for MatrixView");
         return a_rows[i]*b_cols[j]; //VectorView*VectorView
@@ -206,6 +208,7 @@ private:
 template <isMatrix A, isMatrix B> auto operator*(const A& a,const B& b)
 {
     assert(a.nc() == b.nr() && "Matrix dimensions do not match for multiplication");
+    static_assert(isMatrix<MatrixProductView<decltype(a.rows()),decltype(b.rows()),decltype(a.subscriptor())>>,"Matrix-Matrix multiplication should satisfy isMatrix concept requirements");
     return MatrixProductView(a.rows(),b.cols(),a.subscriptor());
 }
 
@@ -224,7 +227,7 @@ template <isMatrix A, isMatrix B> auto operator*(const A& a,const B& b)
 template <isMatrix Ma, isMatrix Mb, class Op> class MatrixOpView
 {
 public:
-    typedef Ma::value_t T;
+    typedef std::remove_cvref_t<Ma>::value_t value_t;
     MatrixOpView(const Ma& _a, const Mb& _b, const Op& _op)
     : a(_a), b(_b), op(_op)
     {
@@ -236,9 +239,9 @@ public:
     size_t nr  () const { return a.nr(); }
     size_t nc  () const { return a.nc(); }
 
-    T operator()(size_t i, size_t j) const
+    value_t operator()(size_t i, size_t j) const
     {
-        return op(a(i,j),b(i,j)); 
+        return op(a(i,j),b(i,j));
     }
 
     auto rows() const
@@ -264,6 +267,7 @@ private:
 
 template <isMatrix A, isMatrix B> auto operator+(const A& a,const B& b)
 {
+    static_assert(isMatrix<MatrixOpView<decltype(a),decltype(b),decltype([](const auto& ia, const auto& ib){return ia+ib;})>>,"Matrix-Matrix addition should satisfy isMatrix concept requirements");
     return MatrixOpView(a,b,[](const auto& ia, const auto& ib){return ia+ib;});                    
 }
 
