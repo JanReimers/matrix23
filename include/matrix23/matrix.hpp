@@ -50,8 +50,7 @@ template <typename T, class S> class Matrix
     
     T  operator()(size_t i, size_t j) const
     {
-        assert(itsSubscriptor.is_stored(i,j));
-        return data[itsSubscriptor.offset(i,j)];
+        return itsSubscriptor.is_stored(i,j) ? data[itsSubscriptor.offset(i,j)] : T(0);
     }
     T& operator()(size_t i, size_t j)
     {
@@ -224,11 +223,11 @@ auto operator*(const isMatrix auto& a,const isMatrix auto& b)
 //     return ???;
 // }
 
-template <isMatrix Ma, isMatrix Mb, class Op> class MatrixOpView
+template <isMatrix Ma, isMatrix Mb, class Op> class MatrixBinOpView
 {
 public:
     typedef std::remove_cvref_t<Ma>::value_t value_t;
-    MatrixOpView(const Ma& _a, const Mb& _b, const Op& _op)
+    MatrixBinOpView(const Ma& _a, const Mb& _b, const Op& _op)
     : a(_a), b(_b), op(_op)
     {
         assert(a.nr()==b.nr());
@@ -263,21 +262,67 @@ private:
     Op op; 
 };
 
+template <isMatrix Ma, class Op> class MatrixOpView
+{
+public:
+    typedef std::remove_cvref_t<Ma>::value_t value_t;
+    MatrixOpView(const Ma& _a, const Op& _op)
+    : a(_a), op(_op)
+    {
+       
+    }
+  
+    size_t size() const { return  nr()*nc(); }
+    size_t nr  () const { return a.nr(); }
+    size_t nc  () const { return a.nc(); }
+
+    value_t operator()(size_t i, size_t j) const
+    {
+        return op(a(i,j));
+    }
+
+    auto rows() const
+    {
+       return std::views::transform(a.rows(),op);
+    }
+
+    auto cols() const
+    {
+       return std::views::transform(a.cols(),op);
+    }
+    auto subscriptor() const
+    {
+        return a.subscriptor();;
+    }
+private:
+    Ma a; 
+    Op op; 
+};
 
 
 auto operator+(const isMatrix auto& a,const isMatrix auto& b)
 {
-    static_assert(isMatrix<MatrixOpView<decltype(a),decltype(b),decltype([](const auto& ia, const auto& ib){return ia+ib;})>>,"Matrix-Matrix addition should satisfy isMatrix concept requirements");
-    return MatrixOpView(a,b,[](const auto& ia, const auto& ib){return ia+ib;});                    
+    static_assert(isMatrix<MatrixBinOpView<decltype(a),decltype(b),decltype([](const auto& ia, const auto& ib){return ia+ib;})>>,"Matrix-Matrix addition should satisfy isMatrix concept requirements");
+    return MatrixBinOpView(a,b,[](const auto& ia, const auto& ib){return ia+ib;});                    
 }
 
 auto operator-(const isMatrix auto& a,const isMatrix auto& b)
 {
-    return MatrixOpView(a,b,[](const auto& ia, const auto& ib){return ia-ib;});                    
+    return MatrixBinOpView(a,b,[](const auto& ia, const auto& ib){return ia-ib;});                    
 }
 
-
-
+auto operator*(const isMatrix auto& a,const arithmetic auto& b)
+{
+    return MatrixOpView(a,[b](const auto& ia){return ia*b;}); 
+}
+auto operator*(const arithmetic auto& b,const isMatrix auto& a)
+{
+    return MatrixOpView(a,[b](const auto& ia){return b*ia;}); 
+}
+auto operator/(const isMatrix auto& a,const arithmetic auto& b)
+{
+    return MatrixOpView(a,[b](const auto& ia){return ia/b;}); 
+}
 
 
 } //namespace matrix23

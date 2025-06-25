@@ -276,7 +276,8 @@ TEST_F(MatrixTests, MatriOps)
 
     TriDiagonalMatrix AA=A+A;
     AA.print();
-    // FullMatrix ApAA=A+A*A;
-    // ApAA.print();
+    FullMatrix ApAA=A+A*A;
+    ApAA.print();
     // print2D(plus.rows());
+    FullMatrix A5=A*5,A6=6*A, A7=7.0*A, A8=A*8.0, A9=A/2, A10=A*A*9;
 }
