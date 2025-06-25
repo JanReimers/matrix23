@@ -209,7 +209,7 @@ TEST_F(MatrixTests, DotProducts)
     
 }
 
-TEST_F(MatrixTests, MatriProductView)
+TEST_F(MatrixTests, MatriProducts)
 {
     using::matrix23::TriDiagonalMatrix;
     using::matrix23::Vector;
@@ -256,6 +256,21 @@ TEST_F(MatrixTests, MatriProductView)
     EXPECT_EQ(v*A*A*A*A*v,42055783);
     EXPECT_EQ(v*A*A*A*A*A*v,1262119377);
     
-    
+    using::matrix23::FullMatrix;
+    FullMatrix An=A*A*A*A*A;
 }
 
+TEST_F(MatrixTests, MatriOps)
+{
+    using::matrix23::TriDiagonalMatrix;
+    using::matrix23::Vector;
+    TriDiagonalMatrix A{{1,2,0,0,0},
+                        {5,6,7,0,0},
+                        {0,8,9,10,0,0},
+                        {0,0,11,12,13},
+                        {0,0,0,14,15}};
+
+    TriDiagonalMatrix AA=A+A;
+    AA.print();
+    // print2D(plus.rows());
+}

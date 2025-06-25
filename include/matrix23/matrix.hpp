@@ -21,6 +21,7 @@ concept isMatrix = requires (M m,size_t i, size_t j)
 template <typename T, class S> class Matrix
 {
     public:
+    typedef T value_t;
     Matrix(size_t nr, size_t nc) : itsSubscriptor(nc,nr), data(itsSubscriptor.size()) {};
     Matrix(size_t nr, size_t nc, size_t k) : itsSubscriptor(nc,nr,k), data(itsSubscriptor.size()) {};
     Matrix(std::initializer_list<std::initializer_list<T>> init)
@@ -33,6 +34,20 @@ template <typename T, class S> class Matrix
     {
         load(init);
     }
+    template <isMatrix M> Matrix(const M& m) 
+    : itsSubscriptor(m.nr(),m.nc()), data(itsSubscriptor.size())
+    {
+        for (size_t i = 0; i < itsSubscriptor.nr; ++i)
+        {
+            for (size_t j = 0; j < itsSubscriptor.nc; ++j)
+            {
+                if (itsSubscriptor.is_stored(i, j))
+                    data[itsSubscriptor.offset(i, j)] = m(i, j);
+                
+            }
+        }
+    }
+    
     T  operator()(size_t i, size_t j) const
     {
         assert(itsSubscriptor.is_stored(i,j));
@@ -192,6 +207,69 @@ template <isMatrix A, isMatrix B> auto operator*(const A& a,const B& b)
 {
     assert(a.nc() == b.nr() && "Matrix dimensions do not match for multiplication");
     return MatrixProductView(a.rows(),b.cols(),a.subscriptor());
+}
+
+//
+//  operator+ introduces some interesting issues.
+//    1) For Matrix we want to do linear/flat traverse of the underlying 1D data.  i.e. no expensive op(i,j) indexing.
+//    2) For MatrixProductView we can add rows which should skip zero-elements as dictated by the subscriptor.
+//
+// template <class T, class S> auto operator+(const Matrix<T,S>& a, const Matrix<T,S>& b)
+// {
+//     auto ab=std::views::zip_transform([](const auto& ia, const auto& ib) { return ia + ib; },a,b);
+//     std::op_plus<T>;
+//     return ???;
+// }
+
+template <isMatrix Ma, isMatrix Mb, class Op> class MatrixOpView
+{
+public:
+    typedef Ma::value_t T;
+    MatrixOpView(const Ma& _a, const Mb& _b, const Op& _op)
+    : a(_a), b(_b), op(_op)
+    {
+        assert(a.nr()==b.nr());
+        assert(a.nc()==b.nc());
+    }
+  
+    size_t size() const { return  nr()*nc(); }
+    size_t nr  () const { return a.nr(); }
+    size_t nc  () const { return a.nc(); }
+
+    T operator()(size_t i, size_t j) const
+    {
+        return op(a(i,j),b(i,j)); 
+    }
+
+    auto rows() const
+    {
+       return std::views::zip_transform(op,a.rows(),b.rows());
+    }
+
+    auto cols() const
+    {
+       return std::views::zip_transform(op,a.cols(),b.cols());
+    }
+    auto subscriptor() const
+    {
+        return a.subscriptor();;
+    }
+private:
+    Ma a; 
+    Mb b; 
+    Op op; 
+};
+
+
+
+template <isMatrix A, isMatrix B> auto operator+(const A& a,const B& b)
+{
+    return MatrixOpView(a,b,[](const auto& ia, const auto& ib){return ia+ib;});                    
+}
+
+template <isMatrix A, isMatrix B> auto operator-(const A& a,const B& b)
+{
+    return MatrixOpView(a,b,[](const auto& ia, const auto& ib){return ia-ib;});                    
 }
 
 

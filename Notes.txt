@@ -5,3 +5,5 @@
  Since these are all 1D operations, It would nice to use the same overloaded ops for Matrix + Matrix.  But then they need to return
  a MatrixView instead of a VectorView.  On idea is for Matrix and MatrixView to define a type view_t = MatrixView<R>
  but matrix does not know R it just knows template <std::ranges::viewable_range R> MatrixView
+
+ - op+(isVector a, isVector b) should calculate the union of the a.indices and b.indices, this skipping over zeros (a[i]==0 && b[i]==0)
