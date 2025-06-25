@@ -18,7 +18,7 @@ concept isMatrix = requires (M m,size_t i, size_t j, std::remove_cvref_t<M>::val
     m.nc();
 };
 
-template <typename T, class S> class Matrix
+template <typename T, isSubscriptor S> class Matrix
 {
     public:
     typedef T value_t;

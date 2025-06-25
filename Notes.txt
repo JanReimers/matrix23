@@ -1,3 +1,25 @@
+Design objectives:
+    1) Start with zero based indexing
+        Add in FORTRAN 1 based (or arbitrary lower bounds) indexing.  Do this last so that all the internal work is done with zero
+        based indexing.
+    2) This allows us to use size_t for all indexing integers
+    3) Support the same matrix packing arrangements used by Lapack and Blas for full, triangular (U/L), band, tri-diagonal and diagonal matrices.
+        Isolate all the packing and unpacking code into a Subscriptor concept and group of classes.
+    4) Support symmetric and Hermitian symmetries using triangular packing.
+    5) Use std::vector<T> and std::valarray<T> interchangably for storing the raw data.  
+        Also support a Copy-On-Write array?
+    6) Support overloaded operators with lazy (delayed) evaluation
+        As much as possible use ranges and view adaptors instead of expression templates to achieve lazy evaluation.
+        Matrix*Matrix should take advantage packing type.  For example DiagonalMatrix * DiagonalMatrix is O(N) not O(N^3)!
+    7) Support float, double, std::complex<T> data types.
+    8) Support various initialization type: none, zero, one, value, diagonal, random, randompos
+    9) Use c++23.  Huge convenience of zip, zip_transform view adaptors.
+    10) Make some blasmm(Matrix,Matrix) functions for speed comparison
+    11) Support ascii/binary io with the cereal header library.
+    11) 
+        
+
+
 
 -Numerous overloaded operators (+ - *scalar etc) for Vector return a VectorView<std::ranges::viewable_range R>
  where R vaies depending on oporator history. We return VectorView instead of viewable_range so that all operators
@@ -6,4 +28,4 @@
  a MatrixView instead of a VectorView.  On idea is for Matrix and MatrixView to define a type view_t = MatrixView<R>
  but matrix does not know R it just knows template <std::ranges::viewable_range R> MatrixView
 
- - op+(isVector a, isVector b) should calculate the union of the a.indices and b.indices, this skipping over zeros (a[i]==0 && b[i]==0)
+ - op+(isVector a, isVector b) should calculate the union of the a.indices and b.indices, thus skipping over zeros (a[i]==0 && b[i]==0)

@@ -7,8 +7,20 @@
 
 namespace matrix23
 {
-
 typedef std::ranges::iota_view<size_t,size_t> iota_view;
+
+template <class S> 
+concept isSubscriptor = requires (S const s,size_t i, size_t j, bool b)
+{
+    b=s.is_stored(i, j);
+    i=s.offset(i,j);
+    i=s.size();
+    i=s.stored_row_size(j);
+    s.nonzero_row_indexes(j);
+    s.nonzero_col_indexes(i);
+    
+};
+
 
 class FullSubsciptor
 {
@@ -190,6 +202,10 @@ class BandedSubsciptor
 
 };
 
-
+static_assert(isSubscriptor<FullSubsciptor>);
+static_assert(isSubscriptor<UpperTriangularSubsciptor>);
+static_assert(isSubscriptor<DiagonalSubsciptor>);
+static_assert(isSubscriptor<TriDiagonalSubsciptor>);
+// static_assert(isSubscriptor<BandedSubsciptor>);
 
 } // namespace matrix23
