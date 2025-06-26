@@ -9,8 +9,24 @@ namespace matrix23
 {
 typedef std::ranges::iota_view<size_t,size_t> iota_view;
 
-template <class S> 
-concept isSubscriptor = requires (S const s,size_t i, size_t j, bool b)
+enum class Packing  {full, utri, ltri, tridiag, diag, sband, uband, lband};
+enum class Indexing {row_major, col_major};
+enum class Symmetry {none,symmetric, anit_symmetric, hermitian, anit_hermitian};
+
+template <class P> concept isPacker  = requires (P const p,size_t i, size_t j, bool b)
+{
+    b=p.is_stored(i,j);
+    i=p.offset(i,j);
+    i=p.stored_size();
+    i=p.stored_row_size(j);
+    i=p.stored_col_size(j);
+};
+template <class S> concept isShaper = requires (S const s,size_t i, size_t j, bool b)
+{
+    s.nonzero_row_indexes(j);
+    s.nonzero_col_indexes(i);  
+};
+template <class S> concept isSubscriptor = requires (S const s,size_t i, size_t j, bool b)
 {
     b=s.is_stored(i, j);
     i=s.offset(i,j);
@@ -22,6 +38,7 @@ concept isSubscriptor = requires (S const s,size_t i, size_t j, bool b)
     i=s.nc();
 
 };
+typedef std::function<size_t(size_t, size_t)> indexer_t;
 
 class SubsciptorCommon
 {
@@ -390,5 +407,178 @@ static_assert(isSubscriptor<UpperTriangularRowMajorSubsciptor>);
 static_assert(isSubscriptor<DiagonalSubsciptor>);
 static_assert(isSubscriptor<TriDiagonalSubsciptor>);
 // static_assert(isSubscriptor<BandedSubsciptor>);
+
+class PackerCommon
+{
+public:
+    PackerCommon(const size_t& _nrows, const size_t& _ncols, const indexer_t& ind) : nrows(_nrows), ncols(_ncols), indexer(ind) {};
+    size_t nr() const {return nrows;}
+    size_t nc() const {return ncols;}
+    void range_check(size_t i, size_t j) const
+    {
+        assert(i<nrows && "   Row index ot of bounds");
+        assert(j<ncols && "Column index ot of bounds");
+    }
+    size_t offset(size_t i, size_t j) const
+    {
+        range_check(i,j);
+        return indexer(i,j);
+    }
+
+protected:
+    const size_t& nrows,ncols;
+    indexer_t indexer; // Function to calculate the index based on row and column
+
+};
+// If indices are (row,col) the row major means the linear data is stored in this order:
+// [  (0,0),(0,1),(0,2)...(0,nc-1),(1,0), (1,1)...(1,nc-1) .....(nr-1,nc-1) ]
+
+class FullPacker : public PackerCommon
+{
+public:
+    FullPacker(const size_t& _nrows, const size_t& _ncols, Indexing ind) 
+        : PackerCommon(_nrows,_ncols, make_indexer(ind,nrows,ncols)) {};
+    bool is_stored(size_t i, size_t j) const {range_check(i,j);return true;} // Full matrix, all elements are stored
+    size_t stored_size() const {return nrows * ncols;} // Total number of elements
+    size_t stored_row_size(size_t) const {return ncols;}// Each row has nc elements
+    size_t stored_col_size(size_t) const {return nrows;} // Each col has nr elements
+private:
+    static indexer_t make_indexer(Indexing ind, const size_t& nrows, const size_t& ncols)
+    {
+        switch (ind)
+        {
+            case Indexing::row_major:
+                return [&ncols](size_t i, size_t j) -> size_t {return j + i*ncols;};
+            case Indexing::col_major:
+                return [&nrows](size_t i, size_t j) -> size_t {return i + j*nrows;};
+        
+        }
+    }
+};
+class UpperTriangularPacker : public PackerCommon
+{
+public:
+    UpperTriangularPacker(const size_t& _nrows, const size_t& _ncols, Indexing ind) 
+        : PackerCommon(_nrows,_ncols,make_indexer(ind,nrows,ncols)) {};
+    bool is_stored(size_t i, size_t j) const {return i <= j;}
+    size_t stored_size() const
+    {
+        return nrows*(nrows+1)/2 + (ncols>nrows ? (ncols-nrows)*nrows : 0); // Total number of elements
+    }
+    size_t stored_row_size(size_t row_index) const
+     {
+        assert(row_index < nrows);
+        if (row_index >= ncols) return 0; // No elements stored in this row
+        return ncols-row_index; // 
+    }
+    size_t stored_col_size(size_t col_index) const
+    {
+        assert(col_index < ncols);
+        if (col_index >= nrows) return nrows; // No elements stored in this row
+        return col_index+1; // 
+    }
+private:
+    static indexer_t make_indexer(Indexing ind, const size_t& nrows, const size_t& ncols)
+    {
+        switch (ind)
+        {
+            case Indexing::row_major:
+                return [&ncols](size_t i, size_t j) -> size_t {return j + i*(2*ncols-i-1)/2;};
+            case Indexing::col_major:
+                return [      ](size_t i, size_t j) -> size_t {return i + j*(        j+1)/2;};
+        
+        }
+    }
+
+};
+class LowerTriangularPacker : public PackerCommon
+{
+public:
+    LowerTriangularPacker(const size_t& _nrows, const size_t& _ncols, Indexing ind) 
+        : PackerCommon(_nrows,_ncols,make_indexer(ind,nrows,ncols)) {};
+    bool is_stored(size_t i, size_t j) const {return j <= i;}
+    size_t offset(size_t i, size_t j) const
+    {
+        assert(is_stored(i,j));
+        return j + (i+1)*i/2;    // row major
+        //return i + (j)*(2*nrows-j-1)/2; // col major   
+    }
+    size_t stored_size() const
+    {
+        return ncols*(ncols+1)/2  + (nrows>ncols ?  (nrows-ncols)*ncols :  0); // Total number of elements
+    }
+    size_t stored_row_size(size_t row_index) const
+    {
+        assert(row_index < nrows);
+        if (row_index >= ncols) return ncols; // full row below the triangle
+        return row_index+1; // in the triangle
+    }
+    size_t stored_col_size(size_t col_index) const
+    {
+        assert(col_index < ncols);
+        if (col_index >= nrows) return 0; // full row below the triangle
+        return nrows-col_index; // in the triangle
+    }
+private:
+    static indexer_t make_indexer(Indexing ind, const size_t& nrows, const size_t& ncols)
+    {
+        switch (ind)
+        {
+            case Indexing::row_major:
+                return [      ](size_t i, size_t j) -> size_t {return j + i*(        i+1)/2;};
+            case Indexing::col_major:
+                return [&nrows](size_t i, size_t j) -> size_t {return i + j*(2*nrows-j-1)/2;};
+        
+        }
+    }
+  
+ 
+};
+class DiagonalPacker : public PackerCommon
+{
+public:
+    DiagonalPacker(const size_t& _nrows, const size_t& _ncols, Indexing ind) 
+        : PackerCommon(_nrows,_ncols, [](size_t i, size_t) -> size_t {return i;}) {};
+    bool is_stored(size_t i, size_t j) const {return i == j;}
+    size_t stored_size() const {return std::min(nrows,ncols);}
+    size_t stored_row_size(size_t) const {return 1;}
+    size_t stored_col_size(size_t) const {return 1;}
+};
+//
+//      *    *   a02  a13  a24  a35  
+//      *   a01  a12  a23  a34  a45 
+//     a00  a11  a22  a33  a44  a55 
+//     a10  a21  a32  a43  a54  *   
+//     a20  a31  a42  a53  *    *
+class SBandPacker : public PackerCommon
+{
+public:
+    //  Handle square only.
+    SBandPacker(const size_t& n, size_t _k, Indexing ind) //k=band width,
+        : PackerCommon(n,n, [&n,_k](size_t i, size_t j) -> size_t {return _k+i-j+j*n;}), k(_k){};
+    bool is_stored(size_t i, size_t j) const {range_check(i,j);return i+k<=j && j+k<=i;}
+    size_t stored_size() const {return nrows * (2*k+1);}
+    size_t stored_row_size(size_t row) const 
+    {
+        if (row<k) return row+1+k;
+        if (row>nrows-k-1) return nrows-row+k;
+        return 2*k+1;  
+    }
+    size_t stored_col_size(size_t col) const //Don't need the col index.
+    {
+        if (col<k) return col+1+k;
+        if (col>ncols-k-1) return ncols-col+k;
+        return 2*k+1; 
+    }
+private:
+    size_t k;
+};
+
+
+static_assert(isPacker<FullPacker>);
+static_assert(isPacker<UpperTriangularPacker>);
+static_assert(isPacker<LowerTriangularPacker>);
+static_assert(isPacker<DiagonalPacker>);
+static_assert(isPacker<SBandPacker>);
 
 } // namespace matrix23
