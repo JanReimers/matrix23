@@ -30,35 +30,134 @@ public:
 
 TEST_F(MatrixTests, Initialization)
 {
-    Matrix<double, matrix23::FullSubsciptor> m1{{1, 2, 3},
-                                                {4, 5, 6},
-                                                {7, 8, 9}};
-    EXPECT_EQ(m1(0, 0), 1);
-    EXPECT_EQ(m1(0, 1), 2);
-    EXPECT_EQ(m1(0, 2), 3);
-    EXPECT_EQ(m1(1, 0), 4);
-    EXPECT_EQ(m1(1, 1), 5);
-    EXPECT_EQ(m1(1, 2), 6);
-    EXPECT_EQ(m1(2, 0), 7);
-    EXPECT_EQ(m1(2, 1), 8);
-    EXPECT_EQ(m1(2, 2), 9);
-
-    Matrix<double, matrix23::UpperTriangularSubsciptor> m2{{1, 2, 3},
-                                                            {0, 5, 6},
-                                                            {0, 0, 9}};
-    EXPECT_EQ(m2(0, 0), 1);
-    EXPECT_EQ(m2(0, 1), 2);
-    EXPECT_EQ(m2(0, 2), 3);
-    // EXPECT_EQ(m2(1, 0), 0);
-    EXPECT_EQ(m2(1, 1), 5);
-    EXPECT_EQ(m2(1, 2), 6);
-    // EXPECT_EQ(m2(2, 0), 0);
-    // EXPECT_EQ(m2(2, 1), 0);
-    EXPECT_EQ(m2(2, 2), 9);
-
-    // Test row and column access
-    print(m1.row(0)); // Should print: [1 2 3 ]
-    print(m1.col(1)); // Should print: [2 5 8 ]
+    {
+    Matrix<double, matrix23::FullRowMajorSubsciptor> A
+    {{1, 2, 3},
+     {4, 5, 6},
+     {7, 8, 9}};
+    EXPECT_EQ(A(0, 0), 1);
+    EXPECT_EQ(A(0, 1), 2);
+    EXPECT_EQ(A(0, 2), 3);
+    EXPECT_EQ(A(1, 0), 4);
+    EXPECT_EQ(A(1, 1), 5);
+    EXPECT_EQ(A(1, 2), 6);
+    EXPECT_EQ(A(2, 0), 7);
+    EXPECT_EQ(A(2, 1), 8);
+    EXPECT_EQ(A(2, 2), 9);
+    EXPECT_EQ(A.row(0),il({1,2,3}));
+    EXPECT_EQ(A.row(1),il({4,5,6}));
+    EXPECT_EQ(A.row(2),il({7,8,9}));
+    EXPECT_EQ(A.col(0),il({1,4,7}));
+    EXPECT_EQ(A.col(1),il({2,5,8}));
+    EXPECT_EQ(A.col(2),il({3,6,9}));
+   
+    }
+    {
+      Matrix<double, matrix23::FullColMajorSubsciptor> A
+    {{1, 2, 3},
+     {4, 5, 6},
+     {7, 8, 9}};
+    EXPECT_EQ(A(0, 0), 1);
+    EXPECT_EQ(A(0, 1), 2);
+    EXPECT_EQ(A(0, 2), 3);
+    EXPECT_EQ(A(1, 0), 4);
+    EXPECT_EQ(A(1, 1), 5);
+    EXPECT_EQ(A(1, 2), 6);
+    EXPECT_EQ(A(2, 0), 7);
+    EXPECT_EQ(A(2, 1), 8);
+    EXPECT_EQ(A(2, 2), 9);
+    EXPECT_EQ(A.row(0),il({1,2,3}));
+    EXPECT_EQ(A.row(1),il({4,5,6}));
+    EXPECT_EQ(A.row(2),il({7,8,9}));
+    EXPECT_EQ(A.col(0),il({1,4,7}));
+    EXPECT_EQ(A.col(1),il({2,5,8}));
+    EXPECT_EQ(A.col(2),il({3,6,9}));
+    }
+    {
+    const Matrix<double, matrix23::UpperTriangularRowMajorSubsciptor> C
+    {{1, 2, 3},
+     {0, 5, 6},
+     {0, 0, 9}};
+    EXPECT_EQ(C(0, 0), 1);
+    EXPECT_EQ(C(0, 1), 2);
+    EXPECT_EQ(C(0, 2), 3);
+    EXPECT_EQ(C(1, 0), 0); // Matrix has to be constant otherwise the non-const op(i,j) will fail.
+    EXPECT_EQ(C(1, 1), 5);
+    EXPECT_EQ(C(1, 2), 6);
+    EXPECT_EQ(C(2, 0), 0); // Matrix has to be constant otherwise the non-const op(i,j) will fail.
+    EXPECT_EQ(C(2, 1), 0); // Matrix has to be constant otherwise the non-const op(i,j) will fail.
+    EXPECT_EQ(C(2, 2), 9);
+    EXPECT_EQ(C.row(0),il({1,2,3}));
+    EXPECT_EQ(C.row(1),il({5,6}));
+    EXPECT_EQ(C.row(2),il({9}));
+    EXPECT_EQ(C.col(0),il({1}));
+    EXPECT_EQ(C.col(1),il({2,5}));
+    EXPECT_EQ(C.col(2),il({3,6,9}));
+    }
+    {
+        const Matrix<double, matrix23::UpperTriangularColMajorSubsciptor> C
+        {{1, 2, 3},
+        {0, 5, 6},
+        {0, 0, 9}};
+        EXPECT_EQ(C(0, 0), 1);
+        EXPECT_EQ(C(0, 1), 2);
+        EXPECT_EQ(C(0, 2), 3);
+        EXPECT_EQ(C(1, 0), 0); // Matrix has to be constant otherwise the non-const op(i,j) will fail.
+        EXPECT_EQ(C(1, 1), 5);
+        EXPECT_EQ(C(1, 2), 6);
+        EXPECT_EQ(C(2, 0), 0); // Matrix has to be constant otherwise the non-const op(i,j) will fail.
+        EXPECT_EQ(C(2, 1), 0); // Matrix has to be constant otherwise the non-const op(i,j) will fail.
+        EXPECT_EQ(C(2, 2), 9);
+        EXPECT_EQ(C.row(0),il({1,2,3}));
+        EXPECT_EQ(C.row(1),il({5,6}));
+        EXPECT_EQ(C.row(2),il({9}));
+        EXPECT_EQ(C.col(0),il({1}));
+        EXPECT_EQ(C.col(1),il({2,5}));
+        EXPECT_EQ(C.col(2),il({3,6,9}));
+    }
+    {
+        const Matrix<double, matrix23::LowerTriangularColMajorSubsciptor> C
+        {{1, 0, 0},
+         {2, 4, 0},
+         {3, 5, 6}};
+        EXPECT_EQ(C(0, 0), 1);
+        EXPECT_EQ(C(0, 1), 0);
+        EXPECT_EQ(C(0, 2), 0);
+        EXPECT_EQ(C(1, 0), 2); // Matrix has to be constant otherwise the non-const op(i,j) will fail.
+        EXPECT_EQ(C(1, 1), 4);
+        EXPECT_EQ(C(1, 2), 0);
+        EXPECT_EQ(C(2, 0), 3); // Matrix has to be constant otherwise the non-const op(i,j) will fail.
+        EXPECT_EQ(C(2, 1), 5); // Matrix has to be constant otherwise the non-const op(i,j) will fail.
+        EXPECT_EQ(C(2, 2), 6);
+        EXPECT_EQ(C.row(0),il({1}));
+        EXPECT_EQ(C.row(1),il({2,4}));
+        EXPECT_EQ(C.row(2),il({3,5,6}));
+        EXPECT_EQ(C.col(0),il({1,2,3}));
+        EXPECT_EQ(C.col(1),il({4,5}));
+        EXPECT_EQ(C.col(2),il({6}));
+    }
+     {
+        const Matrix<double, matrix23::LowerTriangularRowMajorSubsciptor> C
+        {{1, 0, 0},
+         {2, 4, 0},
+         {3, 5, 6}};
+        EXPECT_EQ(C(0, 0), 1);
+        EXPECT_EQ(C(0, 1), 0);
+        EXPECT_EQ(C(0, 2), 0);
+        EXPECT_EQ(C(1, 0), 2); // Matrix has to be constant otherwise the non-const op(i,j) will fail.
+        EXPECT_EQ(C(1, 1), 4);
+        EXPECT_EQ(C(1, 2), 0);
+        EXPECT_EQ(C(2, 0), 3); // Matrix has to be constant otherwise the non-const op(i,j) will fail.
+        EXPECT_EQ(C(2, 1), 5); // Matrix has to be constant otherwise the non-const op(i,j) will fail.
+        EXPECT_EQ(C(2, 2), 6);
+        EXPECT_EQ(C.row(0),il({1}));
+        EXPECT_EQ(C.row(1),il({2,4}));
+        EXPECT_EQ(C.row(2),il({3,5,6}));
+        EXPECT_EQ(C.col(0),il({1,2,3}));
+        EXPECT_EQ(C.col(1),il({4,5}));
+        EXPECT_EQ(C.col(2),il({6}));
+    }
+    
 }
 
 TEST_F(MatrixTests, FullMatrix)
@@ -145,7 +244,10 @@ TEST_F(MatrixTests, TriDiagonalMatrix)
     EXPECT_TRUE((mat1.row(1)==il{5,6,7}));
     EXPECT_TRUE((mat1.col(2)==il{7,9}));
 }
-/*
+
+#define RUN_SLOW_COMPILE_TESTS
+
+#ifdef RUN_SLOW_COMPILE_TESTS
 TEST_F(MatrixTests, DotProducts)
 {
     using matrix23::Vector;
@@ -281,4 +383,4 @@ TEST_F(MatrixTests, MatriOps)
     // print2D(plus.rows());
     FullMatrix A5=A*5,A6=6*A, A7=7.0*A, A8=A*8.0, A9=A/2, A10=A*A*9;
 }
-*/
+#endif

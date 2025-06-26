@@ -5,7 +5,18 @@ Design objectives:
     2) This allows us to use size_t for all indexing integers
     3) Support the same matrix packing arrangements used by Lapack and Blas for full, triangular (U/L), band, tri-diagonal and diagonal matrices.
         Isolate all the packing and unpacking code into a Subscriptor concept and group of classes.
+        The subscriptor really has two aspects:
+            1) The shape which which indexes (i,j) are assumed to zero.
+            2) The packing arrangements of the elements.  i.e. how (i,j) are layed in memeory.
+        Usually packing follows from shape.  But Lapack and Blas support for example trianglular shape with full storage.  i.e. part of matrix is allocated
+        but unused.  There must be reasons for this.  Program complexity may be one of them.
+        For each type we have a cirtual size nr*nc and a packed size.  Packed size is probably only needed for data array construction.
     4) Support symmetric and Hermitian symmetries using triangular packing.
+        This adds a third aspect to matrix storage, symmetry.  This all suggest a group of three enums for the Matrix class constructor
+            enum shape {full, utru, ltri, tridiag, diag, sband, ubank, lband}
+            enum packing {full, utru, ltri, tridiag, diag, sband, ubank, lband} X {col_major,row_major}
+            enum symmetry {none,symmetric,anti_symmetric,hermitian,anti_hermitian}
+        only a certain subset of combinations make sense.  Each of these three aspect would have and agent in the Matrix class that does the required work.
     5) Use std::vector<T> and std::valarray<T> interchangably for storing the raw data.  
         Also support a Copy-On-Write array?
     6) Support overloaded operators with lazy (delayed) evaluation
@@ -29,3 +40,14 @@ Design objectives:
  but matrix does not know R it just knows template <std::ranges::viewable_range R> MatrixView
 
  - op+(isVector a, isVector b) should calculate the union of the a.indices and b.indices, thus skipping over zeros (a[i]==0 && b[i]==0)
+
+ -Fortran storage:
+ 
+      real A(3,5)
+defines a two-dimensional array of 3*5=15 real numbers. It is useful to think of the first index as the row index, and the second as the column index. Hence we get the graphical picture:
+
+   (1,1)  (1,2)  (1,3)  (1,4)  (1,5)
+   (2,1)  (2,2)  (2,3)  (2,4)  (2,5)
+   (3,1)  (3,2)  (3,3)  (3,4)  (3,5)
+
+   2-dimensional arrays are stored by column. So in the above example, array element (1,2) will follow element (3,1).
