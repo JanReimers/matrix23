@@ -9,6 +9,13 @@ namespace matrix23
 {
 typedef std::ranges::iota_view<size_t,size_t> iota_view;
 
+// If indices are (row,col) then:
+// row major means the linear data is stored in this order:
+//    [  (0,0),(0,1),(0,2)...(0,nc-1),(1,0), (1,1)...(1,nc-1) .....(nr-1,nc-1) ]
+// col major means the linear data is stored in this order:
+//    [  (0,0),(1,0),(2,0)...(nr-1,0), (0,1),(1,1)...(nr-1,1) .....(nr-1,nc-1) ]
+//    col major is how Fortran, Lapack and Blas store a matrix.
+
 enum class Packing  {full, utri, ltri, tridiag, diag, sband, uband, lband};
 enum class Indexing {row_major, col_major};
 enum class Symmetry {none,symmetric, anit_symmetric, hermitian, anit_hermitian};
@@ -54,8 +61,6 @@ public:
 protected:
     const size_t nrows,ncols;
 };
-// If indices are (row,col) the row major means the linear data is stored in this order:
-// [  (0,0),(0,1),(0,2)...(0,nc-1),(1,0), (1,1)...(1,nc-1) .....(nr-1,nc-1) ]
 class FullRowMajorSubsciptor : public SubsciptorCommon
 {
 public:
@@ -92,10 +97,6 @@ public:
     }
     
 };
-
-// If indices are (row,col) the col major means the linear data is stored in this order:
-// [  (0,0),(1,0),(2,0)...(nr-1,0), (0,1),(1,1)...(nr-1,1) .....(nr-1,nc-1) ]
-// This is how Fortran, Lapack and Blas store a matrix.
 class FullColMajorSubsciptor  : public SubsciptorCommon
 {
 public:
@@ -131,7 +132,6 @@ public:
         return std::views::iota(size_t(0),ncols);
     }
 };
-
 class UpperTriangularRowMajorSubsciptor  : public SubsciptorCommon
 {
 public:
@@ -173,7 +173,6 @@ public:
     }
     
 };
-
 class UpperTriangularColMajorSubsciptor  : public SubsciptorCommon
 {
 public:
@@ -430,10 +429,7 @@ protected:
     indexer_t indexer; // Function to calculate the index based on row and column
 
 };
-// If indices are (row,col) the row major means the linear data is stored in this order:
-// [  (0,0),(0,1),(0,2)...(0,nc-1),(1,0), (1,1)...(1,nc-1) .....(nr-1,nc-1) ]
-
-class FullPacker : public PackerCommon
+class FullPacker            : public PackerCommon
 {
 public:
     FullPacker(const size_t& _nrows, const size_t& _ncols, Indexing ind) 
@@ -534,7 +530,7 @@ private:
   
  
 };
-class DiagonalPacker : public PackerCommon
+class DiagonalPacker        : public PackerCommon
 {
 public:
     DiagonalPacker(const size_t& _nrows, const size_t& _ncols, Indexing ind) 
@@ -544,14 +540,14 @@ public:
     size_t stored_row_size(size_t) const {return 1;}
     size_t stored_col_size(size_t) const {return 1;}
 };
-//
+class SBandPacker           : public PackerCommon
+{
+// Packing guide:
 //      *    *   a02  a13  a24  a35  
 //      *   a01  a12  a23  a34  a45 
 //     a00  a11  a22  a33  a44  a55 
 //     a10  a21  a32  a43  a54  *   
 //     a20  a31  a42  a53  *    *
-class SBandPacker : public PackerCommon
-{
 public:
     //  Handle square only.
     SBandPacker(const size_t& n, size_t _k, Indexing ind) //k=band width,
@@ -575,10 +571,76 @@ private:
 };
 
 
-static_assert(isPacker<FullPacker>);
+static_assert(isPacker<           FullPacker>);
 static_assert(isPacker<UpperTriangularPacker>);
 static_assert(isPacker<LowerTriangularPacker>);
-static_assert(isPacker<DiagonalPacker>);
-static_assert(isPacker<SBandPacker>);
+static_assert(isPacker<       DiagonalPacker>);
+static_assert(isPacker<          SBandPacker>);
+
+class ShaperCommon
+{
+public:
+    ShaperCommon(const size_t& _nrows, const size_t& _ncols) : nrows(_nrows), ncols(_ncols){};
+    // size_t nr() const {return nrows;}
+    // size_t nc() const {return ncols;}
+protected:
+    const size_t& nrows,ncols;
+};
+class FullShaper            : public ShaperCommon
+{
+public:
+    using ShaperCommon::ShaperCommon; // Inherit constructors
+    iota_view nonzero_row_indexes(size_t col) const {return std::views::iota(size_t(0),nrows);}
+    iota_view nonzero_col_indexes(size_t row) const {return std::views::iota(size_t(0),ncols);}   
+};
+class UpperTriangularShaper : public ShaperCommon
+{
+public:
+    using ShaperCommon::ShaperCommon; // Inherit constructors
+    iota_view nonzero_row_indexes(size_t col) const {return std::views::iota(size_t(0),col+1);}
+    iota_view nonzero_col_indexes(size_t row) const {return std::views::iota(row      ,ncols);} 
+};
+class LowerTriangularShaper : public ShaperCommon
+{
+public:
+    using ShaperCommon::ShaperCommon; // Inherit constructors
+    iota_view nonzero_row_indexes(size_t col) const {return std::views::iota(col      ,nrows);}
+    iota_view nonzero_col_indexes(size_t row) const {return std::views::iota(size_t(0),row+1);}  
+};
+class DiagonalShaper        : public ShaperCommon
+{
+public:
+    using ShaperCommon::ShaperCommon; // Inherit constructors
+    iota_view nonzero_row_indexes(size_t col) const {return std::views::iota(col,col+1);}
+    iota_view nonzero_col_indexes(size_t row) const {return std::views::iota(row,row+1);}  
+};
+class SBandShaper           : public ShaperCommon
+{
+public:
+    SBandShaper(const size_t& _nrows, const size_t& _ncols, size_t _k) 
+        : ShaperCommon(_nrows,_ncols), k(_k) 
+        {
+            assert(nrows==ncols);
+        };
+    iota_view nonzero_row_indexes(size_t col) const 
+    {
+        size_t i0=col<k ? 0 : col-k;
+        size_t i1=col+k>=nrows ? nrows : col+k+1;
+        return std::views::iota(i0 ,i1);
+    }
+    iota_view nonzero_col_indexes(size_t row) const 
+    {
+        size_t i0=row<k ? 0 : row-k;
+        size_t i1=row+k>=ncols ? ncols : row+k+1;
+        return std::views::iota(i0 ,i1);
+    }    
+    size_t k;
+};
+
+static_assert(isShaper<           FullShaper>);
+static_assert(isShaper<UpperTriangularShaper>);
+static_assert(isShaper<LowerTriangularShaper>);
+static_assert(isShaper<       DiagonalShaper>);
+static_assert(isShaper<          SBandShaper>);
 
 } // namespace matrix23

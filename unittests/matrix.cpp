@@ -245,7 +245,7 @@ TEST_F(MatrixTests, TriDiagonalMatrix)
     EXPECT_TRUE((mat1.col(2)==il{7,9}));
 }
 
-#define RUN_SLOW_COMPILE_TESTS
+// #define RUN_SLOW_COMPILE_TESTS
 
 #ifdef RUN_SLOW_COMPILE_TESTS
 TEST_F(MatrixTests, DotProducts)
