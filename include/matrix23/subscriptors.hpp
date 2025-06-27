@@ -433,33 +433,38 @@ class FullPacker            : public PackerCommon
 {
 public:
     FullPacker(const size_t& _nrows, const size_t& _ncols, Indexing ind) 
-        : PackerCommon(_nrows,_ncols, make_indexer(ind,nrows,ncols)) {};
+        : PackerCommon(_nrows,_ncols, make_indexer(ind,_nrows,_ncols)) {};
     bool is_stored(size_t i, size_t j) const {range_check(i,j);return true;} // Full matrix, all elements are stored
     size_t stored_size() const {return nrows * ncols;} // Total number of elements
-    size_t stored_row_size(size_t) const {return ncols;}// Each row has nc elements
-    size_t stored_col_size(size_t) const {return nrows;} // Each col has nr elements
+    size_t stored_row_size(size_t row) const {assert(row<nrows);return ncols;}// Each row has nc elements
+    size_t stored_col_size(size_t col) const {assert(col<ncols);return nrows;}// Each col has nr elements
 private:
     static indexer_t make_indexer(Indexing ind, const size_t& nrows, const size_t& ncols)
     {
+        indexer_t ret;
         switch (ind)
         {
             case Indexing::row_major:
-                return [&ncols](size_t i, size_t j) -> size_t {return j + i*ncols;};
+                ret= [&ncols](size_t i, size_t j) -> size_t {return j + i*ncols;};
+                break;
             case Indexing::col_major:
-                return [&nrows](size_t i, size_t j) -> size_t {return i + j*nrows;};
+                ret= [&nrows](size_t i, size_t j) -> size_t {return i + j*nrows;};
+                break;
         
         }
+        return ret;
     }
 };
 class UpperTriangularPacker : public PackerCommon
 {
 public:
     UpperTriangularPacker(const size_t& _nrows, const size_t& _ncols, Indexing ind) 
-        : PackerCommon(_nrows,_ncols,make_indexer(ind,nrows,ncols)) {};
+        : PackerCommon(_nrows,_ncols,make_indexer(ind,_nrows,_ncols)) {};
     bool is_stored(size_t i, size_t j) const {return i <= j;}
     size_t stored_size() const
     {
-        return nrows*(nrows+1)/2 + (ncols>nrows ? (ncols-nrows)*nrows : 0); // Total number of elements
+        size_t n=std::min(nrows,ncols);
+        return n*(n+1)/2 + (ncols>nrows ? (ncols-nrows)*nrows : 0); // Total number of elements
     }
     size_t stored_row_size(size_t row_index) const
      {
@@ -476,14 +481,18 @@ public:
 private:
     static indexer_t make_indexer(Indexing ind, const size_t& nrows, const size_t& ncols)
     {
+        indexer_t ret;
         switch (ind)
         {
             case Indexing::row_major:
-                return [&ncols](size_t i, size_t j) -> size_t {return j + i*(2*ncols-i-1)/2;};
+                ret= [&ncols](size_t i, size_t j) -> size_t {return j + i*(2*ncols-i-1)/2;};
+                break;
             case Indexing::col_major:
-                return [      ](size_t i, size_t j) -> size_t {return i + j*(        j+1)/2;};
+                ret= [      ](size_t i, size_t j) -> size_t {return i + j*(        j+1)/2;};
+                break;
         
         }
+        return ret;
     }
 
 };
@@ -491,17 +500,12 @@ class LowerTriangularPacker : public PackerCommon
 {
 public:
     LowerTriangularPacker(const size_t& _nrows, const size_t& _ncols, Indexing ind) 
-        : PackerCommon(_nrows,_ncols,make_indexer(ind,nrows,ncols)) {};
+        : PackerCommon(_nrows,_ncols,make_indexer(ind,_nrows,_ncols)) {};
     bool is_stored(size_t i, size_t j) const {return j <= i;}
-    size_t offset(size_t i, size_t j) const
-    {
-        assert(is_stored(i,j));
-        return j + (i+1)*i/2;    // row major
-        //return i + (j)*(2*nrows-j-1)/2; // col major   
-    }
     size_t stored_size() const
     {
-        return ncols*(ncols+1)/2  + (nrows>ncols ?  (nrows-ncols)*ncols :  0); // Total number of elements
+        size_t n=std::min(nrows,ncols);
+        return n*(n+1)/2  + (nrows>ncols ?  (nrows-ncols)*ncols :  0); // Total number of elements
     }
     size_t stored_row_size(size_t row_index) const
     {
@@ -518,14 +522,18 @@ public:
 private:
     static indexer_t make_indexer(Indexing ind, const size_t& nrows, const size_t& ncols)
     {
+        indexer_t ret;
         switch (ind)
         {
             case Indexing::row_major:
-                return [      ](size_t i, size_t j) -> size_t {return j + i*(        i+1)/2;};
+                ret= [      ](size_t i, size_t j) -> size_t {return j + i*(        i+1)/2;};
+                break;
             case Indexing::col_major:
-                return [&nrows](size_t i, size_t j) -> size_t {return i + j*(2*nrows-j-1)/2;};
+                ret= [&nrows](size_t i, size_t j) -> size_t {return i + j*(2*nrows-j-1)/2;};
+                break;
         
         }
+        return ret;
     }
   
  
@@ -533,12 +541,12 @@ private:
 class DiagonalPacker        : public PackerCommon
 {
 public:
-    DiagonalPacker(const size_t& _nrows, const size_t& _ncols, Indexing ind) 
+    DiagonalPacker(const size_t& _nrows, const size_t& _ncols) 
         : PackerCommon(_nrows,_ncols, [](size_t i, size_t) -> size_t {return i;}) {};
     bool is_stored(size_t i, size_t j) const {return i == j;}
     size_t stored_size() const {return std::min(nrows,ncols);}
-    size_t stored_row_size(size_t) const {return 1;}
-    size_t stored_col_size(size_t) const {return 1;}
+    size_t stored_row_size(size_t row) const {return row<ncols ? 1 : 0;}
+    size_t stored_col_size(size_t col) const {return col<nrows ? 1 : 0;}
 };
 class SBandPacker           : public PackerCommon
 {
@@ -550,9 +558,9 @@ class SBandPacker           : public PackerCommon
 //     a20  a31  a42  a53  *    *
 public:
     //  Handle square only.
-    SBandPacker(const size_t& n, size_t _k, Indexing ind) //k=band width,
-        : PackerCommon(n,n, [&n,_k](size_t i, size_t j) -> size_t {return _k+i-j+j*n;}), k(_k){};
-    bool is_stored(size_t i, size_t j) const {range_check(i,j);return i+k<=j && j+k<=i;}
+    SBandPacker(const size_t& n, size_t _k) //k=band width,
+        : PackerCommon(n,n, [_k](size_t i, size_t j) -> size_t {return _k+i-j+j*(2*_k+1);}), k(_k){};
+    bool is_stored(size_t i, size_t j) const {range_check(i,j);return j<=i+k && i<=j+k;}
     size_t stored_size() const {return nrows * (2*k+1);}
     size_t stored_row_size(size_t row) const 
     {
@@ -597,7 +605,7 @@ class UpperTriangularShaper : public ShaperCommon
 {
 public:
     using ShaperCommon::ShaperCommon; // Inherit constructors
-    iota_view nonzero_row_indexes(size_t col) const {return std::views::iota(size_t(0),col+1);}
+    iota_view nonzero_row_indexes(size_t col) const {return std::views::iota(size_t(0),std::min(col+1,nrows));}
     iota_view nonzero_col_indexes(size_t row) const {return std::views::iota(row      ,ncols);} 
 };
 class LowerTriangularShaper : public ShaperCommon
@@ -605,7 +613,7 @@ class LowerTriangularShaper : public ShaperCommon
 public:
     using ShaperCommon::ShaperCommon; // Inherit constructors
     iota_view nonzero_row_indexes(size_t col) const {return std::views::iota(col      ,nrows);}
-    iota_view nonzero_col_indexes(size_t row) const {return std::views::iota(size_t(0),row+1);}  
+    iota_view nonzero_col_indexes(size_t row) const {return std::views::iota(size_t(0),std::min(row+1,ncols));}  
 };
 class DiagonalShaper        : public ShaperCommon
 {
