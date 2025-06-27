@@ -502,7 +502,6 @@ TEST_F(PackerTests,UpperTriangularShaper3x4)
     EXPECT_EQ(s.nonzero_col_indexes(1),iota_view(1,4));
     EXPECT_EQ(s.nonzero_col_indexes(2),iota_view(2,4));
 }
-
 TEST_F(PackerTests,UpperTriangularShaper4x3)
 {
     size_t nr=4, nc=3;
@@ -542,4 +541,48 @@ TEST_F(PackerTests,LowerTriangularShaper4x3)
     EXPECT_EQ(s.nonzero_col_indexes(2),iota_view(0,3));
     EXPECT_EQ(s.nonzero_col_indexes(3),iota_view(0,3));
 
+}
+
+TEST_F(PackerTests,DiagonalShaper3x4)
+{
+    size_t nr=3, nc=4;
+    DiagonalShaper s(nr,nc);
+    EXPECT_EQ(s.nonzero_row_indexes(0),iota_view(0,1));
+    EXPECT_EQ(s.nonzero_row_indexes(1),iota_view(1,2));
+    EXPECT_EQ(s.nonzero_row_indexes(2),iota_view(2,3));
+    EXPECT_TRUE(s.nonzero_row_indexes(3).empty());
+    EXPECT_EQ(s.nonzero_col_indexes(0),iota_view(0,1));
+    EXPECT_EQ(s.nonzero_col_indexes(1),iota_view(1,2));
+    EXPECT_EQ(s.nonzero_col_indexes(2),iota_view(2,3));
+}
+
+TEST_F(PackerTests,DiagonalShaper4x3)
+{
+    size_t nr=4, nc=3;
+    DiagonalShaper s(nr,nc);
+    EXPECT_EQ(s.nonzero_row_indexes(0),iota_view(0,1));
+    EXPECT_EQ(s.nonzero_row_indexes(1),iota_view(1,2));
+    EXPECT_EQ(s.nonzero_row_indexes(2),iota_view(2,3));
+    EXPECT_EQ(s.nonzero_col_indexes(0),iota_view(0,1));
+    EXPECT_EQ(s.nonzero_col_indexes(1),iota_view(1,2));
+    EXPECT_EQ(s.nonzero_col_indexes(2),iota_view(2,3));
+    EXPECT_TRUE(s.nonzero_col_indexes(3).empty());
+}
+
+TEST_F(PackerTests,SBandShaper6x6)
+{
+    size_t n=6,k=2;
+    SBandShaper s(n,k);
+    EXPECT_EQ(s.nonzero_row_indexes(0),iota_view(0,3));
+    EXPECT_EQ(s.nonzero_row_indexes(1),iota_view(0,4));
+    EXPECT_EQ(s.nonzero_row_indexes(2),iota_view(0,5));
+    EXPECT_EQ(s.nonzero_row_indexes(3),iota_view(1,6));
+    EXPECT_EQ(s.nonzero_row_indexes(4),iota_view(2,6));
+    EXPECT_EQ(s.nonzero_row_indexes(5),iota_view(3,6));
+    EXPECT_EQ(s.nonzero_col_indexes(0),iota_view(0,3));
+    EXPECT_EQ(s.nonzero_col_indexes(1),iota_view(0,4));
+    EXPECT_EQ(s.nonzero_col_indexes(2),iota_view(0,5));
+    EXPECT_EQ(s.nonzero_col_indexes(3),iota_view(1,6));
+    EXPECT_EQ(s.nonzero_col_indexes(4),iota_view(2,6));
+    EXPECT_EQ(s.nonzero_col_indexes(5),iota_view(3,6));
 }

@@ -619,14 +619,14 @@ class DiagonalShaper        : public ShaperCommon
 {
 public:
     using ShaperCommon::ShaperCommon; // Inherit constructors
-    iota_view nonzero_row_indexes(size_t col) const {return std::views::iota(col,col+1);}
-    iota_view nonzero_col_indexes(size_t row) const {return std::views::iota(row,row+1);}  
+    iota_view nonzero_row_indexes(size_t col) const {return std::views::iota(col,std::min(col+1,nrows));}
+    iota_view nonzero_col_indexes(size_t row) const {return std::views::iota(row,std::min(row+1,ncols));}  
 };
 class SBandShaper           : public ShaperCommon
 {
 public:
-    SBandShaper(const size_t& _nrows, const size_t& _ncols, size_t _k) 
-        : ShaperCommon(_nrows,_ncols), k(_k) 
+    SBandShaper(const size_t& n, size_t _k) 
+        : ShaperCommon(n,n), k(_k) 
         {
             assert(nrows==ncols);
         };
