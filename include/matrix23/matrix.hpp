@@ -141,18 +141,23 @@ typedef Matrix<double,     TriDiagonalSubsciptor>     TriDiagonalMatrix;
 
 auto operator*(const isMatrix auto& m, const isVector auto& v)
 {
+    assert(m.nc()==v.size());
     auto rows=m.rows();
-    auto mv=v.indices() | std::views::transform([rows,v](size_t i) {return rows[i] * v;});
+    auto indices=std::views::iota(size_t(0),rows.size());
+    auto mv= indices | std::views::transform([rows,v](size_t i) {return rows[i] * v;});
+    assert(mv.size()==rows.size());
     static_assert(isVector<VectorView<decltype(mv)>>,"Matrix-vector multiplication should satisfy isVector concept requirements");
-    return VectorView(std::move(mv), v.indices());
+    return VectorView(std::move(mv), indices);
 }
 
 auto operator*(const isVector auto& v,const isMatrix auto& m)
 {
     auto cols=m.cols();
-    auto vm=v.indices() | std::views::transform([cols,v](size_t j) {return v * cols[j];});
+    auto indices=std::views::iota(size_t(0),cols.size());
+    auto vm=indices | std::views::transform([cols,v](size_t j) {return v * cols[j];});
+    assert(vm.size()==cols.size());
     static_assert(isVector<VectorView<decltype(vm)>>,"Matrix-vector multiplication should satisfy isVector concept requirements");
-    return VectorView(std::move(vm), v.indices());
+    return VectorView(std::move(vm), indices);
 }
 
 template <std::ranges::viewable_range R, std::ranges::viewable_range C, class S> class MatrixProductView

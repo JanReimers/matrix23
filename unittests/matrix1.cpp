@@ -43,7 +43,6 @@ TEST_F(MatrixTests, FullColMajor3x4)
     EXPECT_EQ(A.col(2),(il{3,7,11}));
     EXPECT_EQ(A.col(3),(il{4,8,12}));
 }
-
 TEST_F(MatrixTests, FullRowMajor3x4)
 {
     matrix23::FullMatrix1<double> A({
@@ -59,7 +58,6 @@ TEST_F(MatrixTests, FullRowMajor3x4)
     EXPECT_EQ(A.col(2),(il{3,7,11}));
     EXPECT_EQ(A.col(3),(il{4,8,12}));
 }
-
 TEST_F(MatrixTests, FullColMajor4x3)
 {
     matrix23::FullMatrix1<double> A{
@@ -76,7 +74,6 @@ TEST_F(MatrixTests, FullColMajor4x3)
     EXPECT_EQ(A.col(2),(il{3,6,9,12}));
    
 }
-
 TEST_F(MatrixTests, FullRowMajor4x3)
 {
     matrix23::FullMatrix1<double> A({
@@ -94,7 +91,6 @@ TEST_F(MatrixTests, FullRowMajor4x3)
     EXPECT_EQ(A.col(2),(il{3,6,9,12}));
    
 }
-
 TEST_F(MatrixTests, UpperTriangularColMajor3x4)
 {
     matrix23::UpperTriangularMatrix1<double> A{
@@ -124,7 +120,6 @@ TEST_F(MatrixTests, UpperTriangularRowMajor3x4)
     EXPECT_EQ(A.col(2),(il{3,7,11}));
     EXPECT_EQ(A.col(3),(il{4,8,12}));
 }
-
 TEST_F(MatrixTests, UpperTriangularColMajor4x3)
 {
     matrix23::UpperTriangularMatrix1<double> A{
@@ -141,7 +136,6 @@ TEST_F(MatrixTests, UpperTriangularColMajor4x3)
     EXPECT_EQ(A.col(2),(il{3,6,9}));
    
 }
-
 TEST_F(MatrixTests, UpperTriangularRowajor4x3)
 {
     matrix23::UpperTriangularMatrix1<double> A({
@@ -298,7 +292,6 @@ TEST_F(MatrixTests, SBand6x6_k1)
     EXPECT_EQ(A.col(4),(il{23,29,35}));
     EXPECT_EQ(A.col(5),(il{30,36}));
 }
-
 TEST_F(MatrixTests, SBand6x6_k2)
 {
     size_t k=2;
@@ -323,7 +316,6 @@ TEST_F(MatrixTests, SBand6x6_k2)
     EXPECT_EQ(A.col(4),(il{17,23,29,35}));
     EXPECT_EQ(A.col(5),(il{24,30,36}));
 }
-
 TEST_F(MatrixTests, SBand6x6_k3)
 {
     size_t k=3;
@@ -348,7 +340,6 @@ TEST_F(MatrixTests, SBand6x6_k3)
     EXPECT_EQ(A.col(4),(il{11,17,23,29,35}));
     EXPECT_EQ(A.col(5),(il{18,24,30,36}));
 }
-
 TEST_F(MatrixTests, SBand6x6_k4)
 {
     size_t k=4;
@@ -373,7 +364,6 @@ TEST_F(MatrixTests, SBand6x6_k4)
     EXPECT_EQ(A.col(4),(il{5,11,17,23,29,35}));
     EXPECT_EQ(A.col(5),(il{12,18,24,30,36}));
 }
-
 TEST_F(MatrixTests, SBand6x6_k5)
 {
     size_t k=5;

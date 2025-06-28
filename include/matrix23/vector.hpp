@@ -145,15 +145,17 @@ template <std::ranges::range Range1,std::ranges::range Range2> auto inner_produc
 struct intersection
 {
     typedef std::ranges::iota_view<size_t,size_t> iota_view;
-    intersection(const iota_view& a, const iota_view& b)
+    intersection(const iota_view& a, const iota_view& b) : indices(0,0), drop1(0), drop2(0)
     {
-        size_t i0=std::max(a.front(), b.front());
-        size_t i1=std::min(a.back (), b.back ())+1;
-        if (i0>i1) i1=i0;
-        indices=std::ranges::iota_view(i0,i1); //new intersection range
-        drop1 = a.front() < i0 ? i0 - a.front() : 0; // how many to drop from a
-        drop2 = b.front() < i0 ? i0 - b.front() : 0; // how many to drop from b
-
+        if (!a.empty() && !b.empty())
+        {
+            size_t i0=std::max(a.front(), b.front());
+            size_t i1=std::min(a.back (), b.back ())+1;
+            if (i0>i1) i1=i0;
+            indices=std::ranges::iota_view(i0,i1); //new intersection range
+            drop1 = a.front() < i0 ? i0 - a.front() : 0; // how many to drop from a
+            drop2 = b.front() < i0 ? i0 - b.front() : 0; // how many to drop from b
+        }
     }
 
     iota_view indices;

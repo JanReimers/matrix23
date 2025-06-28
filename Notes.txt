@@ -20,20 +20,21 @@ Design objectives:
     5) Use std::vector<T> and std::valarray<T> interchangably for storing the raw data.  
         Also support a Copy-On-Write array?
     6) Support overloaded operators with lazy (delayed) evaluation
-        As much as possible use ranges and view adaptors instead of expression templates to achieve lazy evaluation.
+        As much as possible use ranges and view adaptors instead of traditional expression templates to achieve lazy evaluation.
         Matrix*Matrix should take advantage packing type.  For example DiagonalMatrix * DiagonalMatrix is O(N) not O(N^3)!
     7) Support float, double, std::complex<T> data types.
     8) Support various initialization type: none, zero, one, value, diagonal, random, randompos
     9) Use c++23.  Huge convenience of zip, zip_transform view adaptors.
     10) Make some blasmm(Matrix,Matrix) functions for speed comparison
     11) Support ascii/binary io with the cereal header library.
-    11) 
+    12) No traditional for loops like:  for (size_t i = 0; i < nrows; ++i)
+    13) No new/delete
         
 
 
 
 -Numerous overloaded operators (+ - *scalar etc) for Vector return a VectorView<std::ranges::viewable_range R>
- where R vaies depending on oporator history. We return VectorView instead of viewable_range so that all operators
+ where R varies depending on oporator history. We return VectorView instead of viewable_range so that all operators
  only got called for isVector arguments.
  Since these are all 1D operations, It would nice to use the same overloaded ops for Matrix + Matrix.  But then they need to return
  a MatrixView instead of a VectorView.  On idea is for Matrix and MatrixView to define a type view_t = MatrixView<R>

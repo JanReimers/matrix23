@@ -7,10 +7,6 @@
 namespace matrix23
 {
 
-auto make_packer(const size_t& nr,const size_t& nc, Packing p)
-{
-
-}
 template <typename T, isPacker P, isShaper S> class Matrix1
 {
 
