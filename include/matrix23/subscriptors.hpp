@@ -296,7 +296,6 @@ public:
     }
     
 };
-
 class DiagonalSubsciptor  : public SubsciptorCommon
 {
     public:
@@ -328,7 +327,6 @@ class DiagonalSubsciptor  : public SubsciptorCommon
     }
    
 };
-
 class TriDiagonalSubsciptor  : public SubsciptorCommon
 {
     public:
@@ -365,7 +363,6 @@ class TriDiagonalSubsciptor  : public SubsciptorCommon
     }
    
 };
-
 class BandedSubsciptor
 {
     public:
@@ -425,7 +422,7 @@ public:
     }
 
 protected:
-    const size_t& nrows,ncols;
+    const size_t nrows,ncols;
     indexer_t indexer; // Function to calculate the index based on row and column
 
 };
@@ -445,10 +442,10 @@ private:
         switch (ind)
         {
             case Indexing::row_major:
-                ret= [&ncols](size_t i, size_t j) -> size_t {return j + i*ncols;};
+                ret= [ncols](size_t i, size_t j) -> size_t {return j + i*ncols;};
                 break;
             case Indexing::col_major:
-                ret= [&nrows](size_t i, size_t j) -> size_t {return i + j*nrows;};
+                ret= [nrows](size_t i, size_t j) -> size_t {return i + j*nrows;};
                 break;
         
         }
@@ -485,10 +482,10 @@ private:
         switch (ind)
         {
             case Indexing::row_major:
-                ret= [&ncols](size_t i, size_t j) -> size_t {return j + i*(2*ncols-i-1)/2;};
+                ret= [ncols](size_t i, size_t j) -> size_t {return j + i*(2*ncols-i-1)/2;};
                 break;
             case Indexing::col_major:
-                ret= [      ](size_t i, size_t j) -> size_t {return i + j*(        j+1)/2;};
+                ret= [     ](size_t i, size_t j) -> size_t {return i + j*(        j+1)/2;};
                 break;
         
         }
@@ -526,10 +523,10 @@ private:
         switch (ind)
         {
             case Indexing::row_major:
-                ret= [      ](size_t i, size_t j) -> size_t {return j + i*(        i+1)/2;};
+                ret= [     ](size_t i, size_t j) -> size_t {return j + i*(        i+1)/2;};
                 break;
             case Indexing::col_major:
-                ret= [&nrows](size_t i, size_t j) -> size_t {return i + j*(2*nrows-j-1)/2;};
+                ret= [nrows](size_t i, size_t j) -> size_t {return i + j*(2*nrows-j-1)/2;};
                 break;
         
         }
@@ -592,7 +589,7 @@ public:
     // size_t nr() const {return nrows;}
     // size_t nc() const {return ncols;}
 protected:
-    const size_t& nrows,ncols;
+    const size_t nrows,ncols;
 };
 class FullShaper            : public ShaperCommon
 {
