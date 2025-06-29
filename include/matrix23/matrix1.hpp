@@ -21,25 +21,13 @@ template <typename T, isPacker P, isShaper S> class Matrix1
     {
         load(init);
     }
-    // Matrix1(std::initializer_list<std::initializer_list<T>> init, size_t k)
-    // : itsSubscriptor(init.size(), init.begin()->size(),k), data(itsSubscriptor.size())
-    // {
-    //     load(init);
-    // }
-    // template <isMatrix M> Matrix(const M& m) 
-    // : itsSubscriptor(m.nr(),m.nc()), data(itsSubscriptor.size())
-    // {
-    //     for (size_t i = 0; i < itsSubscriptor.nr(); ++i)
-    //     {
-    //         for (size_t j = 0; j < itsSubscriptor.nc(); ++j)
-    //         {
-    //             if (itsSubscriptor.is_stored(i, j))
-    //                 data[itsSubscriptor.offset(i, j)] = m(i, j);
-                
-    //         }
-    //     }
-    // }
-    
+    template <isMatrix M> Matrix1(const M& m,P p, S s) 
+        : itsPacker(p), itsShaper(s), data(itsPacker.stored_size())
+    {
+        for (size_t i = 0; i < nr(); ++i)
+            for (size_t j = 0; j < nc(); ++j)
+                if (itsPacker.is_stored(i, j)) (*this)(i,j) = m(i, j);
+    }
     //
     //  2D data access.
     //
@@ -145,6 +133,7 @@ template <class T> class FullMatrix1 : public Matrix1<T,FullPacker,FullShaper>
         FullMatrix1(size_t nr, size_t nc, Indexing ind=Indexing::col_major) : Base(FullPacker(nr,nc,ind), FullShaper(nr,nc)) {};
         FullMatrix1(const il_t& il, Indexing ind=Indexing::col_major) 
             : Base(il,FullPacker(nr(il),nc(il),ind), FullShaper(nr(il),nc(il))) {};
+        template <isMatrix M> FullMatrix1(const M& m,Indexing ind=Indexing::col_major) : Base(m,FullPacker(m.nr(),m.nc(),ind), FullShaper(m.nr(),m.nc())) {};
 };
 template <class T> class UpperTriangularMatrix1 : public Matrix1<T,UpperTriangularPacker,UpperTriangularShaper>
 {

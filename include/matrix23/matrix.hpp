@@ -18,125 +18,120 @@ concept isMatrix = requires (M m,size_t i, size_t j, std::remove_cvref_t<M>::val
     m.nc();
 };
 
-template <typename T, isSubscriptor S> class Matrix
-{
-    public:
-    typedef T value_t;
-    Matrix(size_t nr, size_t nc) : itsSubscriptor(nc,nr), data(itsSubscriptor.size()) {};
-    Matrix(size_t nr, size_t nc, size_t k) : itsSubscriptor(nc,nr,k), data(itsSubscriptor.size()) {};
-    Matrix(std::initializer_list<std::initializer_list<T>> init)
-        : itsSubscriptor(init.size(), init.begin()->size()), data(itsSubscriptor.size())
-    {
-        load(init);
-    }
-    Matrix(std::initializer_list<std::initializer_list<T>> init, size_t k)
-    : itsSubscriptor(init.size(), init.begin()->size(),k), data(itsSubscriptor.size())
-    {
-        load(init);
-    }
-    template <isMatrix M> Matrix(const M& m) 
-    : itsSubscriptor(m.nr(),m.nc()), data(itsSubscriptor.size())
-    {
-        for (size_t i = 0; i < itsSubscriptor.nr(); ++i)
-        {
-            for (size_t j = 0; j < itsSubscriptor.nc(); ++j)
-            {
-                if (itsSubscriptor.is_stored(i, j))
-                    data[itsSubscriptor.offset(i, j)] = m(i, j);
-                
-            }
-        }
-    }
-    
-    T  operator()(size_t i, size_t j) const
-    {
-        return itsSubscriptor.is_stored(i,j) ? data[itsSubscriptor.offset(i,j)] : T(0);
-    }
-    T& operator()(size_t i, size_t j)
-    {
-        assert(itsSubscriptor.is_stored(i,j));
-        return data[itsSubscriptor.offset(i,j)];
-    }
-    size_t size() const
-    {
-        return itsSubscriptor.size();
-    }
-    size_t nr() const { return itsSubscriptor.nr(); }
-    size_t nc() const { return itsSubscriptor.nc(); }
-    // auto begin()       { return std::begin(data); }
-    // auto end  ()       { return std::end  (data); }
-    // auto begin() const { return std::begin(data); }
-    // auto end  () const { return std::end  (data); }
-
-    auto row(size_t i) const
-    {
-        assert(i < itsSubscriptor.nr());
-        auto indices=itsSubscriptor.nonzero_col_indexes(i);
-        auto v=  indices | std::views::transform([i,this](size_t j){return operator()(i,j);});
-        return VectorView<decltype(v)>(std::move(v),indices);
-    }
-    auto col(size_t j) const
-    {
-        assert(j < itsSubscriptor.nc());
-        auto indices=itsSubscriptor.nonzero_row_indexes(j);
-        auto v= indices | std::views::transform([j,this](size_t i){return operator()(i,j);});
-        return VectorView<decltype(v)>(std::move(v),indices);
-    }
-    auto rows() const //Assumes all rows are non-zero.
-    {
-        return std::views::iota(size_t(0), itsSubscriptor.nr()) | std::views::transform([this](size_t i){return row(i);});
-    }
-    auto cols() const //Assumes all cols are non-zero.
-    {
-        return std::views::iota(size_t(0), itsSubscriptor.nc()) | std::views::transform([this](size_t j){return col(j);});
-    }
-    S subscriptor() const
-    {
-        return itsSubscriptor;
-    }
-    void print() const
-    {
-        for (size_t i = 0; i < itsSubscriptor.nr(); ++i)
-        {
-            for (size_t j = 0; j < itsSubscriptor.nc(); ++j)
-            {
-                if (itsSubscriptor.is_stored(i, j))
-                    std::cout << (*this)(i, j) << " ";
-                else
-                    std::cout << "0 "; // Print 0 for non-stored elements
-            }
-            std::cout << std::endl;
-        }   
-    }
-private:
-    void load(std::initializer_list<std::initializer_list<T>> init)
-    {
-        assert(init.size() == itsSubscriptor.nr() && "Initializer list size does not match subscriptor row count");
-        assert(init.begin()->size() == itsSubscriptor.nc() && "Initializer list row size does not match subscriptor column count");
-        size_t i = 0;
-        for (const auto& row : init)
-        {
-            size_t j = 0;
-            for (const auto& val : row)
-            {
-                if (itsSubscriptor.is_stored(i, j))
-                    data[itsSubscriptor.offset(i, j)] = val;
-                else
-                    assert(val==0.0);
-                ++j;
-            }
-            ++i;
-        }
-    }
-
-    S itsSubscriptor;
-    std::valarray<T> data;
-};
-
-typedef Matrix<double,    FullRowMajorSubsciptor>            FullMatrix;
-typedef Matrix<double, UpperTriangularRowMajorSubsciptor> UpperTriangularMatrix;
-typedef Matrix<double,        DiagonalSubsciptor>        DiagonalMatrix;
-typedef Matrix<double,     TriDiagonalSubsciptor>     TriDiagonalMatrix;
+// template <typename T, isSubscriptor S> class Matrix
+// {
+//     public:
+//     typedef T value_t;
+//     Matrix(size_t nr, size_t nc) : itsSubscriptor(nc,nr), data(itsSubscriptor.size()) {};
+//     Matrix(size_t nr, size_t nc, size_t k) : itsSubscriptor(nc,nr,k), data(itsSubscriptor.size()) {};
+//     Matrix(std::initializer_list<std::initializer_list<T>> init)
+//         : itsSubscriptor(init.size(), init.begin()->size()), data(itsSubscriptor.size())
+//     {
+//         load(init);
+//     }
+//     Matrix(std::initializer_list<std::initializer_list<T>> init, size_t k)
+//     : itsSubscriptor(init.size(), init.begin()->size(),k), data(itsSubscriptor.size())
+//     {
+//         load(init);
+//     }
+//     template <isMatrix M> Matrix(const M& m) 
+//     : itsSubscriptor(m.nr(),m.nc()), data(itsSubscriptor.size())
+//     {
+//         for (size_t i = 0; i < itsSubscriptor.nr(); ++i)
+//         {
+//             for (size_t j = 0; j < itsSubscriptor.nc(); ++j)
+//             {
+//                 if (itsSubscriptor.is_stored(i, j))
+//                     data[itsSubscriptor.offset(i, j)] = m(i, j);
+//             }
+//         }
+//     }
+//     T  operator()(size_t i, size_t j) const
+//     {
+//         return itsSubscriptor.is_stored(i,j) ? data[itsSubscriptor.offset(i,j)] : T(0);
+//     }
+//     T& operator()(size_t i, size_t j)
+//     {
+//         assert(itsSubscriptor.is_stored(i,j));
+//         return data[itsSubscriptor.offset(i,j)];
+//     }
+//     size_t size() const
+//     {
+//         return itsSubscriptor.size();
+//     }
+//     size_t nr() const { return itsSubscriptor.nr(); }
+//     size_t nc() const { return itsSubscriptor.nc(); }
+//     // auto begin()       { return std::begin(data); }
+//     // auto end  ()       { return std::end  (data); }
+//     // auto begin() const { return std::begin(data); }
+//     // auto end  () const { return std::end  (data); }
+//     auto row(size_t i) const
+//     {
+//         assert(i < itsSubscriptor.nr());
+//         auto indices=itsSubscriptor.nonzero_col_indexes(i);
+//         auto v=  indices | std::views::transform([i,this](size_t j){return operator()(i,j);});
+//         return VectorView<decltype(v)>(std::move(v),indices);
+//     }
+//     auto col(size_t j) const
+//     {
+//         assert(j < itsSubscriptor.nc());
+//         auto indices=itsSubscriptor.nonzero_row_indexes(j);
+//         auto v= indices | std::views::transform([j,this](size_t i){return operator()(i,j);});
+//         return VectorView<decltype(v)>(std::move(v),indices);
+//     }
+//     auto rows() const //Assumes all rows are non-zero.
+//     {
+//         return std::views::iota(size_t(0), itsSubscriptor.nr()) | std::views::transform([this](size_t i){return row(i);});
+//     }
+//     auto cols() const //Assumes all cols are non-zero.
+//     {
+//         return std::views::iota(size_t(0), itsSubscriptor.nc()) | std::views::transform([this](size_t j){return col(j);});
+//     }
+//     S subscriptor() const
+//     {
+//         return itsSubscriptor;
+//     }
+//     void print() const
+//     {
+//         for (size_t i = 0; i < itsSubscriptor.nr(); ++i)
+//         {
+//             for (size_t j = 0; j < itsSubscriptor.nc(); ++j)
+//             {
+//                 if (itsSubscriptor.is_stored(i, j))
+//                     std::cout << (*this)(i, j) << " ";
+//                 else
+//                     std::cout << "0 "; // Print 0 for non-stored elements
+//             }
+//             std::cout << std::endl;
+//         }   
+//     }
+// private:
+//     void load(std::initializer_list<std::initializer_list<T>> init)
+//     {
+//         assert(init.size() == itsSubscriptor.nr() && "Initializer list size does not match subscriptor row count");
+//         assert(init.begin()->size() == itsSubscriptor.nc() && "Initializer list row size does not match subscriptor column count");
+//         size_t i = 0;
+//         for (const auto& row : init)
+//         {
+//             size_t j = 0;
+//             for (const auto& val : row)
+//             {
+//                 if (itsSubscriptor.is_stored(i, j))
+//                     data[itsSubscriptor.offset(i, j)] = val;
+//                 else
+//                     assert(val==0.0);
+//                 ++j;
+//             }
+//             ++i;
+//         }
+//     }
+//     S itsSubscriptor;
+//     std::valarray<T> data;
+// };
+// typedef Matrix<double,    FullRowMajorSubsciptor>            FullMatrix;
+// typedef Matrix<double, UpperTriangularRowMajorSubsciptor> UpperTriangularMatrix;
+// typedef Matrix<double,        DiagonalSubsciptor>        DiagonalMatrix;
+// typedef Matrix<double,     TriDiagonalSubsciptor>     TriDiagonalMatrix;
 // typedef Matrix<double, BandedSubsciptor> BandedMatrix; // 
 
 auto operator*(const isMatrix auto& m, const isVector auto& v)

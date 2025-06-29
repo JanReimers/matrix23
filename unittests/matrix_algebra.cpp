@@ -7,7 +7,6 @@
 using std::cout;
 using std::endl;
 using matrix23::Vector;
-using matrix23::Matrix;
 
 class MatrixAlgebraTests : public ::testing::Test
 {
@@ -303,7 +302,6 @@ TEST_F(MatrixAlgebraTests, SBandk2)
     EXPECT_EQ(v*A,(il{1*7+12*8+21*9,7*7+2*8+13*9+22*10,17*7+8*8+3*9+14*10+23*11,18*8+9*9+4*10+15*11+24*12,19*9+10*10+5*11+16*12,20*10+11*11+6*12}));
     EXPECT_EQ(v*A*v,(1*7+7*8+17*9)*7+(12*7+2*8+8*9+18*10)*8+(21*7+13*8+3*9+9*10+19*11)*9+(22*8+14*9+4*10+10*11+20*12)*10+(23*9+15*10+5*11+11*12)*11+(24*10+16*11+6*12)*12);
 }
-
 TEST_F(MatrixAlgebraTests, SBandk3)
 {
     size_t k=3;
@@ -350,4 +348,18 @@ TEST_F(MatrixAlgebraTests, SBandk5)
     EXPECT_EQ(v*A*v,60215);
 }
 
-
+TEST_F(MatrixAlgebraTests, FullColMajorMatMul)
+{
+    matrix23::FullMatrix1<double> A({
+        {1,2,3,4},
+        {5,6,7,8},
+        {9,10,11,12}},
+        matrix23::Indexing::col_major);
+    matrix23::FullMatrix1<double> B({
+        {1,2,3},
+        {4,5,6},
+        {7,8,9},
+        {10,11,12}},
+        matrix23::Indexing::col_major);
+    matrix23::FullMatrix1<double> C=A*B;
+}

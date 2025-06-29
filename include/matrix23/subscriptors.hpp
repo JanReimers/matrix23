@@ -648,4 +648,29 @@ static_assert(isShaper<LowerTriangularShaper>);
 static_assert(isShaper<       DiagonalShaper>);
 static_assert(isShaper<          SBandShaper>);
 
+//
+//  Define what matrix shapes result from multiply two matricies.
+//
+template <isPacker P1, isPacker P2> struct MatrixProductPackerType;
+template <isPacker P> struct MatrixProductPackerType<P,FullPacker> {typedef FullPacker packer_t;};
+template <isPacker P> struct MatrixProductPackerType<P,DiagonalPacker> {typedef P packer_t;};
+template <isPacker P> struct MatrixProductPackerType<DiagonalPacker,P> {typedef P packer_t;};
+template <> struct MatrixProductPackerType<UpperTriangularPacker,UpperTriangularPacker> {typedef UpperTriangularPacker packer_t;};
+template <> struct MatrixProductPackerType<LowerTriangularPacker,LowerTriangularPacker> {typedef LowerTriangularPacker packer_t;};
+template <> struct MatrixProductPackerType<UpperTriangularPacker,LowerTriangularPacker> {typedef FullPacker packer_t;};
+template <> struct MatrixProductPackerType<LowerTriangularPacker,UpperTriangularPacker> {typedef FullPacker packer_t;};
+template <> struct MatrixProductPackerType<SBandPacker,SBandPacker> {typedef SBandPacker packer_t;}; //Need to add the ks somehow.
+
+
+template <isShaper P1, isShaper P2> struct MatrixProductShaperType;
+template <isShaper P> struct MatrixProductShaperType<P,FullShaper> {typedef FullShaper shaper_t;};
+template <isShaper P> struct MatrixProductShaperType<P,DiagonalShaper> {typedef P shaper_t;};
+template <isShaper P> struct MatrixProductShaperType<DiagonalShaper,P> {typedef P shaper_t;};
+template <> struct MatrixProductShaperType<UpperTriangularShaper,UpperTriangularShaper> {typedef UpperTriangularShaper shaper_t;};
+template <> struct MatrixProductShaperType<LowerTriangularShaper,LowerTriangularShaper> {typedef LowerTriangularShaper shaper_t;};
+template <> struct MatrixProductShaperType<UpperTriangularShaper,LowerTriangularShaper> {typedef FullShaper shaper_t;};
+template <> struct MatrixProductShaperType<LowerTriangularShaper,UpperTriangularShaper> {typedef FullShaper shaper_t;};
+template <> struct MatrixProductShaperType<SBandShaper,SBandShaper> {typedef SBandShaper shaper_t;}; //Need to add the ks somehow.
+
+
 } // namespace matrix23
