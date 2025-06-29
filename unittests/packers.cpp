@@ -474,7 +474,8 @@ namespace std::ranges {
 TEST_F(PackerTests,FullShaper3x4)
 {
     size_t nr=3, nc=4;
-    FullShaper fs(nr,nc);
+    FullPacker fp(nr,nc);
+    FullShaper fs(fp);
     for (size_t col=0;col<nc;col++)
         EXPECT_EQ(fs.nonzero_row_indexes(col),iota_view(0,3));
     for (size_t row=0;row<nr;row++)
@@ -483,7 +484,8 @@ TEST_F(PackerTests,FullShaper3x4)
 TEST_F(PackerTests,FullShaper4x3)
 {
     size_t nr=4, nc=3;
-    FullShaper fs(nr,nc);
+    FullPacker fp(nr,nc);
+    FullShaper fs(fp);
     for (size_t col=0;col<nc;col++)
         EXPECT_EQ(fs.nonzero_row_indexes(col),iota_view(0,4));
     for (size_t row=0;row<nr;row++)
@@ -492,7 +494,8 @@ TEST_F(PackerTests,FullShaper4x3)
 TEST_F(PackerTests,UpperTriangularShaper3x4)
 {
     size_t nr=3, nc=4;
-    UpperTriangularShaper s(nr,nc);
+    UpperTriangularPacker p(nr,nc);
+    UpperTriangularShaper s(p);
 
     EXPECT_EQ(s.nonzero_row_indexes(0),iota_view(0,1));
     EXPECT_EQ(s.nonzero_row_indexes(1),iota_view(0,2));
@@ -505,7 +508,8 @@ TEST_F(PackerTests,UpperTriangularShaper3x4)
 TEST_F(PackerTests,UpperTriangularShaper4x3)
 {
     size_t nr=4, nc=3;
-    UpperTriangularShaper s(nr,nc);
+    UpperTriangularPacker p(nr,nc);
+    UpperTriangularShaper s(p);
 
     EXPECT_EQ(s.nonzero_row_indexes(0),iota_view(0,1));
     EXPECT_EQ(s.nonzero_row_indexes(1),iota_view(0,2));
@@ -518,7 +522,8 @@ TEST_F(PackerTests,UpperTriangularShaper4x3)
 TEST_F(PackerTests,LowerTriangularShaper3x4)
 {
     size_t nr=3, nc=4;
-    LowerTriangularShaper s(nr,nc);
+    LowerTriangularPacker p(nr,nc);
+    LowerTriangularShaper s(p);
 
     EXPECT_EQ(s.nonzero_row_indexes(0),iota_view(0,3));
     EXPECT_EQ(s.nonzero_row_indexes(1),iota_view(1,3));
@@ -531,7 +536,8 @@ TEST_F(PackerTests,LowerTriangularShaper3x4)
 TEST_F(PackerTests,LowerTriangularShaper4x3)
 {
     size_t nr=4, nc=3;
-    LowerTriangularShaper s(nr,nc);
+    LowerTriangularPacker p(nr,nc);
+    LowerTriangularShaper s(p);
 
     EXPECT_EQ(s.nonzero_row_indexes(0),iota_view(0,4));
     EXPECT_EQ(s.nonzero_row_indexes(1),iota_view(1,4));
@@ -546,7 +552,8 @@ TEST_F(PackerTests,LowerTriangularShaper4x3)
 TEST_F(PackerTests,DiagonalShaper3x4)
 {
     size_t nr=3, nc=4;
-    DiagonalShaper s(nr,nc);
+    DiagonalPacker p(nr,nc);
+    DiagonalShaper s(p);
     EXPECT_EQ(s.nonzero_row_indexes(0),iota_view(0,1));
     EXPECT_EQ(s.nonzero_row_indexes(1),iota_view(1,2));
     EXPECT_EQ(s.nonzero_row_indexes(2),iota_view(2,3));
@@ -559,7 +566,8 @@ TEST_F(PackerTests,DiagonalShaper3x4)
 TEST_F(PackerTests,DiagonalShaper4x3)
 {
     size_t nr=4, nc=3;
-    DiagonalShaper s(nr,nc);
+    DiagonalPacker p(nr,nc);
+    DiagonalShaper s(p);
     EXPECT_EQ(s.nonzero_row_indexes(0),iota_view(0,1));
     EXPECT_EQ(s.nonzero_row_indexes(1),iota_view(1,2));
     EXPECT_EQ(s.nonzero_row_indexes(2),iota_view(2,3));
@@ -572,7 +580,8 @@ TEST_F(PackerTests,DiagonalShaper4x3)
 TEST_F(PackerTests,SBandShaper6x6)
 {
     size_t n=6,k=2;
-    SBandShaper s(n,k);
+    SBandPacker p(n,k);
+    SBandShaper s(p);
     EXPECT_EQ(s.nonzero_row_indexes(0),iota_view(0,3));
     EXPECT_EQ(s.nonzero_row_indexes(1),iota_view(0,4));
     EXPECT_EQ(s.nonzero_row_indexes(2),iota_view(0,5));

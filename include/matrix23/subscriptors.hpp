@@ -35,6 +35,8 @@ template <class S> concept isShaper = requires (S const s,size_t i, size_t j, bo
 
 typedef std::function<size_t(size_t, size_t)> indexer_t;
 
+class ShaperCommon;
+class SBandShaper;
 class PackerCommon
 {
 public:
@@ -53,6 +55,7 @@ public:
     }
 
 protected:
+    friend class ShaperCommon;
     const size_t nrows,ncols;
     indexer_t indexer; // Function to calculate the index based on row and column
 
@@ -203,6 +206,7 @@ public:
         return 2*k+1; 
     }
 private:
+    friend class SBandShaper;
     size_t k;
 };
 
@@ -216,9 +220,7 @@ static_assert(isPacker<          SBandPacker>);
 class ShaperCommon
 {
 public:
-    ShaperCommon(const size_t& _nrows, const size_t& _ncols) : nrows(_nrows), ncols(_ncols){};
-    // size_t nr() const {return nrows;}
-    // size_t nc() const {return ncols;}
+    ShaperCommon(const PackerCommon& p) : nrows(p.nrows), ncols(p.ncols){};
 protected:
     const size_t nrows,ncols;
 };
@@ -253,11 +255,7 @@ public:
 class SBandShaper           : public ShaperCommon
 {
 public:
-    SBandShaper(const size_t& n, size_t _k) 
-        : ShaperCommon(n,n), k(_k) 
-        {
-            assert(nrows==ncols);
-        };
+    SBandShaper(const SBandPacker& p) : ShaperCommon(p), k(p.k) {};
     iota_view nonzero_row_indexes(size_t col) const 
     {
         size_t i0=col<k ? 0 : col-k;

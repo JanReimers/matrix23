@@ -28,7 +28,12 @@ template <typename T, isPacker P, isShaper S> class Matrix1
     static size_t nr(const il_t& il) {return il.size();}
     static size_t nc(const il_t& il) {return il.begin()->size();}
 
+    Matrix1(P p) : itsPacker(p), itsShaper(itsPacker), data(itsPacker.stored_size()) {};
     Matrix1(P p, S s) : itsPacker(p), itsShaper(s), data(itsPacker.stored_size()) {};
+    Matrix1(const il_t& init,P p) : Matrix1(p)
+    {
+        load(init);
+    }
     Matrix1(const il_t& init,P p, S s) : Matrix1(p,s)
     {
         load(init);
@@ -144,9 +149,9 @@ public:
     using il_t=Base::il_t;
     using Base::nr;
     using Base::nc;
-    FullMatrix1(size_t nr, size_t nc, Indexing ind=Indexing::col_major) : Base(FullPacker(nr,nc,ind), FullShaper(nr,nc)) {};
+    FullMatrix1(size_t nr, size_t nc, Indexing ind=Indexing::col_major) : Base(FullPacker(nr,nc,ind)) {};
     FullMatrix1(const il_t& il, Indexing ind=Indexing::col_major) 
-        : Base(il,FullPacker(nr(il),nc(il),ind), FullShaper(nr(il),nc(il))) {};
+        : Base(il,FullPacker(nr(il),nc(il),ind)) {};
     template <isMatrix M> FullMatrix1(const M& m) : Base(m,m.packer(), m.shaper()) {};
 };
 template <class T> class UpperTriangularMatrix1 : public Matrix1<T,UpperTriangularPacker,UpperTriangularShaper>
@@ -156,8 +161,8 @@ public:
     using il_t=Base::il_t;
     using Base::nr;
     using Base::nc;
-    UpperTriangularMatrix1(size_t nr, size_t nc, Indexing ind=Indexing::col_major) : Base(UpperTriangularPacker(nr,nc,ind), UpperTriangularShaper(nr,nc)) {};
-    UpperTriangularMatrix1(const il_t& il, Indexing ind=Indexing::col_major) : Base(il,UpperTriangularPacker(nr(il),nc(il),ind), UpperTriangularShaper(nr(il),nc(il))) {};
+    UpperTriangularMatrix1(size_t nr, size_t nc, Indexing ind=Indexing::col_major) : Base(UpperTriangularPacker(nr,nc,ind)) {};
+    UpperTriangularMatrix1(const il_t& il, Indexing ind=Indexing::col_major) : Base(il,UpperTriangularPacker(nr(il),nc(il),ind)) {};
     template <isMatrix M> UpperTriangularMatrix1(const M& m) : Base(m,m.packer(), m.shaper()) {};
 };
 template <class T> class LowerTriangularMatrix1 : public Matrix1<T,LowerTriangularPacker,LowerTriangularShaper>
@@ -167,8 +172,8 @@ public:
     using il_t=Base::il_t;
     using Base::nr;
     using Base::nc;
-    LowerTriangularMatrix1(size_t nr, size_t nc, Indexing ind=Indexing::col_major) : Base(LowerTriangularPacker(nr,nc,ind), LowerTriangularShaper(nr,nc)) {};
-    LowerTriangularMatrix1(const il_t& il, Indexing ind=Indexing::col_major) : Base(il,LowerTriangularPacker(nr(il),nc(il),ind), LowerTriangularShaper(nr(il),nc(il))) {};
+    LowerTriangularMatrix1(size_t nr, size_t nc, Indexing ind=Indexing::col_major) : Base(LowerTriangularPacker(nr,nc,ind)) {};
+    LowerTriangularMatrix1(const il_t& il, Indexing ind=Indexing::col_major) : Base(il,LowerTriangularPacker(nr(il),nc(il),ind)) {};
     template <isMatrix M> LowerTriangularMatrix1(const M& m) : Base(m,m.packer(), m.shaper()) {};
 };
 template <class T> class DiagonalMatrix1 : public Matrix1<T,DiagonalPacker,DiagonalShaper>
@@ -178,8 +183,8 @@ public:
     using il_t=Base::il_t;
     using Base::nr;
     using Base::nc;
-    DiagonalMatrix1(size_t nr, size_t nc) : Base(DiagonalPacker(nr,nc), DiagonalShaper(nr,nc)) {};
-    DiagonalMatrix1(const il_t& il) : Base(il,DiagonalPacker(nr(il),nc(il)), DiagonalShaper(nr(il),nc(il))) {};
+    DiagonalMatrix1(size_t nr, size_t nc) : Base(DiagonalPacker(nr,nc)) {};
+    DiagonalMatrix1(const il_t& il) : Base(il,DiagonalPacker(nr(il),nc(il))) {};
     template <isMatrix M> DiagonalMatrix1(const M& m) : Base(m,m.packer(), m.shaper()) {};
 };
 template <class T> class SBandMatrix1 : public Matrix1<T,SBandPacker,SBandShaper>
@@ -189,11 +194,11 @@ public:
     using il_t=Base::il_t;
     using Base::nr;
     using Base::nc;
-    SBandMatrix1(size_t n, size_t k) : Base(SBandPacker(n,k), SBandShaper(n,k)) 
+    SBandMatrix1(size_t n, size_t k) : Base(SBandPacker(n,k)) 
     {
         
     };
-    SBandMatrix1(const il_t& il,size_t k) : Base(il,SBandPacker(nr(il),k), SBandShaper(nr(il),k))
+    SBandMatrix1(const il_t& il,size_t k) : Base(il,SBandPacker(nr(il),k))
     {
         assert(nr(il)==nc(il)); //SBand only supports square matricies.
     };
@@ -275,7 +280,7 @@ auto operator*(const isMatrix auto& a,const isMatrix auto& b)
     using packer_t=MatrixProductPackerType<decltype(a.packer()),decltype(b.packer())>::packer_t;
     using shaper_t=MatrixProductShaperType<decltype(a.shaper()),decltype(b.shaper())>::shaper_t;
     packer_t p=packer_t(a.nr(),b.nc());
-    shaper_t s=shaper_t(a.nr(),b.nc());
+    shaper_t s=shaper_t(p);
     return MatrixProductView(a.rows(),b.cols(),p,s);
 }
 
