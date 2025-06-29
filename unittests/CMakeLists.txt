@@ -1,6 +1,6 @@
 
 # packers.cpp matrix1.cpp 
-add_executable(UTmatrix23 main.cpp matrix_algebra.cpp) #vector.cpp matrix.cpp)
+add_executable(UTmatrix23 main.cpp packers.cpp matrix1.cpp matrix_algebra.cpp) #vector.cpp matrix.cpp)
 set_property(TARGET UTmatrix23 PROPERTY CXX_STANDARD 23)
 target_compile_options(UTmatrix23 PRIVATE -Wall 
     $<$<CONFIG:Debug>:-g -O0>

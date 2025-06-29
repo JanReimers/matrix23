@@ -30,7 +30,14 @@ Design objectives:
     12) No traditional for loops like:  for (size_t i = 0; i < nrows; ++i)
     13) No new/delete
         
-
+Issues:
+    -Still need to add symmetry
+    -What are the rules for propagating Indexing (col/row major) through a matrix product?
+        At the moment We don't even store the attribute.
+    -Lots of duplication with nr/nc when creating packers and shapers.
+    -Move default op(i,j) based row(i)/col(j) in the PackerCommon
+        Then make efficient override for full matrix using chunk & stride view adaptors.
+        These overrides need to know the Indexing option.
 
 
 -Numerous overloaded operators (+ - *scalar etc) for Vector return a VectorView<std::ranges::viewable_range R>

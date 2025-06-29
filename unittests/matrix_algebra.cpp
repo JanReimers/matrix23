@@ -348,12 +348,68 @@ TEST_F(MatrixAlgebraTests, SBandk5)
     EXPECT_EQ(v*A*v,60215);
 }
 
-TEST_F(MatrixAlgebraTests, FullColMajorMatMul)
+TEST_F(MatrixAlgebraTests, MatrixMultiplyFF)
+{
+    {
+        matrix23::FullMatrix1<double> A({
+            {1,2,3,4},
+            {5,6,7,8},
+            {9,10,11,12}},
+            matrix23::Indexing::col_major);
+        matrix23::FullMatrix1<double> B({
+            {1,2,3},
+            {4,5,6},
+            {7,8,9},
+            {10,11,12}},
+            matrix23::Indexing::col_major);
+        matrix23::FullMatrix1<double> C=A*B;
+        EXPECT_EQ(C.row(0),(il{70,80,90}));
+        EXPECT_EQ(C.row(1),(il{158,184,210}));
+        EXPECT_EQ(C.row(2),(il{246,288,330}));
+        //matrix23::DiagonalMatrix1<double> D=A*B; //Compile error
+    }
+    {
+        matrix23::FullMatrix1<double> A({
+            {1,2,3,4},
+            {5,6,7,8},
+            {9,10,11,12}},
+            matrix23::Indexing::row_major);
+        matrix23::FullMatrix1<double> B({
+            {1,2,3},
+            {4,5,6},
+            {7,8,9},
+            {10,11,12}},
+            matrix23::Indexing::row_major);
+        matrix23::FullMatrix1<double> C=A*B;
+        EXPECT_EQ(C.row(0),(il{70,80,90}));
+        EXPECT_EQ(C.row(1),(il{158,184,210}));
+        EXPECT_EQ(C.row(2),(il{246,288,330}));
+    }
+}
+TEST_F(MatrixAlgebraTests, MatrixMultiplyFL)
 {
     matrix23::FullMatrix1<double> A({
         {1,2,3,4},
         {5,6,7,8},
         {9,10,11,12}},
+        matrix23::Indexing::col_major);
+    matrix23::LowerTriangularMatrix1<double> B({
+        {1,0,0},
+        {4,5,0},
+        {7,8,9},
+        {10,11,12}},
+        matrix23::Indexing::col_major);
+    matrix23::FullMatrix1<double> C=A*B;
+    EXPECT_EQ(C.row(0),(il{70,78,75}));
+    EXPECT_EQ(C.row(1),(il{158,174,159}));
+    EXPECT_EQ(C.row(2),(il{246,270,243}));
+}
+TEST_F(MatrixAlgebraTests, MatrixMultiplyUF)
+{
+   matrix23::UpperTriangularMatrix1<double> A({
+        {1,2,3,4},
+        {0,6,7,8},
+        {0,0,11,12}},
         matrix23::Indexing::col_major);
     matrix23::FullMatrix1<double> B({
         {1,2,3},
@@ -362,4 +418,115 @@ TEST_F(MatrixAlgebraTests, FullColMajorMatMul)
         {10,11,12}},
         matrix23::Indexing::col_major);
     matrix23::FullMatrix1<double> C=A*B;
+    EXPECT_EQ(C.row(0),(il{70,80,90}));
+    EXPECT_EQ(C.row(1),(il{153,174,195}));
+    EXPECT_EQ(C.row(2),(il{197,220,243}));
+}
+TEST_F(MatrixAlgebraTests, MatrixMultiplyDF)
+{
+    matrix23::DiagonalMatrix1<double> A({
+        {1,0,0,0},
+        {0,6,0,0},
+        {0,0,11,0}});
+    matrix23::FullMatrix1<double> B({
+        {1,2,3},
+        {4,5,6},
+        {7,8,9},
+        {10,11,12}},
+        matrix23::Indexing::col_major);
+    matrix23::FullMatrix1<double> C=A*B;
+    EXPECT_EQ(C.row(0),(il{1,2,3}));
+    EXPECT_EQ(C.row(1),(il{24,30,36}));
+    EXPECT_EQ(C.row(2),(il{77,88,99}));
+}
+
+TEST_F(MatrixAlgebraTests, MatrixMultiplyLL)
+{
+    matrix23::LowerTriangularMatrix1<double> A({
+        {1,0,0,0},
+        {5,6,0,0},
+        {9,10,11,0}},
+        matrix23::Indexing::col_major);
+    matrix23::LowerTriangularMatrix1<double> B({
+        {1,0,0},
+        {4,5,0},
+        {7,8,9},
+        {10,11,12}},
+        matrix23::Indexing::col_major);
+    matrix23::LowerTriangularMatrix1<double> C=A*B;
+    EXPECT_EQ(C.row(0),(il{1}));
+    EXPECT_EQ(C.row(1),(il{29,30}));
+    EXPECT_EQ(C.row(2),(il{126,138,99}));
+}
+TEST_F(MatrixAlgebraTests, MatrixMultiplyUU)
+{
+    matrix23::UpperTriangularMatrix1<double> A({
+        {1,2,3,4},
+        {0,6,7,8},
+        {0,0,11,12}},
+        matrix23::Indexing::col_major);
+    matrix23::UpperTriangularMatrix1<double> B({
+        {1,2,3},
+        {0,5,6},
+        {0,0,9},
+        {0,0,0}},
+        matrix23::Indexing::col_major);
+    matrix23::UpperTriangularMatrix1<double> C=A*B;
+    EXPECT_EQ(C.row(0),(il{1,12,42}));
+    EXPECT_EQ(C.row(1),(il{30,99}));
+    EXPECT_EQ(C.row(2),(il{99}));
+  
+}
+
+TEST_F(MatrixAlgebraTests, MatrixMultiplyDL)
+{
+    matrix23::DiagonalMatrix1<double> A({
+        {1,0,0,0},
+        {0,6,0,0},
+        {0,0,11,0}});
+    matrix23::LowerTriangularMatrix1<double> B({
+        {1,0,0},
+        {4,5,0},
+        {7,8,9},
+        {10,11,12}},
+        matrix23::Indexing::col_major);
+    matrix23::LowerTriangularMatrix1<double> C=A*B;
+    EXPECT_EQ(C.row(0),(il{1}));
+    EXPECT_EQ(C.row(1),(il{24,30}));
+    EXPECT_EQ(C.row(2),(il{77,88,99}));
+}
+TEST_F(MatrixAlgebraTests, MatrixMultiplyUD)
+{
+    matrix23::UpperTriangularMatrix1<double> A({
+        {1,2,3,4},
+        {0,6,7,8},
+        {0,0,11,12}},
+        matrix23::Indexing::col_major);
+    matrix23::DiagonalMatrix1<double> B({
+        {1,0,0},
+        {0,5,0},
+        {0,0,9},
+        {0,0,0}});
+    matrix23::UpperTriangularMatrix1<double> C=A*B;
+    EXPECT_EQ(C.row(0),(il{1,10,27}));
+    EXPECT_EQ(C.row(1),(il{30,63}));
+    EXPECT_EQ(C.row(2),(il{99}));
+  
+}
+TEST_F(MatrixAlgebraTests, MatrixMultiplyDD)
+{
+    matrix23::DiagonalMatrix1<double> A({
+        {1,0,0,0},
+        {0,6,0,0},
+        {0,0,11,0}});
+    matrix23::DiagonalMatrix1<double> B({
+        {1,0,0},
+        {0,5,0},
+        {0,0,9},
+        {0,0,0}});
+    matrix23::DiagonalMatrix1<double> C=A*B;
+    EXPECT_EQ(C.row(0),(il{1}));
+    EXPECT_EQ(C.row(1),(il{30}));
+    EXPECT_EQ(C.row(2),(il{99}));
+  
 }

@@ -429,7 +429,7 @@ protected:
 class FullPacker            : public PackerCommon
 {
 public:
-    FullPacker(const size_t& _nrows, const size_t& _ncols, Indexing ind) 
+    FullPacker(const size_t& _nrows, const size_t& _ncols, Indexing ind=Indexing::col_major) 
         : PackerCommon(_nrows,_ncols, make_indexer(ind,_nrows,_ncols)) {};
     bool is_stored(size_t i, size_t j) const {range_check(i,j);return true;} // Full matrix, all elements are stored
     size_t stored_size() const {return nrows * ncols;} // Total number of elements
@@ -455,7 +455,7 @@ private:
 class UpperTriangularPacker : public PackerCommon
 {
 public:
-    UpperTriangularPacker(const size_t& _nrows, const size_t& _ncols, Indexing ind) 
+    UpperTriangularPacker(const size_t& _nrows, const size_t& _ncols, Indexing ind=Indexing::col_major) 
         : PackerCommon(_nrows,_ncols,make_indexer(ind,_nrows,_ncols)) {};
     bool is_stored(size_t i, size_t j) const {return i <= j;}
     size_t stored_size() const
@@ -496,7 +496,7 @@ private:
 class LowerTriangularPacker : public PackerCommon
 {
 public:
-    LowerTriangularPacker(const size_t& _nrows, const size_t& _ncols, Indexing ind) 
+    LowerTriangularPacker(const size_t& _nrows, const size_t& _ncols, Indexing ind=Indexing::col_major) 
         : PackerCommon(_nrows,_ncols,make_indexer(ind,_nrows,_ncols)) {};
     bool is_stored(size_t i, size_t j) const {return j <= i;}
     size_t stored_size() const
@@ -652,9 +652,14 @@ static_assert(isShaper<          SBandShaper>);
 //  Define what matrix shapes result from multiply two matricies.
 //
 template <isPacker P1, isPacker P2> struct MatrixProductPackerType;
+template <isPacker P> struct MatrixProductPackerType<FullPacker,P> {typedef FullPacker packer_t;};
 template <isPacker P> struct MatrixProductPackerType<P,FullPacker> {typedef FullPacker packer_t;};
 template <isPacker P> struct MatrixProductPackerType<P,DiagonalPacker> {typedef P packer_t;};
 template <isPacker P> struct MatrixProductPackerType<DiagonalPacker,P> {typedef P packer_t;};
+template <> struct MatrixProductPackerType<FullPacker,FullPacker> {typedef FullPacker packer_t;};
+template <> struct MatrixProductPackerType<DiagonalPacker,FullPacker> {typedef FullPacker packer_t;};
+template <> struct MatrixProductPackerType<FullPacker,DiagonalPacker> {typedef FullPacker packer_t;};
+template <> struct MatrixProductPackerType<DiagonalPacker,DiagonalPacker> {typedef DiagonalPacker packer_t;};
 template <> struct MatrixProductPackerType<UpperTriangularPacker,UpperTriangularPacker> {typedef UpperTriangularPacker packer_t;};
 template <> struct MatrixProductPackerType<LowerTriangularPacker,LowerTriangularPacker> {typedef LowerTriangularPacker packer_t;};
 template <> struct MatrixProductPackerType<UpperTriangularPacker,LowerTriangularPacker> {typedef FullPacker packer_t;};
@@ -663,9 +668,14 @@ template <> struct MatrixProductPackerType<SBandPacker,SBandPacker> {typedef SBa
 
 
 template <isShaper P1, isShaper P2> struct MatrixProductShaperType;
-template <isShaper P> struct MatrixProductShaperType<P,FullShaper> {typedef FullShaper shaper_t;};
-template <isShaper P> struct MatrixProductShaperType<P,DiagonalShaper> {typedef P shaper_t;};
-template <isShaper P> struct MatrixProductShaperType<DiagonalShaper,P> {typedef P shaper_t;};
+template <isShaper S> struct MatrixProductShaperType<FullShaper,S> {typedef FullShaper shaper_t;};
+template <isShaper S> struct MatrixProductShaperType<S,FullShaper> {typedef FullShaper shaper_t;};
+template <isShaper S> struct MatrixProductShaperType<S,DiagonalShaper> {typedef S shaper_t;};
+template <isShaper S> struct MatrixProductShaperType<DiagonalShaper,S> {typedef S shaper_t;};
+template <> struct MatrixProductShaperType<FullShaper,FullShaper> {typedef FullShaper shaper_t;};
+template <> struct MatrixProductShaperType<DiagonalShaper,FullShaper> {typedef FullShaper shaper_t;};
+template <> struct MatrixProductShaperType<FullShaper,DiagonalShaper> {typedef FullShaper shaper_t;};
+template <> struct MatrixProductShaperType<DiagonalShaper,DiagonalShaper> {typedef DiagonalShaper shaper_t;};
 template <> struct MatrixProductShaperType<UpperTriangularShaper,UpperTriangularShaper> {typedef UpperTriangularShaper shaper_t;};
 template <> struct MatrixProductShaperType<LowerTriangularShaper,LowerTriangularShaper> {typedef LowerTriangularShaper shaper_t;};
 template <> struct MatrixProductShaperType<UpperTriangularShaper,LowerTriangularShaper> {typedef FullShaper shaper_t;};

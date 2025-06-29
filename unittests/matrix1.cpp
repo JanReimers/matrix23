@@ -7,7 +7,6 @@
 using std::cout;
 using std::endl;
 using matrix23::Vector;
-using matrix23::Matrix;
 
 class MatrixTests : public ::testing::Test
 {
