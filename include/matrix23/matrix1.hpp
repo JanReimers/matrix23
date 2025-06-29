@@ -38,7 +38,10 @@ template <typename T, isPacker P, isShaper S> class Matrix1
     {
         for (size_t i = 0; i < nr(); ++i)
             for (size_t j = 0; j < nc(); ++j)
-                if (itsPacker.is_stored(i, j)) (*this)(i,j) = m(i, j);
+                if (itsPacker.is_stored(i, j)) 
+                    (*this)(i,j) = m(i, j);
+                else
+                    assert(m(i,j)==0.0); //Make sure we are not throwing away data.
     }
     //
     //  2D data access.
