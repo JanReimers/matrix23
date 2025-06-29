@@ -205,9 +205,10 @@ public:
         if (col>ncols-k-1) return ncols-col+k;
         return 2*k+1; 
     }
-private:
+    size_t bandwidth() const {return k;}
+    private:
     friend class SBandShaper;
-    size_t k;
+    const size_t k;
 };
 
 

@@ -202,6 +202,7 @@ public:
     {
         assert(nr(il)==nc(il)); //SBand only supports square matricies.
     };
+    template <isMatrix M> SBandMatrix1(const M& m) : Base(m,m.packer(), m.shaper()) {};
 };
 
 auto operator*(const isMatrix auto& m, const isVector auto& v)
@@ -274,12 +275,23 @@ private:
     S itsShaper; // shape for the product
 };
 
+template <isPacker A, isPacker B> auto MatrixProductPacker(const A& a, const B& b)
+{
+    using packer_t=MatrixProductPackerType<A,B>::packer_t;
+    return packer_t(a.nr(),b.nc());
+}
+template <> inline auto MatrixProductPacker(const SBandPacker& a, const SBandPacker& b)
+{
+    assert(a.nr()==b.nr());
+    return SBandPacker(a.nr(),a.bandwidth()+b.bandwidth());
+}
+
 auto operator*(const isMatrix auto& a,const isMatrix auto& b)
 {
     assert(a.nc() == b.nr() && "Matrix dimensions do not match for multiplication");
-    using packer_t=MatrixProductPackerType<decltype(a.packer()),decltype(b.packer())>::packer_t;
+    // using packer_t=MatrixProductPackerType<decltype(a.packer()),decltype(b.packer())>::packer_t;
     using shaper_t=MatrixProductShaperType<decltype(a.shaper()),decltype(b.shaper())>::shaper_t;
-    packer_t p=packer_t(a.nr(),b.nc());
+    auto p=MatrixProductPacker(a.packer(),b.packer());
     shaper_t s=shaper_t(p);
     return MatrixProductView(a.rows(),b.cols(),p,s);
 }

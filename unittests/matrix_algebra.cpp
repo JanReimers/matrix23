@@ -530,3 +530,31 @@ TEST_F(MatrixAlgebraTests, MatrixMultiplyDD)
     EXPECT_EQ(C.row(2),(il{99}));
   
 }
+
+TEST_F(MatrixAlgebraTests, MatrixMultiplyB1B2)
+{
+    matrix23::SBandMatrix1<double> A({
+        {1 , 7, 0, 0, 0, 0},
+        {12, 2, 8, 0, 0, 0},
+        {0 ,13, 3, 9, 0, 0},
+        {0 , 0,14, 4,10, 0},
+        {0 , 0, 0,15, 5,11},
+        {0 , 0, 0, 0,16, 6}},1);
+   
+    matrix23::SBandMatrix1<double> B({
+        {1 , 7,17, 0, 0, 0},
+        {12, 2, 8,18, 0, 0},
+        {21,13, 3, 9,19, 0},
+        {0 ,22,14, 4,10,20},
+        {0 , 0,23,15, 5,11},
+        {0 , 0, 0,24,16, 6}},2);
+    matrix23::SBandMatrix1<double> C=A*B;
+    EXPECT_EQ(C.packer().bandwidth(),1+2);
+    EXPECT_EQ(C.row(0),(il{85,21,73,126}));
+    EXPECT_EQ(C.row(1),(il{204,192,244,108,152}));
+    EXPECT_EQ(C.row(2),(il{219,263,239,297,147,180}));
+    EXPECT_EQ(C.row(3),(il{294,270,328,292,356,190}));
+    EXPECT_EQ(C.row(4),(il{330,325,399,351,421}));
+    EXPECT_EQ(C.row(5),(il{368,384,176,212}));
+
+}

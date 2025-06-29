@@ -4,19 +4,16 @@ Design objectives:
         based indexing.
     2) This allows us to use size_t for all indexing integers
     3) Support the same matrix packing arrangements used by Lapack and Blas for full, triangular (U/L), band, tri-diagonal and diagonal matrices.
-        Isolate all the packing and unpacking code into a Subscriptor concept and group of classes.
-        The subscriptor really has two aspects:
-            1) The shape which which indexes (i,j) are assumed to zero.
-            2) The packing arrangements of the elements.  i.e. how (i,j) are layed in memeory.
-        Usually packing follows from shape.  But Lapack and Blas support for example trianglular shape with full storage.  i.e. part of matrix is allocated
+        Done: Isolate all the packing and unpacking code into a isPacker and isShaper concepts and groups of classes.
+        Deon: The subscriptor really has two aspects:
+            1) The shape which determines which indexes (i,j) are assumed to zero (regardes of weather or not those zeros are actually stored).
+            2) The packing determines arrangements of the elements.  i.e. how (i,j) are layed in linear memory.
+        Usually packing follows from shape.  But Lapack and Blas support for example triangular shape with full storage.  i.e. part of matrix is allocated
         but unused.  There must be reasons for this.  Program complexity may be one of them.
-        For each type we have a cirtual size nr*nc and a packed size.  Packed size is probably only needed for data array construction.
+        For each type we have a virtual size nr*nc and a packed size.  Packed size is probably only needed for data array construction.
     4) Support symmetric and Hermitian symmetries using triangular packing.
-        This adds a third aspect to matrix storage, symmetry.  This all suggest a group of three enums for the Matrix class constructor
-            enum shape {full, utru, ltri, tridiag, diag, sband, ubank, lband}
-            enum packing {full, utru, ltri, tridiag, diag, sband, ubank, lband} X {col_major,row_major}
-            enum symmetry {none,symmetric,anti_symmetric,hermitian,anti_hermitian}
-        only a certain subset of combinations make sense.  Each of these three aspect would have and agent in the Matrix class that does the required work.
+        This adds a third aspect to matrix storage, symmetry.  
+        only a certain subset of combinations make sense.  Each of these three aspects would have and agent in the Matrix class that does the required work.
     5) Use std::vector<T> and std::valarray<T> interchangably for storing the raw data.  
         Also support a Copy-On-Write array?
     6) Support overloaded operators with lazy (delayed) evaluation
@@ -34,7 +31,7 @@ Issues:
     -Still need to add symmetry
     -What are the rules for propagating Indexing (col/row major) through a matrix product?
         At the moment We don't even store the attribute.
-    -Lots of duplication with nr/nc when creating packers and shapers.
+    Fixed: -Lots of duplication with nr/nc when creating packers and shapers.
     -Move default op(i,j) based row(i)/col(j) in the PackerCommon
         Then make efficient override for full matrix using chunk & stride view adaptors.
         These overrides need to know the Indexing option.
