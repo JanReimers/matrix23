@@ -19,7 +19,7 @@ concept isMatrix = requires (M m,size_t i, size_t j, std::remove_cvref_t<M>::val
     m.nc();
 };
 
-template <typename T, isPacker P, isShaper S> class Matrix1
+template <typename T, isPacker P, isShaper S> class Matrix
 {
 
     public:
@@ -28,17 +28,17 @@ template <typename T, isPacker P, isShaper S> class Matrix1
     static size_t nr(const il_t& il) {return il.size();}
     static size_t nc(const il_t& il) {return il.begin()->size();}
 
-    Matrix1(P p) : itsPacker(p), itsShaper(itsPacker), data(itsPacker.stored_size()) {};
-    Matrix1(P p, S s) : itsPacker(p), itsShaper(s), data(itsPacker.stored_size()) {};
-    Matrix1(const il_t& init,P p) : Matrix1(p)
+    Matrix(P p) : itsPacker(p), itsShaper(itsPacker), data(itsPacker.stored_size()) {};
+    Matrix(P p, S s) : itsPacker(p), itsShaper(s), data(itsPacker.stored_size()) {};
+    Matrix(const il_t& init,P p) : Matrix(p)
     {
         load(init);
     }
-    Matrix1(const il_t& init,P p, S s) : Matrix1(p,s)
+    Matrix(const il_t& init,P p, S s) : Matrix(p,s)
     {
         load(init);
     }
-    template <isMatrix M> Matrix1(const M& m,P p, S s) 
+    template <isMatrix M> Matrix(const M& m,P p, S s) 
         : itsPacker(p), itsShaper(s), data(itsPacker.stored_size())
     {
         for (size_t i = 0; i < nr(); ++i)
@@ -142,67 +142,67 @@ private:
 };
 
 
-template <class T> class FullMatrix1 : public Matrix1<T,FullPacker,FullShaper>
+template <class T> class FullMatrix : public Matrix<T,FullPacker,FullShaper>
 {
 public:
-    using Base = Matrix1<T,FullPacker,FullShaper>;
+    using Base = Matrix<T,FullPacker,FullShaper>;
     using il_t=Base::il_t;
     using Base::nr;
     using Base::nc;
-    FullMatrix1(size_t nr, size_t nc, Indexing ind=Indexing::col_major) : Base(FullPacker(nr,nc,ind)) {};
-    FullMatrix1(const il_t& il, Indexing ind=Indexing::col_major) 
+    FullMatrix(size_t nr, size_t nc, Indexing ind=Indexing::col_major) : Base(FullPacker(nr,nc,ind)) {};
+    FullMatrix(const il_t& il, Indexing ind=Indexing::col_major) 
         : Base(il,FullPacker(nr(il),nc(il),ind)) {};
-    template <isMatrix M> FullMatrix1(const M& m) : Base(m,m.packer(), m.shaper()) {};
+    template <isMatrix M> FullMatrix(const M& m) : Base(m,m.packer(), m.shaper()) {};
 };
-template <class T> class UpperTriangularMatrix1 : public Matrix1<T,UpperTriangularPacker,UpperTriangularShaper>
+template <class T> class UpperTriangularMatrix : public Matrix<T,UpperTriangularPacker,UpperTriangularShaper>
 {
 public:
-    using Base = Matrix1<T,UpperTriangularPacker,UpperTriangularShaper>;
+    using Base = Matrix<T,UpperTriangularPacker,UpperTriangularShaper>;
     using il_t=Base::il_t;
     using Base::nr;
     using Base::nc;
-    UpperTriangularMatrix1(size_t nr, size_t nc, Indexing ind=Indexing::col_major) : Base(UpperTriangularPacker(nr,nc,ind)) {};
-    UpperTriangularMatrix1(const il_t& il, Indexing ind=Indexing::col_major) : Base(il,UpperTriangularPacker(nr(il),nc(il),ind)) {};
-    template <isMatrix M> UpperTriangularMatrix1(const M& m) : Base(m,m.packer(), m.shaper()) {};
+    UpperTriangularMatrix(size_t nr, size_t nc, Indexing ind=Indexing::col_major) : Base(UpperTriangularPacker(nr,nc,ind)) {};
+    UpperTriangularMatrix(const il_t& il, Indexing ind=Indexing::col_major) : Base(il,UpperTriangularPacker(nr(il),nc(il),ind)) {};
+    template <isMatrix M> UpperTriangularMatrix(const M& m) : Base(m,m.packer(), m.shaper()) {};
 };
-template <class T> class LowerTriangularMatrix1 : public Matrix1<T,LowerTriangularPacker,LowerTriangularShaper>
+template <class T> class LowerTriangularMatrix : public Matrix<T,LowerTriangularPacker,LowerTriangularShaper>
 {
 public:
-    using Base = Matrix1<T,LowerTriangularPacker,LowerTriangularShaper>;
+    using Base = Matrix<T,LowerTriangularPacker,LowerTriangularShaper>;
     using il_t=Base::il_t;
     using Base::nr;
     using Base::nc;
-    LowerTriangularMatrix1(size_t nr, size_t nc, Indexing ind=Indexing::col_major) : Base(LowerTriangularPacker(nr,nc,ind)) {};
-    LowerTriangularMatrix1(const il_t& il, Indexing ind=Indexing::col_major) : Base(il,LowerTriangularPacker(nr(il),nc(il),ind)) {};
-    template <isMatrix M> LowerTriangularMatrix1(const M& m) : Base(m,m.packer(), m.shaper()) {};
+    LowerTriangularMatrix(size_t nr, size_t nc, Indexing ind=Indexing::col_major) : Base(LowerTriangularPacker(nr,nc,ind)) {};
+    LowerTriangularMatrix(const il_t& il, Indexing ind=Indexing::col_major) : Base(il,LowerTriangularPacker(nr(il),nc(il),ind)) {};
+    template <isMatrix M> LowerTriangularMatrix(const M& m) : Base(m,m.packer(), m.shaper()) {};
 };
-template <class T> class DiagonalMatrix1 : public Matrix1<T,DiagonalPacker,DiagonalShaper>
+template <class T> class DiagonalMatrix : public Matrix<T,DiagonalPacker,DiagonalShaper>
 {
 public:
-    using Base = Matrix1<T,DiagonalPacker,DiagonalShaper>;
+    using Base = Matrix<T,DiagonalPacker,DiagonalShaper>;
     using il_t=Base::il_t;
     using Base::nr;
     using Base::nc;
-    DiagonalMatrix1(size_t nr, size_t nc) : Base(DiagonalPacker(nr,nc)) {};
-    DiagonalMatrix1(const il_t& il) : Base(il,DiagonalPacker(nr(il),nc(il))) {};
-    template <isMatrix M> DiagonalMatrix1(const M& m) : Base(m,m.packer(), m.shaper()) {};
+    DiagonalMatrix(size_t nr, size_t nc) : Base(DiagonalPacker(nr,nc)) {};
+    DiagonalMatrix(const il_t& il) : Base(il,DiagonalPacker(nr(il),nc(il))) {};
+    template <isMatrix M> DiagonalMatrix(const M& m) : Base(m,m.packer(), m.shaper()) {};
 };
-template <class T> class SBandMatrix1 : public Matrix1<T,SBandPacker,SBandShaper>
+template <class T> class SBandMatrix : public Matrix<T,SBandPacker,SBandShaper>
 {
 public:
-    using Base = Matrix1<T,SBandPacker,SBandShaper>;
+    using Base = Matrix<T,SBandPacker,SBandShaper>;
     using il_t=Base::il_t;
     using Base::nr;
     using Base::nc;
-    SBandMatrix1(size_t n, size_t k) : Base(SBandPacker(n,k)) 
+    SBandMatrix(size_t n, size_t k) : Base(SBandPacker(n,k)) 
     {
         
     };
-    SBandMatrix1(const il_t& il,size_t k) : Base(il,SBandPacker(nr(il),k))
+    SBandMatrix(const il_t& il,size_t k) : Base(il,SBandPacker(nr(il),k))
     {
         assert(nr(il)==nc(il)); //SBand only supports square matricies.
     };
-    template <isMatrix M> SBandMatrix1(const M& m) : Base(m,m.packer(), m.shaper()) {};
+    template <isMatrix M> SBandMatrix(const M& m) : Base(m,m.packer(), m.shaper()) {};
 };
 
 auto operator*(const isMatrix auto& m, const isVector auto& v)

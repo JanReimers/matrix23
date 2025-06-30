@@ -31,11 +31,15 @@ Issues:
     -Still need to add symmetry
     -What are the rules for propagating Indexing (col/row major) through a matrix product?
         At the moment We don't even store the attribute.
+        Using lambdas for row/col major indexing is a little sketchy.
+        Also we need mirror image row(i)/col(j) implementations for row/col major indexing.  More lambdas?
+            or throw in the towel and make distincte FullPackerRM, FullPackerCM classes? 
     Fixed: -Lots of duplication with nr/nc when creating packers and shapers.
+    -Can we have packer.create_shaper(); to avoid all the Shaper pair rules?
     -Move default op(i,j) based row(i)/col(j) in the PackerCommon
         Then make efficient override for full matrix using chunk & stride view adaptors.
         These overrides need to know the Indexing option.
-
+    -Clean up files.  exentsion hpp sux
 
 -Numerous overloaded operators (+ - *scalar etc) for Vector return a VectorView<std::ranges::viewable_range R>
  where R varies depending on oporator history. We return VectorView instead of viewable_range so that all operators

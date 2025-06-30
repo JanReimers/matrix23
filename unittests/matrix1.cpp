@@ -30,7 +30,7 @@ public:
 
 TEST_F(MatrixTests, FullColMajor3x4)
 {
-    matrix23::FullMatrix1<double> A{
+    matrix23::FullMatrix<double> A{
         {1,2,3,4},
         {5,6,7,8},
         {9,10,11,12}};
@@ -44,7 +44,7 @@ TEST_F(MatrixTests, FullColMajor3x4)
 }
 TEST_F(MatrixTests, FullRowMajor3x4)
 {
-    matrix23::FullMatrix1<double> A({
+    matrix23::FullMatrix<double> A({
         {1,2,3,4},
         {5,6,7,8},
         {9,10,11,12}},
@@ -59,7 +59,7 @@ TEST_F(MatrixTests, FullRowMajor3x4)
 }
 TEST_F(MatrixTests, FullColMajor4x3)
 {
-    matrix23::FullMatrix1<double> A{
+    matrix23::FullMatrix<double> A{
         {1,2,3},
         {4,5,6},
         {7,8,9},
@@ -75,7 +75,7 @@ TEST_F(MatrixTests, FullColMajor4x3)
 }
 TEST_F(MatrixTests, FullRowMajor4x3)
 {
-    matrix23::FullMatrix1<double> A({
+    matrix23::FullMatrix<double> A({
         {1,2,3},
         {4,5,6},
         {7,8,9},
@@ -92,7 +92,7 @@ TEST_F(MatrixTests, FullRowMajor4x3)
 }
 TEST_F(MatrixTests, UpperTriangularColMajor3x4)
 {
-    matrix23::UpperTriangularMatrix1<double> A{
+    matrix23::UpperTriangularMatrix<double> A{
         {1,2,3,4},
         {0,6,7,8},
         {0,0,11,12}};
@@ -106,7 +106,7 @@ TEST_F(MatrixTests, UpperTriangularColMajor3x4)
 }
 TEST_F(MatrixTests, UpperTriangularRowMajor3x4)
 {
-    matrix23::UpperTriangularMatrix1<double> A({
+    matrix23::UpperTriangularMatrix<double> A({
         {1,2,3,4},
         {0,6,7,8},
         {0,0,11,12}},
@@ -121,7 +121,7 @@ TEST_F(MatrixTests, UpperTriangularRowMajor3x4)
 }
 TEST_F(MatrixTests, UpperTriangularColMajor4x3)
 {
-    matrix23::UpperTriangularMatrix1<double> A{
+    matrix23::UpperTriangularMatrix<double> A{
         {1,2,3},
         {0,5,6},
         {0,0,9},
@@ -137,7 +137,7 @@ TEST_F(MatrixTests, UpperTriangularColMajor4x3)
 }
 TEST_F(MatrixTests, UpperTriangularRowajor4x3)
 {
-    matrix23::UpperTriangularMatrix1<double> A({
+    matrix23::UpperTriangularMatrix<double> A({
         {1,2,3},
         {0,5,6},
         {0,0,9},
@@ -154,7 +154,7 @@ TEST_F(MatrixTests, UpperTriangularRowajor4x3)
 }
 TEST_F(MatrixTests, LowerTriangularColMajor3x4)
 {
-    matrix23::LowerTriangularMatrix1<double> A{
+    matrix23::LowerTriangularMatrix<double> A{
         {1,0,0,0},
         {5,6,0,0},
         {9,10,11,0}};
@@ -168,7 +168,7 @@ TEST_F(MatrixTests, LowerTriangularColMajor3x4)
 }
 TEST_F(MatrixTests, LowerTriangularRowMajor3x4)
 {
-    matrix23::LowerTriangularMatrix1<double> A({
+    matrix23::LowerTriangularMatrix<double> A({
         {1,0,0,0},
         {5,6,0,0},
         {9,10,11,0}},
@@ -183,7 +183,7 @@ TEST_F(MatrixTests, LowerTriangularRowMajor3x4)
 }
 TEST_F(MatrixTests, LowerTriangularColMajor4x3)
 {
-    matrix23::LowerTriangularMatrix1<double> A{
+    matrix23::LowerTriangularMatrix<double> A{
         {1,0,0},
         {4,5,0},
         {7,8,9},
@@ -199,7 +199,7 @@ TEST_F(MatrixTests, LowerTriangularColMajor4x3)
 }
 TEST_F(MatrixTests, LowerTriangularRowMajor4x3)
 {
-    matrix23::LowerTriangularMatrix1<double> A({
+    matrix23::LowerTriangularMatrix<double> A({
         {1,0,0},
         {4,5,0},
         {7,8,9},
@@ -216,7 +216,7 @@ TEST_F(MatrixTests, LowerTriangularRowMajor4x3)
 }
 TEST_F(MatrixTests, Diagonal3x4)
 {
-    matrix23::DiagonalMatrix1<double> A{
+    matrix23::DiagonalMatrix<double> A{
         {1,0,0,0},
         {0,6,0,0},
         {0,0,11,0}};
@@ -230,7 +230,7 @@ TEST_F(MatrixTests, Diagonal3x4)
 }
 TEST_F(MatrixTests, Diagonal4x3)
 {
-    matrix23::DiagonalMatrix1<double> A{
+    matrix23::DiagonalMatrix<double> A{
         {1,0,0},
         {0,6,0},
         {0,0,11},
@@ -246,7 +246,7 @@ TEST_F(MatrixTests, Diagonal4x3)
 TEST_F(MatrixTests, SBand6x6_k0)
 {
     size_t k=0;
-    matrix23::SBandMatrix1<double> A({
+    matrix23::SBandMatrix<double> A({
         {1 , 0, 0, 0, 0, 0},
         {0 , 8, 0, 0, 0, 0},
         {0 , 0,15, 0, 0, 0},
@@ -270,7 +270,7 @@ TEST_F(MatrixTests, SBand6x6_k0)
 TEST_F(MatrixTests, SBand6x6_k1)
 {
     size_t k=1;
-    matrix23::SBandMatrix1<double> A({
+    matrix23::SBandMatrix<double> A({
         {1 ,2 ,0, 0 ,0 ,0},
         {7 ,8 ,9 , 0,0 ,0 },
         {0 ,14,15,16, 0,0 },
@@ -294,7 +294,7 @@ TEST_F(MatrixTests, SBand6x6_k1)
 TEST_F(MatrixTests, SBand6x6_k2)
 {
     size_t k=2;
-    matrix23::SBandMatrix1<double> A({
+    matrix23::SBandMatrix<double> A({
         {1 ,2 ,3, 0 ,0 ,0},
         {7 ,8 ,9 ,10,0 ,0 },
         {13,14,15,16,17,0 },
@@ -318,7 +318,7 @@ TEST_F(MatrixTests, SBand6x6_k2)
 TEST_F(MatrixTests, SBand6x6_k3)
 {
     size_t k=3;
-    matrix23::SBandMatrix1<double> A({
+    matrix23::SBandMatrix<double> A({
         { 1, 2, 3, 4, 0, 0},
         { 7, 8, 9,10,11, 0},
         {13,14,15,16,17,18},
@@ -342,7 +342,7 @@ TEST_F(MatrixTests, SBand6x6_k3)
 TEST_F(MatrixTests, SBand6x6_k4)
 {
     size_t k=4;
-    matrix23::SBandMatrix1<double> A({
+    matrix23::SBandMatrix<double> A({
         { 1, 2, 3, 4, 5, 0},
         { 7, 8, 9,10,11,12},
         {13,14,15,16,17,18},
@@ -366,7 +366,7 @@ TEST_F(MatrixTests, SBand6x6_k4)
 TEST_F(MatrixTests, SBand6x6_k5)
 {
     size_t k=5;
-    matrix23::SBandMatrix1<double> A({
+    matrix23::SBandMatrix<double> A({
         { 1, 2, 3, 4, 5, 6},
         { 7, 8, 9,10,11,12},
         {13,14,15,16,17,18},
