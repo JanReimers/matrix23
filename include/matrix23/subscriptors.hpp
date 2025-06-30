@@ -37,187 +37,6 @@ typedef std::function<size_t(size_t, size_t)> indexer_t;
 
 class ShaperCommon;
 class SBandShaper;
-class PackerCommon
-{
-public:
-    PackerCommon(const size_t& _nrows, const size_t& _ncols, const indexer_t& ind) : nrows(_nrows), ncols(_ncols), indexer(ind) {};
-    size_t nr() const {return nrows;}
-    size_t nc() const {return ncols;}
-    void range_check(size_t i, size_t j) const
-    {
-        assert(i<nrows && "   Row index ot of bounds");
-        assert(j<ncols && "Column index ot of bounds");
-    }
-    size_t offset(size_t i, size_t j) const
-    {
-        range_check(i,j);
-        return indexer(i,j);
-    }
-
-protected:
-    friend class ShaperCommon;
-    const size_t nrows,ncols;
-    indexer_t indexer; // Function to calculate the index based on row and column
-
-};
-class FullPacker            : public PackerCommon
-{
-public:
-    FullPacker(const size_t& _nrows, const size_t& _ncols, Indexing ind=Indexing::col_major) 
-        : PackerCommon(_nrows,_ncols, make_indexer(ind,_nrows,_ncols)) {};
-    bool is_stored(size_t i, size_t j) const {range_check(i,j);return true;} // Full matrix, all elements are stored
-    size_t stored_size() const {return nrows * ncols;} // Total number of elements
-    size_t stored_row_size(size_t row) const {assert(row<nrows);return ncols;}// Each row has nc elements
-    size_t stored_col_size(size_t col) const {assert(col<ncols);return nrows;}// Each col has nr elements
-private:
-    static indexer_t make_indexer(Indexing ind, const size_t& nrows, const size_t& ncols)
-    {
-        indexer_t ret;
-        switch (ind)
-        {
-            case Indexing::row_major:
-                ret= [ncols](size_t i, size_t j) -> size_t {return j + i*ncols;};
-                break;
-            case Indexing::col_major:
-                ret= [nrows](size_t i, size_t j) -> size_t {return i + j*nrows;};
-                break;
-        
-        }
-        return ret;
-    }
-};
-class UpperTriangularPacker : public PackerCommon
-{
-public:
-    UpperTriangularPacker(const size_t& _nrows, const size_t& _ncols, Indexing ind=Indexing::col_major) 
-        : PackerCommon(_nrows,_ncols,make_indexer(ind,_nrows,_ncols)) {};
-    bool is_stored(size_t i, size_t j) const {return i <= j;}
-    size_t stored_size() const
-    {
-        size_t n=std::min(nrows,ncols);
-        return n*(n+1)/2 + (ncols>nrows ? (ncols-nrows)*nrows : 0); // Total number of elements
-    }
-    size_t stored_row_size(size_t row_index) const
-     {
-        assert(row_index < nrows);
-        if (row_index >= ncols) return 0; // No elements stored in this row
-        return ncols-row_index; // 
-    }
-    size_t stored_col_size(size_t col_index) const
-    {
-        assert(col_index < ncols);
-        if (col_index >= nrows) return nrows; // No elements stored in this row
-        return col_index+1; // 
-    }
-private:
-    static indexer_t make_indexer(Indexing ind, const size_t& nrows, const size_t& ncols)
-    {
-        indexer_t ret;
-        switch (ind)
-        {
-            case Indexing::row_major:
-                ret= [ncols](size_t i, size_t j) -> size_t {return j + i*(2*ncols-i-1)/2;};
-                break;
-            case Indexing::col_major:
-                ret= [     ](size_t i, size_t j) -> size_t {return i + j*(        j+1)/2;};
-                break;
-        
-        }
-        return ret;
-    }
-
-};
-class LowerTriangularPacker : public PackerCommon
-{
-public:
-    LowerTriangularPacker(const size_t& _nrows, const size_t& _ncols, Indexing ind=Indexing::col_major) 
-        : PackerCommon(_nrows,_ncols,make_indexer(ind,_nrows,_ncols)) {};
-    bool is_stored(size_t i, size_t j) const {return j <= i;}
-    size_t stored_size() const
-    {
-        size_t n=std::min(nrows,ncols);
-        return n*(n+1)/2  + (nrows>ncols ?  (nrows-ncols)*ncols :  0); // Total number of elements
-    }
-    size_t stored_row_size(size_t row_index) const
-    {
-        assert(row_index < nrows);
-        if (row_index >= ncols) return ncols; // full row below the triangle
-        return row_index+1; // in the triangle
-    }
-    size_t stored_col_size(size_t col_index) const
-    {
-        assert(col_index < ncols);
-        if (col_index >= nrows) return 0; // full row below the triangle
-        return nrows-col_index; // in the triangle
-    }
-private:
-    static indexer_t make_indexer(Indexing ind, const size_t& nrows, const size_t& ncols)
-    {
-        indexer_t ret;
-        switch (ind)
-        {
-            case Indexing::row_major:
-                ret= [     ](size_t i, size_t j) -> size_t {return j + i*(        i+1)/2;};
-                break;
-            case Indexing::col_major:
-                ret= [nrows](size_t i, size_t j) -> size_t {return i + j*(2*nrows-j-1)/2;};
-                break;
-        
-        }
-        return ret;
-    }
-  
- 
-};
-class DiagonalPacker        : public PackerCommon
-{
-public:
-    DiagonalPacker(const size_t& _nrows, const size_t& _ncols) 
-        : PackerCommon(_nrows,_ncols, [](size_t i, size_t) -> size_t {return i;}) {};
-    bool is_stored(size_t i, size_t j) const {return i == j;}
-    size_t stored_size() const {return std::min(nrows,ncols);}
-    size_t stored_row_size(size_t row) const {return row<ncols ? 1 : 0;}
-    size_t stored_col_size(size_t col) const {return col<nrows ? 1 : 0;}
-};
-class SBandPacker           : public PackerCommon
-{
-// Packing guide:
-//      *    *   a02  a13  a24  a35  
-//      *   a01  a12  a23  a34  a45 
-//     a00  a11  a22  a33  a44  a55 
-//     a10  a21  a32  a43  a54  *   
-//     a20  a31  a42  a53  *    *
-public:
-    //  Handle square only.
-    SBandPacker(const size_t& n, size_t _k) //k=band width,
-        : PackerCommon(n,n, [_k](size_t i, size_t j) -> size_t {return _k+i-j+j*(2*_k+1);}), k(_k){};
-    bool is_stored(size_t i, size_t j) const {range_check(i,j);return j<=i+k && i<=j+k;}
-    size_t stored_size() const {return nrows * (2*k+1);}
-    size_t stored_row_size(size_t row) const 
-    {
-        if (row<k) return row+1+k;
-        if (row>nrows-k-1) return nrows-row+k;
-        return 2*k+1;  
-    }
-    size_t stored_col_size(size_t col) const //Don't need the col index.
-    {
-        if (col<k) return col+1+k;
-        if (col>ncols-k-1) return ncols-col+k;
-        return 2*k+1; 
-    }
-    size_t bandwidth() const {return k;}
-    private:
-    friend class SBandShaper;
-    const size_t k;
-};
-
-
-static_assert(isPacker<           FullPacker>);
-static_assert(isPacker<UpperTriangularPacker>);
-static_assert(isPacker<LowerTriangularPacker>);
-static_assert(isPacker<       DiagonalPacker>);
-static_assert(isPacker<          SBandPacker>);
-
 class PackerCommon1
 {
 public:
@@ -407,6 +226,56 @@ public:
     }
 };
 
+class DiagonalPacker        : public PackerCommon1
+{
+public:
+    using PackerCommon1::PackerCommon1; // Inherit constructors
+    bool is_stored(size_t i, size_t j) const {return i == j;}
+    size_t stored_size() const {return std::min(nrows,ncols);}
+    size_t stored_row_size(size_t row) const {return row<ncols ? 1 : 0;}
+    size_t stored_col_size(size_t col) const {return col<nrows ? 1 : 0;}
+    size_t offset(size_t i, size_t j) const
+    {
+        range_check(i,j);
+        return i;
+    }
+};
+class SBandPacker           : public PackerCommon1
+{
+// Packing guide:
+//      *    *   a02  a13  a24  a35  
+//      *   a01  a12  a23  a34  a45 
+//     a00  a11  a22  a33  a44  a55 
+//     a10  a21  a32  a43  a54  *   
+//     a20  a31  a42  a53  *    *
+public:
+    //  Handle square only.
+    SBandPacker(const size_t& n, size_t _k) : PackerCommon1(n,n) , k(_k){};
+    bool is_stored(size_t i, size_t j) const {range_check(i,j);return j<=i+k && i<=j+k;}
+    size_t stored_size() const {return nrows * (2*k+1);}
+    size_t stored_row_size(size_t row) const 
+    {
+        if (row<k) return row+1+k;
+        if (row>nrows-k-1) return nrows-row+k;
+        return 2*k+1;  
+    }
+    size_t stored_col_size(size_t col) const //Don't need the col index.
+    {
+        if (col<k) return col+1+k;
+        if (col>ncols-k-1) return ncols-col+k;
+        return 2*k+1; 
+    }
+     size_t offset(size_t i, size_t j) const
+    {
+        range_check(i,j);
+        return k+i-j+j*(2*k+1);
+    }
+    size_t bandwidth() const {return k;}
+    private:
+    friend class SBandShaper;
+    const size_t k;
+};
+
 
 
 static_assert(isPacker<           FullPackerCM>);
@@ -415,7 +284,8 @@ static_assert(isPacker<UpperTriangularPackerCM>);
 static_assert(isPacker<UpperTriangularPackerRM>);
 static_assert(isPacker<LowerTriangularPackerCM>);
 static_assert(isPacker<LowerTriangularPackerRM>);
-
+static_assert(isPacker<       DiagonalPacker  >);
+static_assert(isPacker<          SBandPacker  >);
 
 
 
@@ -432,7 +302,6 @@ static_assert(isPacker<LowerTriangularPackerRM>);
 class ShaperCommon
 {
 public:
-    ShaperCommon(const PackerCommon& p) : nrows(p.nrows), ncols(p.ncols){};
     ShaperCommon(const PackerCommon1& p) : nrows(p.nrows), ncols(p.ncols){};
 protected:
     const size_t nrows,ncols;
@@ -496,27 +365,13 @@ static_assert(isShaper<          SBandShaper>);
 //  way to define the rules once for both Packer and Shaper?
 
 template <isPacker P1, isPacker P2> struct MatrixProductPackerType;
-template <isPacker P> struct MatrixProductPackerType<FullPacker,P> {typedef FullPacker packer_t;};
-template <isPacker P> struct MatrixProductPackerType<P,FullPacker> {typedef FullPacker packer_t;};
-template <isPacker P> struct MatrixProductPackerType<P,DiagonalPacker> {typedef P packer_t;};
-template <isPacker P> struct MatrixProductPackerType<DiagonalPacker,P> {typedef P packer_t;};
-template <> struct MatrixProductPackerType<FullPacker,FullPacker> {typedef FullPacker packer_t;};
-template <> struct MatrixProductPackerType<DiagonalPacker,FullPacker> {typedef FullPacker packer_t;};
-template <> struct MatrixProductPackerType<FullPacker,DiagonalPacker> {typedef FullPacker packer_t;};
-// template <> struct MatrixProductPackerType<DiagonalPacker,DiagonalPacker> {typedef DiagonalPacker packer_t;};
-template <> struct MatrixProductPackerType<UpperTriangularPacker,UpperTriangularPacker> {typedef UpperTriangularPacker packer_t;};
-template <> struct MatrixProductPackerType<LowerTriangularPacker,LowerTriangularPacker> {typedef LowerTriangularPacker packer_t;};
-template <> struct MatrixProductPackerType<UpperTriangularPacker,LowerTriangularPacker> {typedef FullPacker packer_t;};
-template <> struct MatrixProductPackerType<LowerTriangularPacker,UpperTriangularPacker> {typedef FullPacker packer_t;};
-template <> struct MatrixProductPackerType<SBandPacker,SBandPacker> {typedef SBandPacker packer_t;}; //Need to add the ks somehow.
-
 
 template <isPacker P> struct MatrixProductPackerType<FullPackerCM,P> {typedef FullPackerCM packer_t;};
 template <isPacker P> struct MatrixProductPackerType<P,FullPackerCM> {typedef FullPackerCM packer_t;};
 template <isPacker P> struct MatrixProductPackerType<FullPackerRM,P> {typedef FullPackerRM packer_t;};
 template <isPacker P> struct MatrixProductPackerType<P,FullPackerRM> {typedef FullPackerRM packer_t;};
-// template <isPacker P> struct MatrixProductPackerType<P,DiagonalPacker> {typedef P packer_t;};
-// template <isPacker P> struct MatrixProductPackerType<DiagonalPacker,P> {typedef P packer_t;};
+template <isPacker P> struct MatrixProductPackerType<P,DiagonalPacker> {typedef P packer_t;};
+template <isPacker P> struct MatrixProductPackerType<DiagonalPacker,P> {typedef P packer_t;};
 template <> struct MatrixProductPackerType<FullPackerCM,FullPackerCM> {typedef FullPackerCM packer_t;};
 template <> struct MatrixProductPackerType<FullPackerRM,FullPackerRM> {typedef FullPackerRM packer_t;};
 template <> struct MatrixProductPackerType<DiagonalPacker,FullPackerCM> {typedef FullPackerCM packer_t;};
@@ -528,7 +383,7 @@ template <> struct MatrixProductPackerType<UpperTriangularPackerCM,UpperTriangul
 template <> struct MatrixProductPackerType<LowerTriangularPackerCM,LowerTriangularPackerCM> {typedef LowerTriangularPackerCM packer_t;};
 template <> struct MatrixProductPackerType<UpperTriangularPackerCM,LowerTriangularPackerCM> {typedef FullPackerCM packer_t;};
 template <> struct MatrixProductPackerType<LowerTriangularPackerCM,UpperTriangularPackerCM> {typedef FullPackerCM packer_t;};
-// template <> struct MatrixProductPackerType<SBandPacker,SBandPacker> {typedef SBandPacker packer_t;}; //Need to add the ks somehow.
+template <> struct MatrixProductPackerType<SBandPacker,SBandPacker> {typedef SBandPacker packer_t;}; //Need to add the ks somehow.
 
 
 

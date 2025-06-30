@@ -27,7 +27,7 @@ TEST_F(PackerDeathTest, Full)
 {
     GTEST_FLAG_SET(death_test_style, "fast"); //Assume single threads in test for now.
     size_t nr=3,nc=4;
-    FullPacker fprm(nr,nc,Indexing::row_major);
+    FullPackerRM fprm(nr,nc);
     EXPECT_EQ(fprm.nr(),3);
     EXPECT_EQ(fprm.nc(),4);
     EXPECT_EQ(fprm.stored_size(),12);
@@ -47,7 +47,7 @@ TEST_F(PackerDeathTest, Full)
     ASSERT_DEATH(fprm.offset(3,0),"");
     ASSERT_DEATH(fprm.offset(0,4),"");
 #endif
-    FullPacker fpcm(nr,nc,Indexing::col_major);
+    FullPackerCM fpcm(nr,nc);
     EXPECT_EQ(fpcm.nr(),3);
     EXPECT_EQ(fpcm.nc(),4);
     EXPECT_EQ(fpcm.stored_size(),12);
@@ -72,7 +72,7 @@ TEST_F(PackerDeathTest, UpperTriangular3x4)
 {
     GTEST_FLAG_SET(death_test_style, "fast"); //Assume single threads in test for now.
     size_t nr=3,nc=4;
-    UpperTriangularPacker utrm(nr,nc,Indexing::row_major);
+    UpperTriangularPackerRM utrm(nr,nc);
     EXPECT_EQ(utrm.nr(),3);
     EXPECT_EQ(utrm.nc(),4);
     EXPECT_EQ(utrm.stored_size(),6+3);
@@ -110,7 +110,7 @@ TEST_F(PackerDeathTest, UpperTriangular3x4)
     ASSERT_DEATH(utrm.offset(3,0),"");
     ASSERT_DEATH(utrm.offset(0,4),"");
 #endif
-    UpperTriangularPacker utcm(nr,nc,Indexing::col_major);
+    UpperTriangularPackerCM utcm(nr,nc);
     EXPECT_EQ(utcm.nr(),3);
     EXPECT_EQ(utcm.nc(),4);
     EXPECT_EQ(utcm.stored_size(),6+3);
@@ -153,7 +153,7 @@ TEST_F(PackerDeathTest, UpperTriangular4x3)
 {
     GTEST_FLAG_SET(death_test_style, "fast"); //Assume single threads in test for now.
     size_t nr=4,nc=3;
-    UpperTriangularPacker utrm(nr,nc,Indexing::row_major);
+    UpperTriangularPackerRM utrm(nr,nc);
     EXPECT_EQ(utrm.nr(),4);
     EXPECT_EQ(utrm.nc(),3);
     EXPECT_EQ(utrm.stored_size(),6);
@@ -182,7 +182,7 @@ TEST_F(PackerDeathTest, UpperTriangular4x3)
     EXPECT_EQ(utrm.offset(1,2),4);
     EXPECT_EQ(utrm.offset(2,2),5);
 
-    UpperTriangularPacker utcm(nr,nc,Indexing::col_major);
+    UpperTriangularPackerCM utcm(nr,nc);
     EXPECT_EQ(utcm.nr(),4);
     EXPECT_EQ(utcm.nc(),3);
     EXPECT_EQ(utcm.stored_size(),6);
@@ -217,7 +217,7 @@ TEST_F(PackerDeathTest, LowerTriangular3x4)
 {
     GTEST_FLAG_SET(death_test_style, "fast"); //Assume single threads in test for now.
     size_t nr=3,nc=4;
-    LowerTriangularPacker ltrm(nr,nc,Indexing::row_major);
+    LowerTriangularPackerRM ltrm(nr,nc);
     EXPECT_EQ(ltrm.nr(),3);
     EXPECT_EQ(ltrm.nc(),4);
     EXPECT_EQ(ltrm.stored_size(),6);
@@ -248,7 +248,7 @@ TEST_F(PackerDeathTest, LowerTriangular3x4)
     EXPECT_EQ(ltrm.offset(2,1),4);
     EXPECT_EQ(ltrm.offset(2,2),5);
 
-    LowerTriangularPacker ltcm(nr,nc,Indexing::col_major);
+    LowerTriangularPackerCM ltcm(nr,nc);
     EXPECT_EQ(ltcm.nr(),3);
     EXPECT_EQ(ltcm.nc(),4);
     EXPECT_EQ(ltcm.stored_size(),6);
@@ -284,7 +284,7 @@ TEST_F(PackerDeathTest, LowerTriangular4x3)
 {
     GTEST_FLAG_SET(death_test_style, "fast"); //Assume single threads in test for now.
     size_t nr=4,nc=3;
-    LowerTriangularPacker ltrm(nr,nc,Indexing::row_major);
+    LowerTriangularPackerRM ltrm(nr,nc);
     EXPECT_EQ(ltrm.nr(),4);
     EXPECT_EQ(ltrm.nc(),3);
     EXPECT_EQ(ltrm.stored_size(),6+3);
@@ -318,7 +318,7 @@ TEST_F(PackerDeathTest, LowerTriangular4x3)
     EXPECT_EQ(ltrm.offset(3,1),7);
     EXPECT_EQ(ltrm.offset(3,2),8);
 
-    LowerTriangularPacker ltcm(nr,nc,Indexing::col_major);
+    LowerTriangularPackerCM ltcm(nr,nc);
     EXPECT_EQ(ltcm.nr(),4);
     EXPECT_EQ(ltcm.nc(),3);
     EXPECT_EQ(ltcm.stored_size(),6+3);
@@ -474,7 +474,7 @@ namespace std::ranges {
 TEST_F(PackerTests,FullShaper3x4)
 {
     size_t nr=3, nc=4;
-    FullPacker fp(nr,nc);
+    FullPackerCM fp(nr,nc);
     FullShaper fs(fp);
     for (size_t col=0;col<nc;col++)
         EXPECT_EQ(fs.nonzero_row_indexes(col),iota_view(0,3));
@@ -484,7 +484,7 @@ TEST_F(PackerTests,FullShaper3x4)
 TEST_F(PackerTests,FullShaper4x3)
 {
     size_t nr=4, nc=3;
-    FullPacker fp(nr,nc);
+    FullPackerCM fp(nr,nc);
     FullShaper fs(fp);
     for (size_t col=0;col<nc;col++)
         EXPECT_EQ(fs.nonzero_row_indexes(col),iota_view(0,4));
@@ -494,7 +494,7 @@ TEST_F(PackerTests,FullShaper4x3)
 TEST_F(PackerTests,UpperTriangularShaper3x4)
 {
     size_t nr=3, nc=4;
-    UpperTriangularPacker p(nr,nc);
+    UpperTriangularPackerCM p(nr,nc);
     UpperTriangularShaper s(p);
 
     EXPECT_EQ(s.nonzero_row_indexes(0),iota_view(0,1));
@@ -508,7 +508,7 @@ TEST_F(PackerTests,UpperTriangularShaper3x4)
 TEST_F(PackerTests,UpperTriangularShaper4x3)
 {
     size_t nr=4, nc=3;
-    UpperTriangularPacker p(nr,nc);
+    UpperTriangularPackerCM p(nr,nc);
     UpperTriangularShaper s(p);
 
     EXPECT_EQ(s.nonzero_row_indexes(0),iota_view(0,1));
@@ -522,7 +522,7 @@ TEST_F(PackerTests,UpperTriangularShaper4x3)
 TEST_F(PackerTests,LowerTriangularShaper3x4)
 {
     size_t nr=3, nc=4;
-    LowerTriangularPacker p(nr,nc);
+    LowerTriangularPackerCM p(nr,nc);
     LowerTriangularShaper s(p);
 
     EXPECT_EQ(s.nonzero_row_indexes(0),iota_view(0,3));
@@ -536,7 +536,7 @@ TEST_F(PackerTests,LowerTriangularShaper3x4)
 TEST_F(PackerTests,LowerTriangularShaper4x3)
 {
     size_t nr=4, nc=3;
-    LowerTriangularPacker p(nr,nc);
+    LowerTriangularPackerCM p(nr,nc);
     LowerTriangularShaper s(p);
 
     EXPECT_EQ(s.nonzero_row_indexes(0),iota_view(0,4));
