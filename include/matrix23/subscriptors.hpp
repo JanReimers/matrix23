@@ -37,10 +37,10 @@ typedef std::function<size_t(size_t, size_t)> indexer_t;
 
 class ShaperCommon;
 class SBandShaper;
-class PackerCommon1
+class PackerCommon
 {
 public:
-    PackerCommon1(const size_t& _nrows, const size_t& _ncols) : nrows(_nrows), ncols(_ncols) {};
+    PackerCommon(const size_t& _nrows, const size_t& _ncols) : nrows(_nrows), ncols(_ncols) {};
     size_t nr() const {return nrows;}
     size_t nc() const {return ncols;}
     void range_check(size_t i, size_t j) const
@@ -53,36 +53,20 @@ protected:
     const size_t nrows,ncols;
 };
 
-class FullPacker1           : public PackerCommon1
+class FullPacker           : public PackerCommon
 {
 public:
-    using PackerCommon1::PackerCommon1; // Inherit constructors
+    using PackerCommon::PackerCommon; // Inherit constructors
     bool is_stored(size_t i, size_t j) const {range_check(i,j);return true;} // Full matrix, all elements are stored
     size_t stored_size() const {return nrows * ncols;} // Total number of elements
     size_t stored_row_size(size_t row) const {assert(row<nrows);return ncols;}// Each row has nc elements
     size_t stored_col_size(size_t col) const {assert(col<ncols);return nrows;}// Each col has nr elements
-private:
-    static indexer_t make_indexer(Indexing ind, const size_t& nrows, const size_t& ncols)
-    {
-        indexer_t ret;
-        switch (ind)
-        {
-            case Indexing::row_major:
-                ret= [ncols](size_t i, size_t j) -> size_t {return j + i*ncols;};
-                break;
-            case Indexing::col_major:
-                ret= [nrows](size_t i, size_t j) -> size_t {return i + j*nrows;};
-                break;
-        
-        }
-        return ret;
-    }
 };
 
-class FullPackerCM         : public FullPacker1
+class FullPackerCM         : public FullPacker
 {
 public:
-    using FullPacker1::FullPacker1; // Inherit constructors
+    using FullPacker::FullPacker; // Inherit constructors
     size_t offset(size_t i, size_t j) const
     {
         range_check(i,j);
@@ -90,10 +74,10 @@ public:
     }
 
 };
-class FullPackerRM         : public FullPacker1
+class FullPackerRM         : public FullPacker
 {
 public:
-    using FullPacker1::FullPacker1; // Inherit constructors
+    using FullPacker::FullPacker; // Inherit constructors
     size_t offset(size_t i, size_t j) const
     {
         range_check(i,j);
@@ -102,10 +86,10 @@ public:
 
 };
 
-class UpperTriangularPacker1 : public PackerCommon1
+class UpperTriangularPacker : public PackerCommon
 {
 public:
-    using PackerCommon1::PackerCommon1; // Inherit constructors
+    using PackerCommon::PackerCommon; // Inherit constructors
     bool is_stored(size_t i, size_t j) const {return i <= j;}
     size_t stored_size() const
     {
@@ -124,39 +108,22 @@ public:
         if (col_index >= nrows) return nrows; // No elements stored in this row
         return col_index+1; // 
     }
-private:
-    static indexer_t make_indexer(Indexing ind, const size_t& nrows, const size_t& ncols)
-    {
-        indexer_t ret;
-        switch (ind)
-        {
-            case Indexing::row_major:
-                ret= [ncols](size_t i, size_t j) -> size_t {return j + i*(2*ncols-i-1)/2;};
-                break;
-            case Indexing::col_major:
-                ret= [     ](size_t i, size_t j) -> size_t {return i + j*(        j+1)/2;};
-                break;
-        
-        }
-        return ret;
-    }
-
 };
 
-class UpperTriangularPackerRM : public UpperTriangularPacker1
+class UpperTriangularPackerRM : public UpperTriangularPacker
 {
 public:
-    using UpperTriangularPacker1::UpperTriangularPacker1; // Inherit constructors
+    using UpperTriangularPacker::UpperTriangularPacker; // Inherit constructors
     size_t offset(size_t i, size_t j) const
     {
         range_check(i,j);
         return j + i*(2*ncols-i-1)/2;
     }
 };
-class UpperTriangularPackerCM : public UpperTriangularPacker1
+class UpperTriangularPackerCM : public UpperTriangularPacker
 {
 public:
-    using UpperTriangularPacker1::UpperTriangularPacker1; // Inherit constructors
+    using UpperTriangularPacker::UpperTriangularPacker; // Inherit constructors
     size_t offset(size_t i, size_t j) const
     {
         range_check(i,j);
@@ -164,10 +131,10 @@ public:
     }
 };
 
-class LowerTriangularPacker1 : public PackerCommon1
+class LowerTriangularPacker : public PackerCommon
 {
 public:
-    using PackerCommon1::PackerCommon1; // Inherit constructors
+    using PackerCommon::PackerCommon; // Inherit constructors
     bool is_stored(size_t i, size_t j) const {return j <= i;}
     size_t stored_size() const
     {
@@ -186,39 +153,21 @@ public:
         if (col_index >= nrows) return 0; // full row below the triangle
         return nrows-col_index; // in the triangle
     }
-private:
-    static indexer_t make_indexer(Indexing ind, const size_t& nrows, const size_t& ncols)
-    {
-        indexer_t ret;
-        switch (ind)
-        {
-            case Indexing::row_major:
-                ret= [     ](size_t i, size_t j) -> size_t {return j + i*(        i+1)/2;};
-                break;
-            case Indexing::col_major:
-                ret= [nrows](size_t i, size_t j) -> size_t {return i + j*(2*nrows-j-1)/2;};
-                break;
-        
-        }
-        return ret;
-    }
-  
- 
 };
-class LowerTriangularPackerRM : public LowerTriangularPacker1
+class LowerTriangularPackerRM : public LowerTriangularPacker
 {
 public:
-    using LowerTriangularPacker1::LowerTriangularPacker1; // Inherit constructors
+    using LowerTriangularPacker::LowerTriangularPacker; // Inherit constructors
     size_t offset(size_t i, size_t j) const
     {
         range_check(i,j);
         return j + i*(        i+1)/2;
     }
 };
-class LowerTriangularPackerCM : public LowerTriangularPacker1
+class LowerTriangularPackerCM : public LowerTriangularPacker
 {
 public:
-    using LowerTriangularPacker1::LowerTriangularPacker1; // Inherit constructors
+    using LowerTriangularPacker::LowerTriangularPacker; // Inherit constructors
     size_t offset(size_t i, size_t j) const
     {
         range_check(i,j);
@@ -226,10 +175,10 @@ public:
     }
 };
 
-class DiagonalPacker        : public PackerCommon1
+class DiagonalPacker        : public PackerCommon
 {
 public:
-    using PackerCommon1::PackerCommon1; // Inherit constructors
+    using PackerCommon::PackerCommon; // Inherit constructors
     bool is_stored(size_t i, size_t j) const {return i == j;}
     size_t stored_size() const {return std::min(nrows,ncols);}
     size_t stored_row_size(size_t row) const {return row<ncols ? 1 : 0;}
@@ -240,7 +189,7 @@ public:
         return i;
     }
 };
-class SBandPacker           : public PackerCommon1
+class SBandPacker           : public PackerCommon
 {
 // Packing guide:
 //      *    *   a02  a13  a24  a35  
@@ -250,7 +199,7 @@ class SBandPacker           : public PackerCommon1
 //     a20  a31  a42  a53  *    *
 public:
     //  Handle square only.
-    SBandPacker(const size_t& n, size_t _k) : PackerCommon1(n,n) , k(_k){};
+    SBandPacker(const size_t& n, size_t _k) : PackerCommon(n,n) , k(_k){};
     bool is_stored(size_t i, size_t j) const {range_check(i,j);return j<=i+k && i<=j+k;}
     size_t stored_size() const {return nrows * (2*k+1);}
     size_t stored_row_size(size_t row) const 
@@ -276,8 +225,6 @@ public:
     const size_t k;
 };
 
-
-
 static_assert(isPacker<           FullPackerCM>);
 static_assert(isPacker<           FullPackerRM>);
 static_assert(isPacker<UpperTriangularPackerCM>);
@@ -287,22 +234,15 @@ static_assert(isPacker<LowerTriangularPackerRM>);
 static_assert(isPacker<       DiagonalPacker  >);
 static_assert(isPacker<          SBandPacker  >);
 
-
-
-
-
-
-
-
-
-
-
-
-
+//--------------------------------------------------------------------------------------
+//
+//  Shapers. These decide which part/range of a row or column is non-zero; *regardless* of whether or not
+//  thoses zeros are actually stored.  For example an upper triangular matrix can be will full packing/storage.
+//
 class ShaperCommon
 {
 public:
-    ShaperCommon(const PackerCommon1& p) : nrows(p.nrows), ncols(p.ncols){};
+    ShaperCommon(const PackerCommon& p) : nrows(p.nrows), ncols(p.ncols){};
 protected:
     const size_t nrows,ncols;
 };

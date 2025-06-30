@@ -142,19 +142,6 @@ private:
 };
 
 
-// template <class T> class FullMatrix : public Matrix<T,FullPacker,FullShaper>
-// {
-// public:
-//     using Base = Matrix<T,FullPacker,FullShaper>;
-//     using il_t=Base::il_t;
-//     using Base::nr;
-//     using Base::nc;
-//     FullMatrix(size_t nr, size_t nc, Indexing ind=Indexing::col_major) : Base(FullPacker(nr,nc,ind)) {};
-//     FullMatrix(const il_t& il, Indexing ind=Indexing::col_major) 
-//         : Base(il,FullPacker(nr(il),nc(il),ind)) {};
-//     template <isMatrix M> FullMatrix(const M& m) : Base(m,m.packer(), m.shaper()) {};
-// };
-
 template <class T> class FullMatrixRM : public Matrix<T,FullPackerRM,FullShaper>
 {
 public:
