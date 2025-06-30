@@ -30,7 +30,7 @@ public:
 
 TEST_F(MatrixTests, FullColMajor3x4)
 {
-    matrix23::FullMatrix<double> A{
+    matrix23::FullMatrixCM<double> A{
         {1,2,3,4},
         {5,6,7,8},
         {9,10,11,12}};
@@ -44,11 +44,10 @@ TEST_F(MatrixTests, FullColMajor3x4)
 }
 TEST_F(MatrixTests, FullRowMajor3x4)
 {
-    matrix23::FullMatrix<double> A({
+    matrix23::FullMatrixRM<double> A({
         {1,2,3,4},
         {5,6,7,8},
-        {9,10,11,12}},
-        matrix23::Indexing::row_major);
+        {9,10,11,12}});
     EXPECT_EQ(A.row(0),(il{1,2,3,4}));
     EXPECT_EQ(A.row(1),(il{5,6,7,8}));
     EXPECT_EQ(A.row(2),(il{9,10,11,12}));
@@ -59,7 +58,7 @@ TEST_F(MatrixTests, FullRowMajor3x4)
 }
 TEST_F(MatrixTests, FullColMajor4x3)
 {
-    matrix23::FullMatrix<double> A{
+    matrix23::FullMatrixCM<double> A{
         {1,2,3},
         {4,5,6},
         {7,8,9},
@@ -75,12 +74,11 @@ TEST_F(MatrixTests, FullColMajor4x3)
 }
 TEST_F(MatrixTests, FullRowMajor4x3)
 {
-    matrix23::FullMatrix<double> A({
+    matrix23::FullMatrixRM<double> A({
         {1,2,3},
         {4,5,6},
         {7,8,9},
-        {10,11,12}},
-        matrix23::Indexing::row_major);
+        {10,11,12}});
     EXPECT_EQ(A.row(0),(il{1,2,3}));
     EXPECT_EQ(A.row(1),(il{4,5,6}));
     EXPECT_EQ(A.row(2),(il{7,8,9}));
@@ -90,9 +88,13 @@ TEST_F(MatrixTests, FullRowMajor4x3)
     EXPECT_EQ(A.col(2),(il{3,6,9,12}));
    
 }
+
+
+
+
 TEST_F(MatrixTests, UpperTriangularColMajor3x4)
 {
-    matrix23::UpperTriangularMatrix<double> A{
+    matrix23::UpperTriangularMatrixCM<double> A{
         {1,2,3,4},
         {0,6,7,8},
         {0,0,11,12}};
@@ -106,11 +108,10 @@ TEST_F(MatrixTests, UpperTriangularColMajor3x4)
 }
 TEST_F(MatrixTests, UpperTriangularRowMajor3x4)
 {
-    matrix23::UpperTriangularMatrix<double> A({
+    matrix23::UpperTriangularMatrixRM<double> A({
         {1,2,3,4},
         {0,6,7,8},
-        {0,0,11,12}},
-        matrix23::Indexing::row_major);
+        {0,0,11,12}});
     EXPECT_EQ(A.row(0),(il{1,2,3,4}));
     EXPECT_EQ(A.row(1),(il{6,7,8}));
     EXPECT_EQ(A.row(2),(il{11,12}));
@@ -121,7 +122,7 @@ TEST_F(MatrixTests, UpperTriangularRowMajor3x4)
 }
 TEST_F(MatrixTests, UpperTriangularColMajor4x3)
 {
-    matrix23::UpperTriangularMatrix<double> A{
+    matrix23::UpperTriangularMatrixCM<double> A{
         {1,2,3},
         {0,5,6},
         {0,0,9},
@@ -137,12 +138,11 @@ TEST_F(MatrixTests, UpperTriangularColMajor4x3)
 }
 TEST_F(MatrixTests, UpperTriangularRowajor4x3)
 {
-    matrix23::UpperTriangularMatrix<double> A({
+    matrix23::UpperTriangularMatrixRM<double> A({
         {1,2,3},
         {0,5,6},
         {0,0,9},
-        {0,0,0}},
-        matrix23::Indexing::row_major);
+        {0,0,0}});
     EXPECT_EQ(A.row(0),(il{1,2,3}));
     EXPECT_EQ(A.row(1),(il{5,6}));
     EXPECT_EQ(A.row(2),(il{9}));
@@ -152,9 +152,10 @@ TEST_F(MatrixTests, UpperTriangularRowajor4x3)
     EXPECT_EQ(A.col(2),(il{3,6,9}));
    
 }
+
 TEST_F(MatrixTests, LowerTriangularColMajor3x4)
 {
-    matrix23::LowerTriangularMatrix<double> A{
+    matrix23::LowerTriangularMatrixCM<double> A{
         {1,0,0,0},
         {5,6,0,0},
         {9,10,11,0}};
@@ -168,11 +169,10 @@ TEST_F(MatrixTests, LowerTriangularColMajor3x4)
 }
 TEST_F(MatrixTests, LowerTriangularRowMajor3x4)
 {
-    matrix23::LowerTriangularMatrix<double> A({
+    matrix23::LowerTriangularMatrixRM<double> A({
         {1,0,0,0},
         {5,6,0,0},
-        {9,10,11,0}},
-        matrix23::Indexing::row_major);
+        {9,10,11,0}});
     EXPECT_EQ(A.row(0),(il{1}));
     EXPECT_EQ(A.row(1),(il{5,6}));
     EXPECT_EQ(A.row(2),(il{9,10,11}));
@@ -183,7 +183,7 @@ TEST_F(MatrixTests, LowerTriangularRowMajor3x4)
 }
 TEST_F(MatrixTests, LowerTriangularColMajor4x3)
 {
-    matrix23::LowerTriangularMatrix<double> A{
+    matrix23::LowerTriangularMatrixCM<double> A{
         {1,0,0},
         {4,5,0},
         {7,8,9},
@@ -199,12 +199,11 @@ TEST_F(MatrixTests, LowerTriangularColMajor4x3)
 }
 TEST_F(MatrixTests, LowerTriangularRowMajor4x3)
 {
-    matrix23::LowerTriangularMatrix<double> A({
+    matrix23::LowerTriangularMatrixRM<double> A({
         {1,0,0},
         {4,5,0},
         {7,8,9},
-        {10,11,12}},
-        matrix23::Indexing::row_major);
+        {10,11,12}});
     EXPECT_EQ(A.row(0),(il{1}));
     EXPECT_EQ(A.row(1),(il{4,5}));
     EXPECT_EQ(A.row(2),(il{7,8,9}));
@@ -214,6 +213,7 @@ TEST_F(MatrixTests, LowerTriangularRowMajor4x3)
     EXPECT_EQ(A.col(2),(il{9,12}));
    
 }
+
 TEST_F(MatrixTests, Diagonal3x4)
 {
     matrix23::DiagonalMatrix<double> A{
