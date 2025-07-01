@@ -52,7 +52,7 @@ class FullPacker           : public PackerCommon
 {
 public:
     using PackerCommon::PackerCommon; // Inherit constructors
-    bool is_stored(size_t i, size_t j) const {this->range_check(i,j);return true;} // Full matrix, all elements are stored
+    bool is_stored(size_t i, size_t j) const {range_check(i,j);return true;} // Full matrix, all elements are stored
     size_t stored_size() const {return nrows * ncols;} // Total number of elements
     size_t stored_row_size(size_t row) const {assert(row<nrows);return ncols;}// Each row has nc elements
     size_t stored_col_size(size_t col) const {assert(col<ncols);return nrows;}// Each col has nr elements
@@ -237,7 +237,7 @@ static_assert(isPacker<          SBandPacker  >);
 class ShaperCommon
 {
 public:
-    ShaperCommon(const PackerCommon& p) : nrows(p.nr()), ncols(p.nc()){};
+    ShaperCommon(const PackerCommon& p) : nrows(p.nrows), ncols(p.ncols){};
 protected:
     const size_t nrows,ncols;
 };

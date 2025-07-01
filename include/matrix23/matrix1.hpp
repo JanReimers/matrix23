@@ -76,10 +76,28 @@ template <typename T, isPacker P, isShaper S> class Matrix
     //
     //  2D range access.
     //
-    auto row(size_t i) const;
-    auto col(size_t j) const;
-    auto rows() const; //Assumes all rows are non-zero.
-    auto cols() const; //Assumes all cols are non-zero.
+    auto row(size_t i) const
+    {
+        assert(i < itsPacker.nr());
+        auto indices=itsShaper.nonzero_col_indexes(i);
+        auto v=  indices | std::views::transform([i,this](size_t j){return operator()(i,j);});
+        return VectorView<decltype(v)>(std::move(v),indices);
+    }
+    auto col(size_t j) const
+    {
+        assert(j < itsPacker.nc());
+        auto indices=itsShaper.nonzero_row_indexes(j);
+        auto v= indices | std::views::transform([j,this](size_t i){return operator()(i,j);});
+        return VectorView<decltype(v)>(std::move(v),indices);
+    }
+    auto rows() const //Assumes all rows are non-zero.
+    {
+        return std::views::iota(size_t(0), itsPacker.nr()) | std::views::transform([this](size_t i){return row(i);});
+    }
+    auto cols() const //Assumes all cols are non-zero.
+    {
+        return std::views::iota(size_t(0), itsPacker.nc()) | std::views::transform([this](size_t j){return col(j);});
+    }
     P packer() const {return itsPacker;}
     S shaper() const {return itsShaper;}
 
@@ -122,59 +140,6 @@ private:
     S itsShaper;
     std::valarray<T> data;
 };
-
-
-template <typename T, isPacker P, isShaper S, std::ranges::range R> auto rowf(size_t i, const P& packer, const S& shaper, const R& data)
-{
-    assert(i < packer.nr());
-    auto indices=shaper.nonzero_col_indexes(i);
-    auto v=  indices | std::views::transform([i,data,packer](size_t j){return data[packer.offset(i,j)];});
-    return VectorView<decltype(v)>(std::move(v),indices); 
-}
-template <typename T, isPacker P, isShaper S, std::ranges::range R> auto colf(size_t j, const P& packer, const S& shaper, const R& data)
-{
-    assert(j < packer.nc());
-    auto indices=shaper.nonzero_row_indexes(j);
-    auto v= indices | std::views::transform([j,data,packer](size_t i){return data[packer.offset(i,j)];});
-    return VectorView<decltype(v)>(std::move(v),indices);
-}
-
-template <typename T, isPacker P, isShaper S> auto Matrix<T,P,S>::row(size_t i) const
-{
-    return rowf<T,P,S,decltype(data)>(i,itsPacker,itsShaper,data);
-}
-template <typename T, isPacker P, isShaper S> auto Matrix<T,P,S>::col(size_t j) const
-{
-    return colf<T,P,S,decltype(data)>(j,itsPacker,itsShaper,data);
-}
-
-
-template <typename T, isPacker P, isShaper S, std::ranges::range R> auto rowsf(const P& packer, const S& shaper, const R& data)
-{
-    return std::views::iota(size_t(0), packer.nr()) | std::views::transform([packer,shaper,data](size_t i){return rowf<T,P,S,R>(i,packer,shaper,data);});
-}
-template <typename T, isPacker P, isShaper S, std::ranges::range R> auto colsf(const P& packer, const S& shaper, const R& data)
-{
-    return std::views::iota(size_t(0), packer.nc()) | std::views::transform([packer,shaper,data](size_t j){return colf<T,P,S,R>(j,packer,shaper,data);});
-}
-
-template <typename T, isPacker P, isShaper S> auto Matrix<T,P,S>::rows() const
-{
-    return rowsf<T,P,S,decltype(data)>(itsPacker,itsShaper,data);
-}
-template <typename T, isPacker P, isShaper S> auto Matrix<T,P,S>::cols() const
-{
-    return colsf<T,P,S,decltype(data)>(itsPacker,itsShaper,data);
-}
-//
-// Specializations for full row major matrix 
-//
-// template <typename T> auto Matrix<T,FullPackerRM,FullShaper>::rows() const
-// {
-//     return data | std::view:chunk(ncols);
-// }
-
-
 
 
 template <class T> class FullMatrixRM : public Matrix<T,FullPackerRM,FullShaper>
