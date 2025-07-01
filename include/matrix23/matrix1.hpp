@@ -76,28 +76,10 @@ template <typename T, isPacker P, isShaper S> class Matrix
     //
     //  2D range access.
     //
-    auto row(size_t i) const
-    {
-        assert(i < itsPacker.nr());
-        auto indices=itsShaper.nonzero_col_indexes(i);
-        auto v=  indices | std::views::transform([i,this](size_t j){return operator()(i,j);});
-        return VectorView<decltype(v)>(std::move(v),indices);
-    }
-    auto col(size_t j) const
-    {
-        assert(j < itsPacker.nc());
-        auto indices=itsShaper.nonzero_row_indexes(j);
-        auto v= indices | std::views::transform([j,this](size_t i){return operator()(i,j);});
-        return VectorView<decltype(v)>(std::move(v),indices);
-    }
-    auto rows() const //Assumes all rows are non-zero.
-    {
-        return std::views::iota(size_t(0), itsPacker.nr()) | std::views::transform([this](size_t i){return row(i);});
-    }
-    auto cols() const //Assumes all cols are non-zero.
-    {
-        return std::views::iota(size_t(0), itsPacker.nc()) | std::views::transform([this](size_t j){return col(j);});
-    }
+    auto row(size_t i) const;
+    auto col(size_t j) const;
+    auto rows() const; //Assumes all rows are non-zero.
+    auto cols() const; //Assumes all cols are non-zero.
     P packer() const {return itsPacker;}
     S shaper() const {return itsShaper;}
 
@@ -140,6 +122,29 @@ private:
     S itsShaper;
     std::valarray<T> data;
 };
+
+template <typename T, isPacker P, isShaper S> auto Matrix<T,P,S>::row(size_t i) const
+{
+    assert(i < itsPacker.nr());
+    auto indices=itsShaper.nonzero_col_indexes(i);
+    auto v=  indices | std::views::transform([i,this](size_t j){return operator()(i,j);});
+    return VectorView<decltype(v)>(std::move(v),indices);
+}
+template <typename T, isPacker P, isShaper S> auto Matrix<T,P,S>::col(size_t j) const
+{
+    assert(j < itsPacker.nc());
+    auto indices=itsShaper.nonzero_row_indexes(j);
+    auto v= indices | std::views::transform([j,this](size_t i){return operator()(i,j);});
+    return VectorView<decltype(v)>(std::move(v),indices);
+}
+template <typename T, isPacker P, isShaper S> auto Matrix<T,P,S>::rows() const
+{
+    return std::views::iota(size_t(0), itsPacker.nr()) | std::views::transform([this](size_t i){return row(i);});
+}
+template <typename T, isPacker P, isShaper S> auto Matrix<T,P,S>::cols() const
+{
+    return std::views::iota(size_t(0), itsPacker.nc()) | std::views::transform([this](size_t j){return col(j);});
+}
 
 
 template <class T> class FullMatrixRM : public Matrix<T,FullPackerRM,FullShaper>

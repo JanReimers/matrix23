@@ -33,7 +33,16 @@ Issues:
         At the moment We don't even store the attribute.
         Using lambdas for row/col major indexing is a little sketchy.
         Also we need mirror image row(i)/col(j) implementations for row/col major indexing.  More lambdas?
-            or throw in the towel and make distincte FullPackerRM, FullPackerCM classes? 
+            Done: or throw in the towel and make distincte FullPackerRM, FullPackerCM classes? 
+    Refactor row(i)/col(j)
+        It is so hard to think through these designs when virtual functions are banashied.
+            https://en.wikipedia.org/wiki/Curiously_recurring_template_pattern
+            This patter in a PITA becuase you need ream of using statements to inhert all the template bass class functions
+        We need a way for the FullPacker to yield chunck or stride views of data, for rows and columns.
+            BUT you can't express the data as range in the concept definition.
+             "one cannot use an auto placeholder in the parameter declaration of a requirement parameter list"
+        How about a specialized template function
+        
     Fixed: -Lots of duplication with nr/nc when creating packers and shapers.
     -Can we have packer.create_shaper(); to avoid all the Shaper pair rules?
     -Move default op(i,j) based row(i)/col(j) in the PackerCommon

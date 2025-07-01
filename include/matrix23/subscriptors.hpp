@@ -32,11 +32,7 @@ template <class S> concept isShaper = requires (S const s,size_t i, size_t j, bo
     s.nonzero_col_indexes(i);  
 };
 
-
-typedef std::function<size_t(size_t, size_t)> indexer_t;
-
-class ShaperCommon;
-class SBandShaper;
+#include <ranges>
 class PackerCommon
 {
 public:
@@ -49,7 +45,6 @@ public:
         assert(j<ncols && "Column index ot of bounds");
     }
 protected:
-    friend class ShaperCommon;
     const size_t nrows,ncols;
 };
 
@@ -57,7 +52,7 @@ class FullPacker           : public PackerCommon
 {
 public:
     using PackerCommon::PackerCommon; // Inherit constructors
-    bool is_stored(size_t i, size_t j) const {range_check(i,j);return true;} // Full matrix, all elements are stored
+    bool is_stored(size_t i, size_t j) const {this->range_check(i,j);return true;} // Full matrix, all elements are stored
     size_t stored_size() const {return nrows * ncols;} // Total number of elements
     size_t stored_row_size(size_t row) const {assert(row<nrows);return ncols;}// Each row has nc elements
     size_t stored_col_size(size_t col) const {assert(col<ncols);return nrows;}// Each col has nr elements
@@ -242,7 +237,7 @@ static_assert(isPacker<          SBandPacker  >);
 class ShaperCommon
 {
 public:
-    ShaperCommon(const PackerCommon& p) : nrows(p.nrows), ncols(p.ncols){};
+    ShaperCommon(const PackerCommon& p) : nrows(p.nr()), ncols(p.nc()){};
 protected:
     const size_t nrows,ncols;
 };
