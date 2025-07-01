@@ -115,7 +115,7 @@ template <typename T, isPacker P, isShaper S> class Matrix
             std::cout << std::endl;
         }   
     }
-private:
+protected:
     void load(std::initializer_list<std::initializer_list<T>> init)
     {
         assert(init.size() == nr() && "Initializer list size does not match subscriptor row count");
@@ -152,6 +152,15 @@ public:
     FullMatrixRM(size_t nr, size_t nc) : Base(FullPackerRM(nr,nc)) {};
     FullMatrixRM(const il_t& il) : Base(il,FullPackerRM(nr(il),nc(il))) {};
     template <isMatrix M> FullMatrixRM(const M& m) : Base(m,m.packer(), m.shaper()) {};
+
+    auto rows() const //Assumes all rows are non-zero.
+    {
+        iota_view indices=std::views::iota(size_t(0), nc());
+        return Base::data 
+            | std::views::chunk(nc()) 
+            | std::views::transform(
+                [indices](auto row){return VectorView<decltype(row)>(std::move(row),indices);});
+    }
 };
 template <class T> class FullMatrixCM : public Matrix<T,FullPackerCM,FullShaper>
 {
@@ -163,6 +172,15 @@ public:
     FullMatrixCM(size_t nr, size_t nc) : Base(FullPackerCM(nr,nc)) {};
     FullMatrixCM(const il_t& il) : Base(il,FullPackerCM(nr(il),nc(il))) {};
     template <isMatrix M> FullMatrixCM(const M& m) : Base(m,m.packer(), m.shaper()) {};
+
+    auto cols() const //Assumes all rows are non-zero.
+    {
+        iota_view indices=std::views::iota(size_t(0), nr());
+        return Base::data 
+            | std::views::chunk(nr()) 
+            | std::views::transform(
+                [indices](auto col){return VectorView<decltype(col)>(std::move(col),indices);});
+    }
 };
 
 template <class T> class UpperTriangularMatrixCM : public Matrix<T,UpperTriangularPackerCM,UpperTriangularShaper>

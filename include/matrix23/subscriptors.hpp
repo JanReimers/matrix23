@@ -237,7 +237,7 @@ static_assert(isPacker<          SBandPacker  >);
 class ShaperCommon
 {
 public:
-    ShaperCommon(const PackerCommon& p) : nrows(p.nrows), ncols(p.ncols){};
+    ShaperCommon(const PackerCommon& p) : nrows(p.nr()), ncols(p.nc()){};
 protected:
     const size_t nrows,ncols;
 };
