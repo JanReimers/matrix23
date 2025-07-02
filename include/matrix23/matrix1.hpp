@@ -339,7 +339,6 @@ auto operator*(const isMatrix auto& m, const isVector auto& v)
     static_assert(isVector<VectorView<decltype(mv)>>,"Matrix-vector multiplication should satisfy isVector concept requirements");
     return VectorView(std::move(mv), indices);
 }
-
 auto operator*(const isVector auto& v,const isMatrix auto& m)
 {
     auto cols=m.cols();
@@ -420,21 +419,69 @@ auto operator*(const isMatrix auto& a,const isMatrix auto& b)
     return MatrixProductView(a.rows(),b.cols(),p,s);
 }
 
-// template <std::ranges::range Range> static void print(Range v)
-//     {
-//         std::cout << "[";
-//         for (auto element : v) 
-//             std::cout << element << " ";
-
-//         std::cout << "]\n";
-//     }
-
 template <isMatrix M> bool operator==(const M& a,const std::initializer_list<std::initializer_list<double>>& b)
 {
     for (const auto& [ia,ib] : std::views::zip(a.rows(),b)) 
         if (ia != ib) return false;
     return true;
 }
+template <isMatrix Ma, isMatrix Mb> bool operator==(const Ma& a,const Mb& b)
+{
+    for (const auto& [ia,ib] : std::views::zip(a.rows(),b.rows())) 
+        if (ia != ib) return false;
+    return true;
+}
+ 
+
+template <isMatrix Ma, isMatrix Mb, class Op> class MatrixBinOpView
+{
+public:
+    typedef std::remove_cvref_t<Ma>::value_t value_t;
+    MatrixBinOpView(const Ma& _a, const Mb& _b, const Op& _op)
+    : a(_a), b(_b), op(_op)
+    {
+        assert(a.nr()==b.nr());
+        assert(a.nc()==b.nc());
+    }
+  
+    size_t size() const { return  nr()*nc(); }
+    size_t nr  () const { return a.nr(); }
+    size_t nc  () const { return a.nc(); }
+
+    value_t operator()(size_t i, size_t j) const
+    {
+        return op(a(i,j),b(i,j));
+    }
+
+    auto rows() const
+    {
+       return std::views::zip_transform(op,a.rows(),b.rows());
+    }
+
+    auto cols() const
+    {
+       return std::views::zip_transform(op,a.cols(),b.cols());
+    }
+    auto packer() const
+    {
+        return a.packer();;
+    }
+    auto shaper() const
+    {
+        return a.shaper();;
+    }
+private:
+    Ma a; 
+    Mb b; 
+    Op op; 
+};
+
+
+auto operator-(const isMatrix auto& a,const isMatrix auto& b)
+{
+    return MatrixBinOpView(a,b,[](const auto& ia, const auto& ib){return ia-ib;});                    
+}
+
 
 
 
