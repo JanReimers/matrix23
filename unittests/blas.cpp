@@ -92,3 +92,17 @@ TEST_F(BlasTests,gbmv)
         EXPECT_EQ(A*x,y);
     }
 }
+
+TEST_F(BlasTests,gemm)
+{
+    using M=matrix23::FullMatrixCM<double>;
+    size_t nr=30,k=35,nc=40;
+    {
+        M A(nr,k,matrix23::random);
+        M B(k,nc,matrix23::random);
+        M C(nr,nc);
+        matrix23::gemm(1.0,A,B,0.0,C);
+        M delta=A*B-C;
+        EXPECT_EQ(A*B,C);
+    }
+}

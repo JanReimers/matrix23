@@ -21,4 +21,6 @@ template <class T> void tpmv(const UpperTriangularMatrixRM<T>& A, Vector<T>& x);
 template <class T> void tpmv(const LowerTriangularMatrixCM<T>& A, Vector<T>& x);
 template <class T> void tpmv(const LowerTriangularMatrixRM<T>& A, Vector<T>& x);
 
+template <class T> void gemm(T alpha, const FullMatrixCM<T>& A, const FullMatrixCM<T>& B, T beta, FullMatrixCM<T>& C);
+
 } //namespace matrix23

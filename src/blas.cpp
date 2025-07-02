@@ -4,8 +4,11 @@
 extern"C" {
 void dgemv_(char* trans,int* m,int* n,double* alpha, const double* A,int* lda, const double* x, int* incx, double* beta, double* y, int* incy);
 void dtpmv_(char* uplo, char* trans, char* diag, int* n, const double* A, double* x,  int* incx);
-void dgbmv_(char* trans,int* m,int* n,int* kl,int* ku,double* alpha,const double*A ,int* lda,const double* x,int* incx,double*	beta,double* y,int* incy);
+void dgbmv_(char* trans,int* m,int* n,int* kl,int* ku,double* alpha,const double*A ,int* lda,const double* x,int* incx,double* beta,double* y,int* incy);
 
+void dgemm_( char* transa,char* transb,int* m,int* n,int* k,double* alpha,const double* A,int* lda,const double* B,int* ldb,double* beta, double* C,int* ldc );
+// dtrmm_ would be for full packing and triangular shape.  i.e. lower zeros are stored but not refrenced.
+// void dtrmm_( char* side,char* uplo,char* transa,char* diag,int* m,int* n,double* alpha,const double*A,int* lda,const double*B,int* ldb );
 }
 
 namespace matrix23 {
@@ -65,6 +68,16 @@ template <> void gbmv(double alpha, const SBandMatrix<double>& A, const Vector<d
     char trans='N'; //Don't transpose A.
     int m=A.nr(),n=A.nc(),k=A.bandwidth(),lda=2*k+1,inc=1;
     dgbmv_(&trans,&m,&n,&k,&k,&alpha,A.begin(),&lda,x.begin(),&inc,&beta,y.begin(),&inc);
+}
+
+template <> void gemm(double alpha, const FullMatrixCM<double>& A, const FullMatrixCM<double>& B, double beta, FullMatrixCM<double>& C )
+{
+    assert(A.nc()==B.nr());
+    assert(A.nr()==C.nr());
+    assert(B.nc()==C.nc());
+    char transa='N', transb='N'; //Don't transpose A.
+    int m=A.nr(),k=A.nc(),n=B.nc();
+    dgemm_(&transa,&transb,&m,&n,&k,&alpha,A.begin(),&m,B.begin(),&k,&beta,C.begin(),&m);
 }
 
 } //namespace matrix23
