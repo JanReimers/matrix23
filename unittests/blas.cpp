@@ -8,7 +8,6 @@
 using std::cout;
 using std::endl;
 using matrix23::Vector;
-using matrix23::FullMatrixCM;
 
 class BlasTests : public ::testing::Test
 {
@@ -32,9 +31,64 @@ public:
 TEST_F(BlasTests,gemv)
 {
     size_t nr=30,nc=40;
-    FullMatrixCM<double> A(nr,nc,matrix23::random);
-    Vector<double> x(nc,matrix23::random),y(nr);
-    matrix23::gemv(1.0,A,x,0.0,y);
-    EXPECT_EQ(A*x,y);
+    {
+        matrix23::FullMatrixCM<double> A(nr,nc,matrix23::random);
+        Vector<double> x(nc,matrix23::random),y(nr);
+        matrix23::gemv(1.0,A,x,0.0,y);
+        EXPECT_EQ(A*x,y);
+    }
+    {
+        matrix23::FullMatrixRM<double> A(nr,nc,matrix23::random);
+        Vector<double> x(nc,matrix23::random),y(nr);
+        matrix23::gemv(1.0,A,x,0.0,y);
+        EXPECT_EQ(A*x,y);
+    }
 
+}
+
+TEST_F(BlasTests,tpmv)
+{
+    size_t n=30;
+    {
+        matrix23::UpperTriangularMatrixCM<double> A(n,n,matrix23::random);
+        Vector<double> x(n,matrix23::random),y(x);
+        matrix23::tpmv(A,y);
+        EXPECT_EQ(A*x,y);
+    }
+    {
+        matrix23::UpperTriangularMatrixRM<double> A(n,n,matrix23::random);
+        Vector<double> x(n,matrix23::random),y(x);
+        matrix23::tpmv(A,y);
+        EXPECT_EQ(A*x,y);
+       
+    }
+    {
+        matrix23::LowerTriangularMatrixCM<double> A(n,n,matrix23::random);
+        Vector<double> x(n,matrix23::random),y(x);
+        matrix23::tpmv(A,y);
+        // EXPECT_EQ(A*x,y); flakey
+        Vector<double> dx=A*x-y; 
+        EXPECT_LT(sqrt(dx*dx),n*2e-16);
+        // auto dx=A*x-y; //move problem somewhere.
+    }
+    {
+        matrix23::LowerTriangularMatrixRM<double> A(n,n,matrix23::random);
+        Vector<double> x(n,matrix23::random),y(x);
+        matrix23::tpmv(A,y);
+        EXPECT_EQ(A*x,y);
+        Vector<double> dx=A*x-y; 
+        EXPECT_LT(sqrt(dx*dx),n*2e-16);   
+    }
+}
+
+TEST_F(BlasTests,gbmv)
+{
+    size_t n=30;
+    for (size_t k=0;k<n-1;k++)
+    {
+        matrix23::SBandMatrix<double> A(n,k,matrix23::random);
+        Vector<double> x(n,matrix23::random),y(n);
+        matrix23::gbmv(1.0,A,x,0.0,y);
+        EXPECT_EQ(A*x,y);
+    }
 }

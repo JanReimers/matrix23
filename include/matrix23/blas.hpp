@@ -13,5 +13,12 @@ namespace matrix23 {
 // m by n matrix.
 //     
 template <class T> void gemv(T alpha, const FullMatrixCM<T>& A, const Vector<T>& x, T beta, Vector<T>& y );
+template <class T> void gemv(T alpha, const FullMatrixRM<T>& A, const Vector<T>& x, T beta, Vector<T>& y );
+template <class T> void gbmv(T alpha, const  SBandMatrix<T>& A, const Vector<T>& x, T beta, Vector<T>& y );
+
+template <class T> void tpmv(const UpperTriangularMatrixCM<T>& A, Vector<T>& x);
+template <class T> void tpmv(const UpperTriangularMatrixRM<T>& A, Vector<T>& x);
+template <class T> void tpmv(const LowerTriangularMatrixCM<T>& A, Vector<T>& x);
+template <class T> void tpmv(const LowerTriangularMatrixRM<T>& A, Vector<T>& x);
 
 } //namespace matrix23
