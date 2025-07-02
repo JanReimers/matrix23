@@ -3,6 +3,7 @@
 
 #include "matrix23/subscriptors.hpp"
 #include "matrix23/vector.hpp"
+#include <iostream>
 
 namespace matrix23
 {
@@ -30,6 +31,27 @@ template <typename T, isPacker P, isShaper S> class Matrix
 
     Matrix(P p) : itsPacker(p), itsShaper(itsPacker), data(itsPacker.stored_size()) {};
     Matrix(P p, S s) : itsPacker(p), itsShaper(s), data(itsPacker.stored_size()) {};
+    Matrix(P p, fill f, T v=T(1)) : Matrix(p)
+    {
+        switch (f)
+        {
+            case none:
+                break;
+            case zero:
+                fillvalue(T(0.0));
+                break;
+            case one:
+                fillvalue(T(1.0));
+                break;
+            case value:
+                fillvalue(v);
+                break;
+            case random:
+                fillrandom(v); //v is max abs
+                break;
+        }
+    }
+
     Matrix(const il_t& init,P p) : Matrix(p)
     {
         load(init);
@@ -135,7 +157,14 @@ protected:
             ++i;
         }
     }
-
+    void fillvalue(T v) {for (auto& i:data) i=v;}
+    void fillrandom(T v) 
+    {
+        if (v==1)
+            for (auto& i:data) i=OMLRandPos<T>();
+        else
+            for (auto& i:data) i=OMLRandPos<T>()*v;
+    }
     P itsPacker;
     S itsShaper;
     std::valarray<T> data;
@@ -151,6 +180,7 @@ public:
     using Base::nr;
     using Base::nc;
     FullMatrixRM(size_t nr, size_t nc) : Base(FullPackerRM(nr,nc)) {};
+    FullMatrixRM(size_t nr, size_t nc, fill f, T v=T(1)) : Base(FullPackerRM(nr,nc),f,v) {};
     FullMatrixRM(const il_t& il) : Base(il,FullPackerRM(nr(il),nc(il))) {};
     template <isMatrix M> FullMatrixRM(const M& m) : Base(m,m.packer(), m.shaper()) {};
     // template <std::ranges::range Range> static void print(Range v)
@@ -193,6 +223,7 @@ public:
     using Base::nr;
     using Base::nc;
     FullMatrixCM(size_t nr, size_t nc) : Base(FullPackerCM(nr,nc)) {};
+    FullMatrixCM(size_t nr, size_t nc, fill f, T v=T(1)) : Base(FullPackerCM(nr,nc),f,v) {};
     FullMatrixCM(const il_t& il) : Base(il,FullPackerCM(nr(il),nc(il))) {};
     template <isMatrix M> FullMatrixCM(const M& m) : Base(m,m.packer(), m.shaper()) {};
 
@@ -383,6 +414,22 @@ auto operator*(const isMatrix auto& a,const isMatrix auto& b)
     auto p=MatrixProductPacker(a.packer(),b.packer());
     shaper_t s=shaper_t(p);
     return MatrixProductView(a.rows(),b.cols(),p,s);
+}
+
+// template <std::ranges::range Range> static void print(Range v)
+//     {
+//         std::cout << "[";
+//         for (auto element : v) 
+//             std::cout << element << " ";
+
+//         std::cout << "]\n";
+//     }
+
+template <isMatrix M> bool operator==(const M& a,const std::initializer_list<std::initializer_list<double>>& b)
+{
+    for (const auto& [ia,ib] : std::views::zip(a.rows(),b)) 
+        if (ia != ib) return false;
+    return true;
 }
 
 

@@ -1,6 +1,7 @@
 // File: vector.hpp Define a vector class for linear algebra operations.
 #pragma once
 
+#include "matrix23/ran250.h"
 #include <valarray>
 #include <ranges>
 #include <cassert>
@@ -54,12 +55,33 @@ private:
     iota_view itsIndices;
 };
 
+enum fill {none, zero, one, value, random};
 
 template <class T, template <class> class Data> class GenVector
 {
 public:
     GenVector() : data(0) {};
     GenVector(size_t n) : data(n) {}
+    GenVector(size_t n, fill f, T v=T(1)) : data(n) 
+    {
+        switch (f)
+        {
+            case none:
+                break;
+            case zero:
+                fillvalue(T(0.0));
+                break;
+            case one:
+                fillvalue(T(1.0));
+                break;
+            case value:
+                fillvalue(v);
+                break;
+            case random:
+                fillrandom(v); //v is max abs
+                break;
+        }
+    }
     GenVector(const std::initializer_list<T>& init) : data(init.size()) {assign_from(init);}
     template <std::ranges::range R> 
     GenVector(const R& range) : data(range.size()) {assign_from(range);}
@@ -124,6 +146,15 @@ protected:
         size_t i=0;
         for (auto r:range) data[i++] = r; //This should be where the lazy evaluation of all the chained views happens.
     }
+    void fillvalue(T v) {for (auto& i:data) i=v;}
+    void fillrandom(T v) 
+    {
+        if (v==1)
+            for (auto& i:data) i=OMLRandPos<T>();
+        else
+            for (auto& i:data) i=OMLRandPos<T>()*v;
+    }
+    
 
     Data<T> data;
 };
