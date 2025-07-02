@@ -239,5 +239,13 @@ template <isVector V> bool operator==(const V& a,const std::initializer_list<dou
 
     return true;
 }
+template <isVector Va, isVector Vb> bool operator==(const Va& a,const Vb& b)
+{
+    if (a.size() != b.size()) return false;
+    for (const auto& [ia,ib] : std::views::zip(a,b)) 
+        if (ia != ib) return false;
+
+    return true;
+}
 
 } // namespace matrix23
