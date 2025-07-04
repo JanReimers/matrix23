@@ -36,33 +36,49 @@ Issues:
             or throw in the towel and make distincte FullPackerRM, FullPackerCM classes? 
     Fixed: -Lots of duplication with nr/nc when creating packers and shapers.
     -Can we have packer.create_shaper(); to avoid all the Shaper pair rules?
-    -Move default op(i,j) based row(i)/col(j) in the PackerCommon
+    No: -Move default op(i,j) based row(i)/col(j) in the PackerCommon
         Then make efficient override for full matrix using chunk & stride view adaptors.
         These overrides need to know the Indexing option.
     -Clean up files.  exentsion hpp sux
     -The performance M*M is absolutely terrible compared to blas::dgemm
         blas is very hard to match :https://stackoverflow.com/questions/1303182/how-does-blas-get-such-extreme-performance
-        -Make a simple op(i,j) version to compare
-            Results for n=300:
-                blas: 5100us
-                opij no packer: 25200us
-                opij with packer: 24500us
-                ranges: 25300
-                ranges + remove all opt for CM rows/cols: 24400us
+        Done: -Make a simple op(i,j) version to compare
+            n       blas::gemm(ms)        ranges(ms)         std_mmul           mmul_wcopy
+            100          0.0( 0.0)          1.4( 0.6)          1.0( 0.5)          0.1( 0.1)      
+            200          1.0( 0.0)          6.8( 0.1)          7.0( 0.2)          6.9( 0.1)      
+            300          5.0( 0.2)         26.0( 0.6)         25.5( 0.5)         25.1( 0.7)      
+            400         10.7( 0.2)         69.3( 1.0)         68.8( 1.3)         55.6( 0.8)      
+            500         21.6( 0.4)        137.7( 7.3)        143.0( 8.1)        113.2( 3.8)      
+            600         36.6( 0.8)       1016.5( 7.8)       1018.5(12.5)        197.3(10.9)      
+            700         56.6( 0.5)       2243.4( 3.2)       2244.1( 6.5)        304.8( 0.4)       
         -Take away message:
-            Even the dummbest (but cleanest) ranges code is just fine compared to hand coded
-            Think of a clean way to allow user to opt for the blas call.
-                1) global flag  matrix23::blas_on()/blas_off()
+            Even the dummbest (but cleanest) ranges code is just fine compared to naive hand coded
+            BUT the cache friendly algo with copy does much better than ranges.
+            Done: Think of a clean way to allow user to opt for the blas call.
+                No: 1) global flag  matrix23::blas_on()/blas_off()
                     put and if statement in op*(M,M)
-                2) op*(M,M) always does ranges. user must choose for hot code ares: blasmm(M,M), blasmv(M,V), blasvm(V,M) 
-                    Construct of temporaries for chained calles.  No way to avoid that.
-                
+                Done: 2) op*(M,M) always does ranges. user must choose for hot code ares: blasmm(M,M), blasmv(M,V), blasvm(V,M) 
+                    Construct of temporaries for chained calls.  No way to avoid that.
+    -Is there a nice way to get the wcopy algo wirking with ranges?
+        for (size_t i=0;i<A.nr();i++)
+        {
+            Vector<double> Ai=A.row(i);
+            for (size_t j=0;j<B.nc();j++)
+            {
+                double t=0.0;
+                for (size_t k=0;k<A.nc();k++)
+                    t+=Ai(k)*B(k,j);
+                C(i,j)=t;
+            }
+        }
+        Yes!!   Cache  VecotrView Ai=a_rows[i] and i,  i didnt' change use the cache.
+            Need CM(i,j) and RM(i,j) ops  RM caches b_rows[j],j instead.
+            value_t operator()(size_t i, size_t j) const
+            {
+                return a_rows[i]*b_cols[j]; //VectorView*VectorView
+            }
 
 
-
-
-
-        -Make a simple full matrix CM sample class and add some range functionaly bit by bit to see where performance drops.
 
 -Numerous overloaded operators (+ - *scalar etc) for Vector return a VectorView<std::ranges::viewable_range R>
  where R varies depending on oporator history. We return VectorView instead of viewable_range so that all operators

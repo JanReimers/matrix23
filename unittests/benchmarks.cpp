@@ -33,8 +33,8 @@ using M = matrix23::FullMatrixCM<double>;
 M mymul(const M& A, const M& B)
 {
     M C(A.nr(),B.nc());
-    for (size_t j=0;j<B.nc();j++)
-        for (size_t i=0;i<A.nr();i++)
+    for (size_t i=0;i<A.nr();i++)
+        for (size_t j=0;j<B.nc();j++)
         {
             double t=0.0;
             for (size_t k=0;k<A.nc();k++)
@@ -43,36 +43,94 @@ M mymul(const M& A, const M& B)
         }
     return C;
 }
+M mymul_wcopy(const M& A, const M& B)
+{
+    M C(A.nr(),B.nc());
+    for (size_t i=0;i<A.nr();i++)
+    {
+        Vector<double> Ai=A.row(i);
+        for (size_t j=0;j<B.nc();j++)
+        {
+            double t=0.0;
+            for (size_t k=0;k<A.nc();k++)
+                t+=Ai(k)*B(k,j);
+            C(i,j)=t;
+        }
+    }
+    return C;
+}
+
+double average(const std::valarray<double>& a)
+{
+    return a.sum()/a.size();
+}
+
+double stdev(const std::valarray<double>& a)
+{
+    size_t Nm=a.size()-1;
+    double avg=average(a);
+    std::valarray<double> da=(a-avg)*(a-avg);
+    return sqrt(da.sum())/Nm;
+    
+}
+
+#ifndef DEBUG
 
 TEST_F(Benchmarks, MatrixMultiply)
 {
-
     
-    cout << "  n    blas::gemm(ms)    matrix23::op*(ms)" << endl;
-    size_t N=100;
-    std::valarray<double> blas(N), m23(N);
+    cout << "  n       blas::gemm(ms)        ranges(ms)         std_mmul           mmul_wcopy" << endl;
+    size_t N=10;
+    const size_t iblas=0,iranges=1,imymul=2,imymul_wcopy=3;
+    for ( size_t n:{100,200,300,400,500,600,700})
+    {
+    std::valarray<std::valarray<double>> timings(4);
+    for (auto& i:timings) i=std::valarray<double>(N);
 
 
     for (size_t i:std::ranges::iota_view(size_t(0),N))
     {
-    size_t n=300;
-    M A(n, n, matrix23::random);
-    M B(n, n, matrix23::random);
-    M C(n, n);
+       
+        M A(n, n, matrix23::random);
+        M B(n, n, matrix23::random);
+        M C(n, n);
+        {
+            auto start = std::chrono::high_resolution_clock::now();
+            matrix23::gemm(1.0, A, B, 0.0, C);
+            auto stop = std::chrono::high_resolution_clock::now();
+            timings[iblas][i]=duration_cast<std::chrono::milliseconds>(stop - start).count();
+        }
+        {
+            auto start = std::chrono::high_resolution_clock::now();
+            M C1 = A * B;
+            auto stop = std::chrono::high_resolution_clock::now();
+            timings[iranges][i]= duration_cast<std::chrono::milliseconds>(stop - start).count();
+        }
+        {
+            auto start = std::chrono::high_resolution_clock::now();
+            M C1=mymul(A,B);
+            auto stop = std::chrono::high_resolution_clock::now();
+            // cout << std::setw(10) << duration2.count() << std::setw(10) << (double)duration2.count()/duration1.count() << endl;
+            timings[imymul][i]= duration_cast<std::chrono::milliseconds>(stop - start).count();
+        }
+        {
+            auto start = std::chrono::high_resolution_clock::now();
+            M C1=mymul_wcopy(A,B);
+            auto stop = std::chrono::high_resolution_clock::now();
+            // cout << std::setw(10) << duration2.count() << std::setw(10) << (double)duration2.count()/duration1.count() << endl;
+            timings[imymul_wcopy][i]= duration_cast<std::chrono::milliseconds>(stop - start).count();
+        }
 
-        auto start1 = std::chrono::high_resolution_clock::now();
-        matrix23::gemm(1.0, A, B, 0.0, C);
-        auto stop1 = std::chrono::high_resolution_clock::now();
-        auto duration1 = duration_cast<std::chrono::microseconds>(stop1 - start1);
-        // cout << "n=" << n << "  " << std::setw(10) << duration1.count() << " " ;
-        blas[i]=duration1.count();
-        auto start2 = std::chrono::high_resolution_clock::now();
-        // M C1 = A * B;
-        M C1=mymul(A,B);
-        auto stop2 = std::chrono::high_resolution_clock::now();
-        auto duration2 = duration_cast<std::chrono::microseconds>(stop2 - start2);
-        // cout << std::setw(10) << duration2.count() << std::setw(10) << (double)duration2.count()/duration1.count() << endl;
-        m23[i]=duration2.count();
     }
-    cout << "blas average: " << blas.sum()/N << " m23 average: " << m23.sum()/N << endl;
+
+    cout << n << "      ";
+    for (auto it:{iblas,iranges,imymul,imymul_wcopy})
+    {
+        double avg=average(timings[it]);
+        double dev=stdev(timings[it]);
+        cout << std::setprecision(1) << std::fixed << std::setw(7) << avg << "(" << std::setw(4) << dev << ")      ";
+    }
+    cout << endl;
+    } //for n
 }
+#endif //DEBUG
