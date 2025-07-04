@@ -28,21 +28,15 @@ public:
     {
         assert(size() == std::ranges::size(range) && "VectorView stop index out of range");
     }
-    // VectorView(R& r, const iota_view& indices)
-    // : range(std::forward<R>(r)), itsIndices(indices)
-    // {
-    //     assert(size() == std::ranges::size(range) && "VectorView stop index out of range");
-    // }
-     VectorView(R&& r)
-    : range(std::forward<R>(r)), itsIndices(size_t(0),range.size())
+    VectorView(const R& r, const iota_view& indices)
+    : range(r), itsIndices(indices)
     {
         assert(size() == std::ranges::size(range) && "VectorView stop index out of range");
     }
-    // VectorView(const R& r, const iota_view& indices)
-    // : range(r), itsIndices(indices)
-    // {
-    //     assert(size() == std::ranges::size(range) && "VectorView stop index out of range");
-    // }
+     VectorView(R&& r)
+    : range(std::forward<R>(r)), itsIndices(size_t(0),range.size())
+    {
+    }
     auto begin()       { return std::ranges::begin(range); }
     auto end  ()       { return std::ranges::end  (range); }
     auto begin() const { return std::ranges::begin(range); }
