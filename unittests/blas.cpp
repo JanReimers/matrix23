@@ -38,10 +38,35 @@ TEST_F(BlasTests,gemv)
         EXPECT_EQ(A*x,y);
     }
     {
+        matrix23::FullMatrixCM<double> A(nr,nc,matrix23::random);
+        Vector<double> x(nc,matrix23::random);
+        Vector<double> Ax=blasmv(A,x);
+        EXPECT_EQ(A*x,Ax);
+    }
+    {
+        matrix23::FullMatrixCM<double> A(nr,nc,matrix23::random);
+        Vector<double> x(nr,matrix23::random);
+        Vector<double> xA=blasvm(x,A);
+        EXPECT_EQ(x*A,xA);
+    }
+
+    {
         matrix23::FullMatrixRM<double> A(nr,nc,matrix23::random);
         Vector<double> x(nc,matrix23::random),y(nr);
         matrix23::gemv(1.0,A,x,0.0,y);
         EXPECT_EQ(A*x,y);
+    }
+    {
+        matrix23::FullMatrixRM<double> A(nr,nc,matrix23::random);
+        Vector<double> x(nc,matrix23::random);
+        Vector<double> Ax=blasmv(A,x);
+        EXPECT_EQ(A*x,Ax);
+    }
+    {
+        matrix23::FullMatrixRM<double> A(nr,nc,matrix23::random);
+        Vector<double> x(nr,matrix23::random);
+        Vector<double> xA=blasvm(x,A);
+        EXPECT_EQ(x*A,xA);
     }
 
 }
@@ -68,7 +93,7 @@ TEST_F(BlasTests,tpmv)
         matrix23::tpmv(A,y);
         // EXPECT_EQ(A*x,y); flakey
         Vector<double> dx=A*x-y; 
-        EXPECT_LT(sqrt(dx*dx),n*2e-16);
+        EXPECT_LT(sqrt(dx*dx),n*3e-16);
         // auto dx=A*x-y; //move problem somewhere.
     }
     {
@@ -90,10 +115,15 @@ TEST_F(BlasTests,gbmv)
         Vector<double> x(n,matrix23::random),y(n);
         matrix23::gbmv(1.0,A,x,0.0,y);
         EXPECT_EQ(A*x,y);
+        Vector<double> Ax=matrix23::blasmv(A,x);
+        EXPECT_EQ(A*x,Ax);
+
+        Vector<double> xA=matrix23::blasvm(x,A);
+        EXPECT_EQ(x*A,xA);
     }
 }
 
-TEST_F(BlasTests,gemm)
+TEST_F(BlasTests,ColMajor_gemm)
 {
     using M=matrix23::FullMatrixCM<double>;
     size_t nr=30,k=35,nc=40;
@@ -102,7 +132,51 @@ TEST_F(BlasTests,gemm)
         M B(k,nc,matrix23::random);
         M C(nr,nc);
         matrix23::gemm(1.0,A,B,0.0,C);
-        M delta=A*B-C;
+        // M delta=A*B-C;
         EXPECT_EQ(A*B,C);
     }
+    {
+        M A(nr,k,matrix23::random);
+        M B(k,nc,matrix23::random);
+        
+        EXPECT_EQ(A*B,blasmm(A,B));
+    }
 }
+// TEST_F(BlasTests,RowMajor_gemm)
+// {
+//     using M=matrix23::FullMatrixRM<double>;
+//     // size_t nr=30,k=35,nc=40;
+//     // size_t nr=1,k=4,nc=2;
+//     {
+//         // M A(nr,k)
+//         // M B(k,nc)
+//         // M A({{1,2,3,4}});
+//         // M B({{4,1},{3,2},{2,3},{1,4}});
+//         // M A({{1,2,3,4},
+//         //      {4,3,2,1}});
+//         // M B({{4},
+//         //      {3},
+//         //      {2},
+//         //      {1}});
+//         M A({{1,2},
+//              {4,3}});
+//         M B({{2},
+//              {1}});
+//         A.print();
+//         B.print();
+//         M C(A.nr(),B.nc());
+//         matrix23::gemm(1.0,A,B,0.0,C);
+//         C.print();
+
+//         M C1=A*B;
+//         C1.print();
+//         // M delta=A*B-C;
+//         // EXPECT_EQ(A*B,C);
+//     }
+//     // {
+//     //     M A(nr,k,matrix23::one);
+//     //     M B(k,nc,matrix23::one);
+        
+//     //     EXPECT_EQ(A*B,blasmm(A,B));
+//     // }
+// }

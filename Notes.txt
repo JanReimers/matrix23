@@ -40,6 +40,29 @@ Issues:
         Then make efficient override for full matrix using chunk & stride view adaptors.
         These overrides need to know the Indexing option.
     -Clean up files.  exentsion hpp sux
+    -The performance M*M is absolutely terrible compared to blas::dgemm
+        blas is very hard to match :https://stackoverflow.com/questions/1303182/how-does-blas-get-such-extreme-performance
+        -Make a simple op(i,j) version to compare
+            Results for n=300:
+                blas: 5100us
+                opij no packer: 25200us
+                opij with packer: 24500us
+                ranges: 25300
+                ranges + remove all opt for CM rows/cols: 24400us
+        -Take away message:
+            Even the dummbest (but cleanest) ranges code is just fine compared to hand coded
+            Think of a clean way to allow user to opt for the blas call.
+                1) global flag  matrix23::blas_on()/blas_off()
+                    put and if statement in op*(M,M)
+                2) op*(M,M) always does ranges. user must choose for hot code ares: blasmm(M,M), blasmv(M,V), blasvm(V,M) 
+                    Construct of temporaries for chained calles.  No way to avoid that.
+                
+
+
+
+
+
+        -Make a simple full matrix CM sample class and add some range functionaly bit by bit to see where performance drops.
 
 -Numerous overloaded operators (+ - *scalar etc) for Vector return a VectorView<std::ranges::viewable_range R>
  where R varies depending on oporator history. We return VectorView instead of viewable_range so that all operators

@@ -29,6 +29,24 @@ template <> void gemv(double alpha, const FullMatrixRM<double>& A, const Vector<
     int m=A.nc(),n=A.nr(),inc=1;
     dgemv_(&trans,&m,&n,&alpha,A.begin(),&m,x.begin(),&inc,&beta,y.begin(),&inc);
 }
+template <> void gevm(double alpha, const FullMatrixCM<double>& A, const Vector<double>& x, double beta, Vector<double>& y )
+{
+    assert(A.nr()==x.size());
+    assert(A.nc()==y.size());
+    char trans='T'; //Do transpose A.
+    int m=A.nr(),n=A.nc(),inc=1;
+    dgemv_(&trans,&m,&n,&alpha,A.begin(),&m,x.begin(),&inc,&beta,y.begin(),&inc);
+}
+template <> void gevm(double alpha, const FullMatrixRM<double>& A, const Vector<double>& x, double beta, Vector<double>& y )
+{
+    assert(A.nr()==x.size());
+    assert(A.nc()==y.size());
+    char trans='N'; //Don't transpose A.
+    int m=A.nc(),n=A.nr(),inc=1;
+    dgemv_(&trans,&m,&n,&alpha,A.begin(),&m,x.begin(),&inc,&beta,y.begin(),&inc);
+}
+
+
 template <> void tpmv(const UpperTriangularMatrixCM<double>& A, Vector<double>& x)
 {
     assert(A.nc()==x.size());
@@ -69,15 +87,35 @@ template <> void gbmv(double alpha, const SBandMatrix<double>& A, const Vector<d
     int m=A.nr(),n=A.nc(),k=A.bandwidth(),lda=2*k+1,inc=1;
     dgbmv_(&trans,&m,&n,&k,&k,&alpha,A.begin(),&lda,x.begin(),&inc,&beta,y.begin(),&inc);
 }
+template <> void gbvm(double alpha, const SBandMatrix<double>& A, const Vector<double>& x, double beta, Vector<double>& y )
+{
+    assert(A.nr()==x.size());
+    assert(A.nc()==y.size());
+    char trans='T'; //Don't transpose A.
+    int m=A.nr(),n=A.nc(),k=A.bandwidth(),lda=2*k+1,inc=1;
+    dgbmv_(&trans,&m,&n,&k,&k,&alpha,A.begin(),&lda,x.begin(),&inc,&beta,y.begin(),&inc);
+}
 
 template <> void gemm(double alpha, const FullMatrixCM<double>& A, const FullMatrixCM<double>& B, double beta, FullMatrixCM<double>& C )
 {
     assert(A.nc()==B.nr());
     assert(A.nr()==C.nr());
     assert(B.nc()==C.nc());
-    char transa='N', transb='N'; //Don't transpose A.
+    char transa='N', transb='N'; //Don't transpose A or B.
     int m=A.nr(),k=A.nc(),n=B.nc();
     dgemm_(&transa,&transb,&m,&n,&k,&alpha,A.begin(),&m,B.begin(),&k,&beta,C.begin(),&m);
 }
+//Don't transpose A or B.  The swap A<-->B in the dgemm call!
+// Not working.
+// template <> void gemm(double alpha, const FullMatrixRM<double>& B, const FullMatrixRM<double>& A, double beta, FullMatrixRM<double>& C )
+// {
+//     assert(B.nc()==A.nr());
+//     assert(B.nr()==C.nr());
+//     assert(A.nc()==C.nc());
+//     char transa='T', transb='T'; 
+//     int m=A.nc(),k=A.nr(),n=B.nr();
+//     std::cout << "m,k,n=" << m << " " << k << " " << n << std::endl;
+//     dgemm_(&transa,&transb,&m,&n,&k,&alpha,A.begin(),&k,B.begin(),&n,&beta,C.begin(),&m);
+// }
 
 } //namespace matrix23
