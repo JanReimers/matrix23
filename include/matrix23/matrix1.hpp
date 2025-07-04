@@ -183,37 +183,7 @@ public:
     FullMatrixRM(size_t nr, size_t nc, fill f, T v=T(1)) : Base(FullPackerRM(nr,nc),f,v) {};
     FullMatrixRM(const il_t& il) : Base(il,FullPackerRM(nr(il),nc(il))) {};
     template <isMatrix M> FullMatrixRM(const M& m) : Base(m,m.packer(), m.shaper()) {};
-    // template <std::ranges::range Range> static void print(Range v)
-    // {
-    //     std::cout << "[";
-    //     for (auto element : v) 
-    //         std::cout << element << " ";
-
-    //     std::cout << "]\n";
-    // }
-    auto rows() const //Assumes all rows are non-zero.
-    {
-        iota_view indices=std::views::iota(size_t(0), nc());
-        return Base::data 
-            | std::views::chunk(nc()) 
-            | std::views::transform(
-                [indices](auto row){return VectorView<decltype(row)>(std::move(row),indices);});
-    }
-
-    auto row(size_t i) const 
-    {
-        iota_view indices=std::views::iota(size_t(0), nc());
-        auto rowi=Base::data | std::views::drop(i*nc()) | std::views::take(nc());
-        return VectorView<decltype(rowi)>(std::move(rowi),indices);
-    }
-
-    auto col(size_t j) const 
-    {
-        iota_view indices=std::views::iota(size_t(0), nr());
-        auto colj=Base::data | std::views::drop(j) | std::views::stride(nc());
-        return VectorView<decltype(colj)>(std::move(colj),indices);
-    }
-
+    
 };
 template <class T> class FullMatrixCM : public Matrix<T,FullPackerCM,FullShaper>
 {
@@ -226,40 +196,6 @@ public:
     FullMatrixCM(size_t nr, size_t nc, fill f, T v=T(1)) : Base(FullPackerCM(nr,nc),f,v) , nr1(nr) {};
     FullMatrixCM(const il_t& il) : Base(il,FullPackerCM(nr(il),nc(il))) , nr1(nr()) {};
     template <isMatrix M> FullMatrixCM(const M& m) : Base(m,m.packer(), m.shaper())  , nr1(nr()){};
-
-    // auto cols() const //Assumes all rows are non-zero.
-    // {
-    //     iota_view indices=std::views::iota(size_t(0), nr());
-    //     return Base::data 
-    //         | std::views::chunk(nr()) 
-    //         | std::views::transform(
-    //             [indices](auto col){return VectorView<decltype(col)>(std::move(col),indices);});
-    // }
-
-    // auto row(size_t i) const 
-    // {
-    //     iota_view indices=std::views::iota(size_t(0), nc());
-    //     auto rowi=Base::data | std::views::drop(i) | std::views::stride(nr());
-    //     return VectorView<decltype(rowi)>(std::move(rowi),indices);
-    // }
-
-    // auto col(size_t j) const 
-    // {
-    //     iota_view indices=std::views::iota(size_t(0), nr());
-    //     auto colj=Base::data | std::views::drop(j*nr()) | std::views::take(nr());
-    //     return VectorView<decltype(colj)>(std::move(colj),indices);
-    // }
-
-    // T operator()(size_t i, size_t j) const
-    // {
-       
-    //     return Base::data[i + j*nr1];
-    // }
-    // T& operator()(size_t i, size_t j) 
-    // {
-       
-    //     return Base::data[i + j*nr1];
-    // }
 
     size_t nr1;
 };
