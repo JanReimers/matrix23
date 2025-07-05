@@ -401,8 +401,6 @@ TEST_F(MatrixAlgebraTests, MatrixMultiplyUF)
         {7,8,9},
         {10,11,12}});
     matrix23::FullMatrixCM<double> C=A*B;
-    C.print();
-
     EXPECT_EQ(C.row(0),(il{70,80,90}));
     EXPECT_EQ(C.row(1),(il{153,174,195}));
     EXPECT_EQ(C.row(2),(il{197,220,243}));

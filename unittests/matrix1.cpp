@@ -387,3 +387,24 @@ TEST_F(MatrixTests, SBand6x6_k5)
     EXPECT_EQ(A.col(4),(il{5,11,17,23,29,35}));
     EXPECT_EQ(A.col(5),(il{6,12,18,24,30,36}));
 }
+
+
+TEST_F(MatrixTests, SymmetricColMajor4x4)
+{
+    matrix23::SymmetricMatrixCM<double> A{
+        {1,2,3,4},
+        {2,5,6,7},
+        {3,6,8,9},
+        {4,7,9,10}};
+    EXPECT_EQ(A.row(0),(il{1,2,3,4}));
+    EXPECT_EQ(A.row(1),(il{2,5,6,7}));
+    EXPECT_EQ(A.row(2),(il{3,6,8,9}));
+    EXPECT_EQ(A.row(3),(il{4,7,9,10}));
+    EXPECT_EQ(A.col(0),(il{1,2,3,4}));
+    EXPECT_EQ(A.col(1),(il{2,5,6,7}));
+    EXPECT_EQ(A.col(2),(il{3,6,8,9}));
+    EXPECT_EQ(A.col(3),(il{4,7,9,10}));
+    A(0,2)=0;
+    EXPECT_EQ(A.row(0),(il{1,2,0,4}));
+    EXPECT_EQ(A.col(2),(il{0,6,8,9}));
+}

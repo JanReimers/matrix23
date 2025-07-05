@@ -65,9 +65,9 @@ static_assert(isSymmetry<   NoSymmetry<std::valarray<double>,FullPackerCM>> );
 static_assert(isSymmetry<    Symmetric<std::valarray<double>,FullPackerCM>> );
 static_assert(isSymmetry<AntiSymmetric<std::valarray<double>,FullPackerCM>> );
 
+template <typename T> using default_data_type=std::valarray<T>;
 
-
-template <typename T, isPacker P, isShaper S, typename D=std::valarray<T>, isSymmetry Sym=NoSymmetry<D,P> > class Matrix
+template <typename T, isPacker P, isShaper S, typename D=default_data_type<T>, isSymmetry Sym=NoSymmetry<D,P> > class Matrix
 {
 
 public:
@@ -199,7 +199,7 @@ protected:
                 if (itsPacker.is_stored(i, j))
                     (*this)(i, j) = val;
                 else
-                    assert(val==0.0);
+                    assert(val==itsSymmetry.apply(i,j));
                 ++j;
             }
             ++i;
@@ -325,7 +325,29 @@ public:
     size_t bandwidth() const {return this->packer().bandwidth();}
 };
 
-
+template <class T> class SymmetricMatrixCM 
+: public Matrix<T,
+                UpperTriangularPackerCM,
+                FullShaper,
+                default_data_type<T>,
+                Symmetric<default_data_type<T>,UpperTriangularPackerCM>
+                >
+{
+public:
+    using Base = Matrix<T,
+                UpperTriangularPackerCM,
+                FullShaper,
+                default_data_type<T>,
+                Symmetric<default_data_type<T>,UpperTriangularPackerCM>
+                >;
+    using il_t=Base::il_t;
+    using Base::nr;
+    using Base::nc;
+    SymmetricMatrixCM(size_t n) : Base(UpperTriangularPackerCM(n,n)) {};
+    SymmetricMatrixCM(size_t n, fill f, T v=T(1)) : Base(UpperTriangularPackerCM(n,n),f,v) {};
+    SymmetricMatrixCM(const il_t& il) : Base(il,UpperTriangularPackerCM(nr(il),nc(il))) {assert(nr()==nc());};
+    template <isMatrix M> SymmetricMatrixCM(const M& m) : Base(m,m.packer(), m.shaper()) {};
+};
 
 auto operator*(const isMatrix auto& m, const isVector auto& v)
 {
