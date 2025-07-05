@@ -20,17 +20,64 @@ concept isMatrix = requires (M m,size_t i, size_t j, std::remove_cvref_t<M>::val
     m.nc();
 };
 
-template <typename T, isPacker P, isShaper S> class Matrix
+
+template <class S> concept isSymmetry = requires (S const s,size_t i)
+{
+    s.apply(i,i);
+};
+
+template <class D, isPacker P> struct NoSymmetry
+{
+    NoSymmetry(const D& d, const P& p) : data(d), packer(p) {};
+    D::value_type  apply(size_t i, size_t j) const {return packer.is_stored(i,j) ? data[packer.offset(i,j)] : typename D::value_type(0);}
+private:
+    const D& data;
+    const P& packer;
+};
+template <class D, isPacker P> struct Symmetric
+{
+    Symmetric(D& d, const P& p) : data(d), packer(p) {};
+    D::value_type  apply(size_t i, size_t j) const 
+    {
+        bool storedij=packer.is_stored(i,j);
+        assert(storedij || packer.is_stored(j,i));
+        return  storedij ? data[packer.offset(i,j)] : data[packer.offset(j,i)];
+    }
+private:
+    const D& data;
+    const P& packer;
+};
+template <class D, isPacker P> struct AntiSymmetric
+{
+    AntiSymmetric(const D& d, const P& p) : data(d), packer(p) {};
+    D::value_type  apply(size_t i, size_t j) const 
+    {
+        bool storedij=packer.is_stored(i,j);
+        assert(storedij || packer.is_stored(j,i));
+        return  storedij ? data[packer.offset(i,j)] : -data[packer.offset(j,i)];
+    }
+private:
+    const D& data;
+    const P& packer;
+};
+
+static_assert(isSymmetry<   NoSymmetry<std::valarray<double>,FullPackerCM>> );
+static_assert(isSymmetry<    Symmetric<std::valarray<double>,FullPackerCM>> );
+static_assert(isSymmetry<AntiSymmetric<std::valarray<double>,FullPackerCM>> );
+
+
+
+template <typename T, isPacker P, isShaper S, typename D=std::valarray<T>, isSymmetry Sym=NoSymmetry<D,P> > class Matrix
 {
 
-    public:
+public:
     typedef T value_t;
     using il_t = std::initializer_list<std::initializer_list<T>>;
     static size_t nr(const il_t& il) {return il.size();}
     static size_t nc(const il_t& il) {return il.begin()->size();}
 
-    Matrix(P p) : itsPacker(p), itsShaper(itsPacker), data(itsPacker.stored_size()) {};
-    Matrix(P p, S s) : itsPacker(p), itsShaper(s), data(itsPacker.stored_size()) {};
+    Matrix(P p, S s) : itsPacker(p), itsShaper(s), data(itsPacker.stored_size()), itsSymmetry(data,itsPacker) {};
+    Matrix(P p) : Matrix(p,S(p)) {};
     Matrix(P p, fill f, T v=T(1)) : Matrix(p)
     {
         switch (f)
@@ -61,7 +108,7 @@ template <typename T, isPacker P, isShaper S> class Matrix
         load(init);
     }
     template <isMatrix M> Matrix(const M& m,P p, S s) 
-        : itsPacker(p), itsShaper(s), data(itsPacker.stored_size())
+        : Matrix(p,s)
     {
         for (size_t i = 0; i < nr(); ++i)
             for (size_t j = 0; j < nc(); ++j)
@@ -76,7 +123,8 @@ template <typename T, isPacker P, isShaper S> class Matrix
     T  operator()(size_t i, size_t j) const
     {
         // std::cout << "i,j=" << i << " " << j << "  offfset=" << itsPacker.offset(i,j) << std::endl;
-        return itsPacker.is_stored(i,j) ? data[itsPacker.offset(i,j)] : T(0);
+        // return itsPacker.is_stored(i,j) ? data[itsPacker.offset(i,j)] : T(0);
+        return itsSymmetry.apply(i,j);
     }
     T& operator()(size_t i, size_t j)
     {
@@ -167,7 +215,8 @@ protected:
     }
     P itsPacker;
     S itsShaper;
-    std::valarray<T> data;
+    D data;
+    Sym itsSymmetry;
 };
 
 
@@ -276,6 +325,8 @@ public:
     size_t bandwidth() const {return this->packer().bandwidth();}
 };
 
+
+
 auto operator*(const isMatrix auto& m, const isVector auto& v)
 {
     assert(m.nc()==v.size());
@@ -364,13 +415,8 @@ public:
     using Base::a_rows;
     using Base::b_cols;
 
-    // using Base::MatrixProductView; //Inherit constructor
    FullMatrixCMProductView(const R& rows, const C& cols,FullPackerCM packer, FullShaper shaper )
-    : Base(rows,cols,packer,shaper), i_cache(nr()) , ai_cache(0)
-    {
-        assert(nr()==itsPacker.nr());
-        assert(nc()==itsPacker.nc());
-    }
+    : Base(rows,cols,packer,shaper), i_cache(nr()) , ai_cache(0) {}
     value_t operator()(size_t i, size_t j) const
     {
         if (i!=i_cache)

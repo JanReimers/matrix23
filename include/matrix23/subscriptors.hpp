@@ -338,4 +338,6 @@ template <> struct MatrixProductShaperType<LowerTriangularShaper,UpperTriangular
 template <> struct MatrixProductShaperType<SBandShaper,SBandShaper> {typedef SBandShaper shaper_t;}; //Need to add the ks somehow.
 
 
+
+
 } // namespace matrix23
