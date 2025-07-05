@@ -31,11 +31,29 @@ Design objectives:
 
 TODO priorities:
     Done: -Specialized MatrixFullCMProductView<R,C> for max performance.
+          n       blas::gemm(ms)        ranges(ms)         std_mmul           mmul_wcopy
+        100          0.5( 0.3)          0.6( 0.3)          0.4( 0.3)          0.1( 0.1)      
+        200          1.1( 0.1)          7.1( 0.1)          7.0( 0.0)          6.8( 0.1)      
+        300          5.1( 0.1)         25.5( 0.2)         25.9( 0.2)         25.2( 0.2)      
+        400         11.9( 0.4)         61.3( 1.5)         75.4( 2.3)         66.1( 6.0)      
+        500         21.6( 0.6)        114.7( 4.0)        135.6( 4.5)        111.2( 3.1)      
+        600         35.6( 0.3)        193.1( 4.9)       1017.8( 8.1)        189.4( 1.0)      
+        700         59.7( 1.8)        361.7(28.8)       2298.1(28.2)        379.0(45.6)    
     -Still need to add symmetry
+        Should symmetry be read only?  i.e. assingments are only allowed on the top half of a symmetric matrix?.
+            If not then how do we overload op(i,j) for a hermitian matrix?  conj(double) is not a rvalue.  We need to return a proxy with rvalue semantics.
+            struct conj_proxy{T& re, T& im}.
+        When is symmtry applied?
+            1) only on unstored values?  I.e. return m(j,i) if m(i,j) is not stored?
+                In this case NoSymmetry needs to return 0 for unstored values and Symmetric needs to return op(j,i) when reading op(i,j)
+            2) Try and enforce symmetry on a full storage matrix?  Then we need to intercep rvalue op(i,j) instead of read only op(i,j).
+            #1 sounds MUCH easier.
+    -clean up
+        value_t should be value_type to be consistent with std::vector and std::valarray.
     -Missing features:
         -op+ op- */ scalars, +=,-=,*=,/=;.
         -TransposeView
-        -SubMatrix view
+        -SubMatrixView (this is not a slice row(i), col(j) and diagonal are slices, 2D->1D)
 
     -Test Triangular shape with full storage.
         add blas support for full packing U*U L*L.
@@ -46,6 +64,13 @@ TODO priorities:
 Bugs:
     -blas RM*RM not working.  
         https://petewarden.com/2015/10/25/an-engineers-guide-to-gemm/
+
+
+Notes for documenting:
+    overloaded op are all delayed evaluation.  blas calls are all eager evaluation with posible construction of temporaries.
+        So we cannot put blas calls inside overloaded operators.  User must explicitely choose.
+    Code is generic accross all combos of packings/shapes/symmetris.  So will not be optimized for any given pair.
+
 
 
 Issues:
