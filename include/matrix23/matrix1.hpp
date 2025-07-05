@@ -9,7 +9,7 @@ namespace matrix23
 {
 
 template <class M> 
-concept isMatrix = requires (M m,size_t i, size_t j, std::remove_cvref_t<M>::value_t t)
+concept isMatrix = requires (M m,size_t i, size_t j, std::remove_cvref_t<M>::value_type t)
 {
     t=m.operator()(i, j);
     m.rows();
@@ -71,7 +71,7 @@ template <typename T, isPacker P, isShaper S, typename D=std::valarray<T>, isSym
 {
 
 public:
-    typedef T value_t;
+    typedef T value_type;
     using il_t = std::initializer_list<std::initializer_list<T>>;
     static size_t nr(const il_t& il) {return il.size();}
     static size_t nc(const il_t& il) {return il.begin()->size();}
@@ -351,7 +351,7 @@ template <std::ranges::viewable_range R, std::ranges::viewable_range C, isPacker
 {
 public:
     typedef std::ranges::range_value_t<R> Rv; //rows value type which is a column range.
-    typedef std::ranges::range_value_t<Rv> value_t; //column range value type which should be scalar (double etc.)
+    typedef std::ranges::range_value_t<Rv> value_type; //column range value type which should be scalar (double etc.)
     MatrixProductView(const R& _rows, const C& _cols,P _packer, S _shaper )
     : a_rows(_rows), b_cols(_cols), itsPacker(_packer), itsShaper(_shaper)
     {
@@ -363,7 +363,7 @@ public:
     size_t nr  () const { return std::ranges::size(a_rows); }
     size_t nc  () const { return std::ranges::size(b_cols); }
 
-    value_t operator()(size_t i, size_t j) const
+    value_type operator()(size_t i, size_t j) const
     {
         // assert(subsciptor.is_stored(i,j) && "Index out of range for MatrixView");
         return a_rows[i]*b_cols[j]; //VectorView*VectorView
@@ -404,7 +404,7 @@ public:
     using Base=MatrixProductView<R,C,FullPackerCM,FullShaper>;
     // These are all required in order to statisfy the isMatrix concept. With template classes they don't
     // automatically get pulled in from the base class :( 
-    using value_t=Base::value_t;
+    using value_type=Base::value_type;
     using Base::nr;
     using Base::nc;
     using Base::rows;
@@ -417,7 +417,7 @@ public:
 
    FullMatrixCMProductView(const R& rows, const C& cols,FullPackerCM packer, FullShaper shaper )
     : Base(rows,cols,packer,shaper), i_cache(nr()) , ai_cache(0) {}
-    value_t operator()(size_t i, size_t j) const
+    value_type operator()(size_t i, size_t j) const
     {
         if (i!=i_cache)
         {
@@ -483,7 +483,7 @@ template <isMatrix Ma, isMatrix Mb> bool operator==(const Ma& a,const Mb& b)
 template <isMatrix Ma, isMatrix Mb, class Op> class MatrixBinOpView
 {
 public:
-    typedef std::remove_cvref_t<Ma>::value_t value_t;
+    typedef std::remove_cvref_t<Ma>::value_type value_type;
     MatrixBinOpView(const Ma& _a, const Mb& _b, const Op& _op)
     : a(_a), b(_b), op(_op)
     {
@@ -495,7 +495,7 @@ public:
     size_t nr  () const { return a.nr(); }
     size_t nc  () const { return a.nc(); }
 
-    value_t operator()(size_t i, size_t j) const
+    value_type operator()(size_t i, size_t j) const
     {
         return op(a(i,j),b(i,j));
     }

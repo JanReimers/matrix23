@@ -49,7 +49,7 @@ TODO priorities:
             2) Try and enforce symmetry on a full storage matrix?  Then we need to intercep rvalue op(i,j) instead of read only op(i,j).
             #1 sounds MUCH easier.
     -clean up
-        value_t should be value_type to be consistent with std::vector and std::valarray.
+        Done: value_t should be value_type to be consistent with std::vector and std::valarray.
     -Missing features:
         -op+ op- */ scalars, +=,-=,*=,/=;.
         -TransposeView
