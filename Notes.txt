@@ -5,7 +5,7 @@ Design objectives:
     2) This allows us to use size_t for all indexing integers
     3) Support the same matrix packing arrangements used by Lapack and Blas for full, triangular (U/L), band, tri-diagonal and diagonal matrices.
         Done: Isolate all the packing and unpacking code into a isPacker and isShaper concepts and groups of classes.
-        Deon: The subscriptor really has two aspects:
+        Done: The subscriptor really has two aspects:
             1) The shape which determines which indexes (i,j) are assumed to zero (regardes of weather or not those zeros are actually stored).
             2) The packing determines arrangements of the elements.  i.e. how (i,j) are layed in linear memory.
         Usually packing follows from shape.  But Lapack and Blas support for example triangular shape with full storage.  i.e. part of matrix is allocated
@@ -20,45 +20,64 @@ Design objectives:
         As much as possible use ranges and view adaptors instead of traditional expression templates to achieve lazy evaluation.
         Matrix*Matrix should take advantage packing type.  For example DiagonalMatrix * DiagonalMatrix is O(N) not O(N^3)!
     7) Support float, double, std::complex<T> data types.
-    8) Support various initialization type: none, zero, one, value, diagonal, random, randompos
-    9) Use c++23.  Huge convenience of zip, zip_transform view adaptors.
-    10) Make some blasmm(Matrix,Matrix) functions for speed comparison
+    Done: 8-1) Support various initialization type: none, zero, one, value, random
+    8-2) Support initialization diagonal=value, unit.
+    Done: 9) Use c++23.  Huge convenience of zip, zip_transform view adaptors.
+    Done: 10) Make some blasmm(Matrix,Matrix) functions for speed comparison
     11) Support ascii/binary io with the cereal header library.
+        Need to learn how to get cmake to hanlde optional dependencies first.  Optional for cereal, lapack, blas ...
     12) No traditional for loops like:  for (size_t i = 0; i < nrows; ++i)
     13) No new/delete
-        
-Issues:
+
+TODO priorities:
+    Done: -Specialized MatrixFullCMProductView<R,C> for max performance.
     -Still need to add symmetry
+    -Missing features:
+        -op+ op- */ scalars, +=,-=,*=,/=;.
+        -TransposeView
+        -SubMatrix view
+
+    -Test Triangular shape with full storage.
+        add blas support for full packing U*U L*L.
+        -Can we have packer.create_shaper(); to avoid all the Shaper pair rules?
+    -Get cmake to handle optional dependencies first.  Optional for cereal, lapack, blas ...
+        https://cmake.org/cmake/help/latest/guide/using-dependencies/index.html
+        https://cmake.org/cmake/help/book/mastering-cmake/cmake/Help/guide/using-dependencies/
+Bugs:
+    -blas RM*RM not working.  
+        https://petewarden.com/2015/10/25/an-engineers-guide-to-gemm/
+
+
+Issues:
+    
     -What are the rules for propagating Indexing (col/row major) through a matrix product?
         At the moment We don't even store the attribute.
-        Using lambdas for row/col major indexing is a little sketchy.
+        Fixed: Using lambdas for row/col major indexing is a little sketchy.
         Also we need mirror image row(i)/col(j) implementations for row/col major indexing.  More lambdas?
-            or throw in the towel and make distincte FullPackerRM, FullPackerCM classes? 
+            Yes: or throw in the towel and make distincte FullPackerRM, FullPackerCM classes? 
     Fixed: -Lots of duplication with nr/nc when creating packers and shapers.
-    -Can we have packer.create_shaper(); to avoid all the Shaper pair rules?
+    
     No: -Move default op(i,j) based row(i)/col(j) in the PackerCommon
         Then make efficient override for full matrix using chunk & stride view adaptors.
         These overrides need to know the Indexing option.
     -Clean up files.  exentsion hpp sux
-    -The performance M*M is absolutely terrible compared to blas::dgemm
+Performance:
+    -Observation: Nothing beats blas::dgemm ... not even close!!!
         blas is very hard to match :https://stackoverflow.com/questions/1303182/how-does-blas-get-such-extreme-performance
-        Done: -Make a simple op(i,j) version to compare
-            n       blas::gemm(ms)        ranges(ms)         std_mmul           mmul_wcopy
-            100          0.0( 0.0)          1.4( 0.6)          1.0( 0.5)          0.1( 0.1)      
-            200          1.0( 0.0)          6.8( 0.1)          7.0( 0.2)          6.9( 0.1)      
-            300          5.0( 0.2)         26.0( 0.6)         25.5( 0.5)         25.1( 0.7)      
-            400         10.7( 0.2)         69.3( 1.0)         68.8( 1.3)         55.6( 0.8)      
-            500         21.6( 0.4)        137.7( 7.3)        143.0( 8.1)        113.2( 3.8)      
-            600         36.6( 0.8)       1016.5( 7.8)       1018.5(12.5)        197.3(10.9)      
-            700         56.6( 0.5)       2243.4( 3.2)       2244.1( 6.5)        304.8( 0.4)       
-        -Take away message:
-            Even the dummbest (but cleanest) ranges code is just fine compared to naive hand coded
-            BUT the cache friendly algo with copy does much better than ranges.
-            Done: Think of a clean way to allow user to opt for the blas call.
-                No: 1) global flag  matrix23::blas_on()/blas_off()
-                    put and if statement in op*(M,M)
-                Done: 2) op*(M,M) always does ranges. user must choose for hot code ares: blasmm(M,M), blasmv(M,V), blasvm(V,M) 
-                    Construct of temporaries for chained calls.  No way to avoid that.
+    Done: -Make a simple op(i,j) version to compare
+        n       blas::gemm(ms)        ranges(ms)         std_mmul           mmul_wcopy
+        100          0.0( 0.0)          1.4( 0.6)          1.0( 0.5)          0.1( 0.1)      
+        200          1.0( 0.0)          6.8( 0.1)          7.0( 0.2)          6.9( 0.1)      
+        300          5.0( 0.2)         26.0( 0.6)         25.5( 0.5)         25.1( 0.7)      
+        400         10.7( 0.2)         69.3( 1.0)         68.8( 1.3)         55.6( 0.8)      
+        500         21.6( 0.4)        137.7( 7.3)        143.0( 8.1)        113.2( 3.8)      
+        600         36.6( 0.8)       1016.5( 7.8)       1018.5(12.5)        197.3(10.9)      
+        700         56.6( 0.5)       2243.4( 3.2)       2244.1( 6.5)        304.8( 0.4)       
+     Done: Think of a clean way to allow user to opt for the blas call.
+            No: 1) global flag  matrix23::blas_on()/blas_off()
+                put and if statement in op*(M,M)
+            Done: 2) op*(M,M) always does ranges. user must choose for hot code ares: blasmm(M,M), blasmv(M,V), blasvm(V,M) 
+                Construct of temporaries for chained calls.  No way to avoid that.
     -Is there a nice way to get the wcopy algo wirking with ranges?
         for (size_t i=0;i<A.nr();i++)
         {
@@ -77,17 +96,38 @@ Issues:
             {
                 return a_rows[i]*b_cols[j]; //VectorView*VectorView
             }
+            Need to set a limit on when this is used.  n>nmin_for_cache.
+        Here is the result:
+          n       blas::gemm(ms)        ranges(ms)         std_mmul           mmul_wcopy
+        100          0.0( 0.0)          1.0( 0.0)          0.0( 0.0)          0.0( 0.0)      
+        200          1.1( 0.1)         11.5( 0.2)          7.4( 0.2)          7.4( 0.2)      
+        300          6.2( 0.4)         49.1( 6.7)         31.4( 2.3)         28.5( 2.8)      
+        400         11.5( 0.5)         77.2( 1.3)         70.4( 1.1)         57.4( 1.0)      
+        500         22.1( 0.7)        154.6( 5.5)        142.1( 6.9)        111.2( 2.8)      
+        600         35.5( 0.4)        254.6( 3.9)       1030.6( 9.2)        188.8( 0.5)      
+        700         57.0( 0.7)        405.2( 3.0)       2268.2( 7.7)        314.5( 2.0)
+
+        Now ranges beats std_mmul (naive mul) for large enough n (>500) but still not as good as mmul_wcopy.  for n<=500 is it the overall looser.  This mostly because of the
+        indices intersection handling required for non-full packed matrices.  To get around this we need a specialized MatrixProductView for FullMatrixCM*FullMatrixCM and another
+        one for FullMatrixRM*FullMatrixRM that does do indices intersection analisys.  There are two ways to acived this:
+            1) Make special op*(FullMatrixCM,FullMatrixCM) that returns MatrixFullCMProductView<R,C>
+            2) Expand MatrixProductView to take both packer types (instead of auto p=MatrixProductPacker(a.packer(),b.packer())) and then make template specializations for FullCM/RM.
+        Option 1 seems better because MatrixFullCMProductView<R,C> can inherit from MatrixProductView<R,C,P,S> and only need to overload op(i,j).
+            It might help to have specialized concepts for FullCM and FullRM.  But what is the distinguishing function call (or attribute) then distinguished them?
+            The specialization is the other way around.  Non full needs is_stored for the packer, full does not.
+        Tiling https://siboehm.com/articles/22/Fast-MMM-on-CPU
+    https://github.com/flame/how-to-optimize-gemm/wiki#the-gotoblasblis-approach-to-optimizing-matrix-matrix-multiplication---step-by-step
 
 
 
--Numerous overloaded operators (+ - *scalar etc) for Vector return a VectorView<std::ranges::viewable_range R>
- where R varies depending on oporator history. We return VectorView instead of viewable_range so that all operators
+Done: -Numerous overloaded operators (+ - *scalar etc) for Vector return a VectorView<std::ranges::viewable_range R>
+ where R varies depending on operator history. We return VectorView instead of viewable_range so that all operators
  only got called for isVector arguments.
  Since these are all 1D operations, It would nice to use the same overloaded ops for Matrix + Matrix.  But then they need to return
- a MatrixView instead of a VectorView.  On idea is for Matrix and MatrixView to define a type view_t = MatrixView<R>
+ a MatrixView instead of a VectorView.  One idea is for Matrix and MatrixView to define a type view_t = MatrixView<R>
  but matrix does not know R it just knows template <std::ranges::viewable_range R> MatrixView
 
- - op+(isVector a, isVector b) should calculate the union of the a.indices and b.indices, thus skipping over zeros (a[i]==0 && b[i]==0)
+ Done: - op+(isVector a, isVector b) should calculate the union of the a.indices and b.indices, thus skipping over zeros (a[i]==0 && b[i]==0)
 
  -Fortran storage:
  

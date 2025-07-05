@@ -83,6 +83,7 @@ TEST_F(Benchmarks, MatrixMultiply)
     size_t N=10;
     const size_t iblas=0,iranges=1,imymul=2,imymul_wcopy=3;
     for ( size_t n:{100,200,300,400,500,600,700})
+    // for ( size_t n:{200})
     {
     std::valarray<std::valarray<double>> timings(4);
     for (auto& i:timings) i=std::valarray<double>(N);

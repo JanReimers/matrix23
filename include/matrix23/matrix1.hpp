@@ -195,15 +195,7 @@ public:
     FullMatrixCM(size_t nr, size_t nc) : Base(FullPackerCM(nr,nc))  {};
     FullMatrixCM(size_t nr, size_t nc, fill f, T v=T(1)) : Base(FullPackerCM(nr,nc),f,v)  {};
     FullMatrixCM(const il_t& il) : Base(il,FullPackerCM(nr(il),nc(il)))  {};
-    template <isMatrix M> FullMatrixCM(const M& m) : Base(m.packer(), m.shaper()) 
-    {
-            for (size_t i = 0; i < nr(); ++i)
-            for (size_t j = 0; j < nc(); ++j)
-                if (this->packer().is_stored(i, j)) 
-                    (*this)(i,j) = m.with_cachei(i, j);
-                else
-                    assert(m(i,j)==0.0); //Make sure we are not throwing away data.
-    };
+    template <isMatrix M> FullMatrixCM(const M& m) : Base(m,m.packer(), m.shaper()) {};
 };
 
 template <class T> class UpperTriangularMatrixCM : public Matrix<T,UpperTriangularPackerCM,UpperTriangularShaper>
@@ -310,8 +302,7 @@ public:
     typedef std::ranges::range_value_t<R> Rv; //rows value type which is a column range.
     typedef std::ranges::range_value_t<Rv> value_t; //column range value type which should be scalar (double etc.)
     MatrixProductView(const R& _rows, const C& _cols,P _packer, S _shaper )
-    : a_rows(_rows), b_cols(_cols), itsPacker(_packer), itsShaper(_shaper), i_cache(nr())
-    , ai_cache(0)
+    : a_rows(_rows), b_cols(_cols), itsPacker(_packer), itsShaper(_shaper)
     {
         assert(nr()==itsPacker.nr());
         assert(nc()==itsPacker.nc());
@@ -326,19 +317,7 @@ public:
         // assert(subsciptor.is_stored(i,j) && "Index out of range for MatrixView");
         return a_rows[i]*b_cols[j]; //VectorView*VectorView
     }
-    value_t with_cachei(size_t i, size_t j) const
-    {
-        if (i!=i_cache)
-        {
-            size_t anc=a_rows[i].size(); //# of stored values in this row.
-            if (ai_cache.size()!=anc) ai_cache=std::valarray<double>(anc);
-            i_cache=i;
-            auto aij_cache=std::ranges::begin(ai_cache);
-            for (auto aij:a_rows[i]) *aij_cache++=aij;
-        }
-        // assert(ai_cache.size()==b_cols[j].size());
-        return VectorView(ai_cache,a_rows[i].indices())*b_cols[j];
-    }
+   
 
     auto rows() const
     {
@@ -360,11 +339,53 @@ public:
     P packer() const {return itsPacker;}
     S shaper() const {return itsShaper;}
 
-private:
+protected:
     R a_rows; //a as a range fo rows.
     C b_cols; //b as a range of cols.
     P itsPacker; //packing for the product.
     S itsShaper; // shape for the product
+};
+
+template <std::ranges::viewable_range R, std::ranges::viewable_range C> class FullMatrixCMProductView
+: MatrixProductView<R,C,FullPackerCM,FullShaper>
+{
+public:
+    using Base=MatrixProductView<R,C,FullPackerCM,FullShaper>;
+    // These are all required in order to statisfy the isMatrix concept. With template classes they don't
+    // automatically get pulled in from the base class :( 
+    using value_t=Base::value_t;
+    using Base::nr;
+    using Base::nc;
+    using Base::rows;
+    using Base::cols;
+    using Base::packer;
+    using Base::shaper;
+    //protected    
+    using Base::a_rows;
+    using Base::b_cols;
+
+    // using Base::MatrixProductView; //Inherit constructor
+   FullMatrixCMProductView(const R& rows, const C& cols,FullPackerCM packer, FullShaper shaper )
+    : Base(rows,cols,packer,shaper), i_cache(nr()) , ai_cache(0)
+    {
+        assert(nr()==itsPacker.nr());
+        assert(nc()==itsPacker.nc());
+    }
+    value_t operator()(size_t i, size_t j) const
+    {
+        if (i!=i_cache)
+        {
+            size_t anc=a_rows[i].size(); //# of stored values in this row.
+            if (ai_cache.size()!=anc) 
+                ai_cache=std::valarray<double>(anc);
+            i_cache=i;
+            auto aij_cache=std::ranges::begin(ai_cache);
+            for (auto aij:a_rows[i]) *aij_cache++=aij;
+        }
+        return inner_product(ai_cache,b_cols[j]); //Skip all indices intersections and checking
+    }
+
+private:
     mutable size_t i_cache;
     mutable std::valarray<double> ai_cache;
 };
@@ -388,6 +409,15 @@ auto operator*(const isMatrix auto& a,const isMatrix auto& b)
     auto p=MatrixProductPacker(a.packer(),b.packer());
     shaper_t s=shaper_t(p);
     return MatrixProductView(a.rows(),b.cols(),p,s);
+}
+
+template <class T> auto operator*(const FullMatrixCM<T>& a,const FullMatrixCM<T>& b)
+{
+    assert(a.nc() == b.nr() && "Matrix dimensions do not match for multiplication");
+    using shaper_t=MatrixProductShaperType<decltype(a.shaper()),decltype(b.shaper())>::shaper_t;
+    auto p=MatrixProductPacker(a.packer(),b.packer());
+    shaper_t s=shaper_t(p);
+    return FullMatrixCMProductView(a.rows(),b.cols(),p,s); //Cache friendly version
 }
 
 template <isMatrix M> bool operator==(const M& a,const std::initializer_list<std::initializer_list<double>>& b)
