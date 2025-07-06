@@ -39,7 +39,8 @@ TODO priorities:
         matops.hpp
         Done: GenVector and Data<>.  Use default template arguments like for matrix.
         Done: move all static asserts into test source files.
-        Make a common base class for symmetries.
+        Done: Make a common base class for symmetries.
+    -Support initialization diagonal=unit.
     -Missing features:
         -op+ op- */ scalars, +=,-=,*=,/=;.
         -TransposeView

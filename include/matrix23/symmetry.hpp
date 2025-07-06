@@ -17,39 +17,45 @@ template <class S> concept isSymmetry = requires (S const s,size_t i)
     s.apply(i,i);
 };
 
-template <class D, isPacker P> struct NoSymmetry
+
+template <class D, isPacker P> struct SymmetryCommon
 {
-    NoSymmetry(const D& d, const P& p) : data(d), packer(p) {};
-    D::value_type  apply(size_t i, size_t j) const {return packer.is_stored(i,j) ? data[packer.offset(i,j)] : typename D::value_type(0);}
-private:
+    SymmetryCommon(const D& d, const P& p) : data(d), packer(p) {};
+protected:
     const D& data;
-    const P& packer;
+    const P& packer;       
 };
-template <class D, isPacker P> struct Symmetric
+
+template <class D, isPacker P> struct NoSymmetry : public SymmetryCommon<D,P>
 {
-    Symmetric(D& d, const P& p) : data(d), packer(p) {};
+    using SymmetryCommon<D,P>::SymmetryCommon; //Inherit constructors
+    using SymmetryCommon<D,P>::data;
+    using SymmetryCommon<D,P>::packer;
+    D::value_type  apply(size_t i, size_t j) const {return packer.is_stored(i,j) ? data[packer.offset(i,j)] : typename D::value_type(0);}
+};
+template <class D, isPacker P> struct Symmetric  : public SymmetryCommon<D,P>
+{
+    using SymmetryCommon<D,P>::SymmetryCommon; //Inherit constructors
+    using SymmetryCommon<D,P>::data;
+    using SymmetryCommon<D,P>::packer;
     D::value_type  apply(size_t i, size_t j) const 
     {
         bool storedij=packer.is_stored(i,j);
         assert(storedij || packer.is_stored(j,i));
         return  storedij ? data[packer.offset(i,j)] : data[packer.offset(j,i)];
     }
-private:
-    const D& data;
-    const P& packer;
 };
-template <class D, isPacker P> struct AntiSymmetric
+template <class D, isPacker P> struct AntiSymmetric  : public SymmetryCommon<D,P>
 {
-    AntiSymmetric(const D& d, const P& p) : data(d), packer(p) {};
+    using SymmetryCommon<D,P>::SymmetryCommon; //Inherit constructors
+    using SymmetryCommon<D,P>::data;
+    using SymmetryCommon<D,P>::packer;
     D::value_type  apply(size_t i, size_t j) const 
     {
         bool storedij=packer.is_stored(i,j);
         assert(storedij || packer.is_stored(j,i));
         return  storedij ? data[packer.offset(i,j)] : -data[packer.offset(j,i)];
     }
-private:
-    const D& data;
-    const P& packer;
 };
 
 
