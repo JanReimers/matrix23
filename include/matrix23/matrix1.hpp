@@ -1,8 +1,10 @@
 // File: Matrix.hpp Define a matrix class for linear algebra operations.
 #pragma once
 
-#include "matrix23/subscriptors.hpp"
 #include "matrix23/vector.hpp"
+#include "matrix23/shaper.hpp"
+#include "matrix23/packer.hpp"
+#include "matrix23/symmetry.hpp"
 #include <iostream>
 
 namespace matrix23
@@ -20,50 +22,6 @@ concept isMatrix = requires (M m,size_t i, size_t j, std::remove_cvref_t<M>::val
     m.nc();
 };
 
-
-template <class S> concept isSymmetry = requires (S const s,size_t i)
-{
-    s.apply(i,i);
-};
-
-template <class D, isPacker P> struct NoSymmetry
-{
-    NoSymmetry(const D& d, const P& p) : data(d), packer(p) {};
-    D::value_type  apply(size_t i, size_t j) const {return packer.is_stored(i,j) ? data[packer.offset(i,j)] : typename D::value_type(0);}
-private:
-    const D& data;
-    const P& packer;
-};
-template <class D, isPacker P> struct Symmetric
-{
-    Symmetric(D& d, const P& p) : data(d), packer(p) {};
-    D::value_type  apply(size_t i, size_t j) const 
-    {
-        bool storedij=packer.is_stored(i,j);
-        assert(storedij || packer.is_stored(j,i));
-        return  storedij ? data[packer.offset(i,j)] : data[packer.offset(j,i)];
-    }
-private:
-    const D& data;
-    const P& packer;
-};
-template <class D, isPacker P> struct AntiSymmetric
-{
-    AntiSymmetric(const D& d, const P& p) : data(d), packer(p) {};
-    D::value_type  apply(size_t i, size_t j) const 
-    {
-        bool storedij=packer.is_stored(i,j);
-        assert(storedij || packer.is_stored(j,i));
-        return  storedij ? data[packer.offset(i,j)] : -data[packer.offset(j,i)];
-    }
-private:
-    const D& data;
-    const P& packer;
-};
-
-static_assert(isSymmetry<   NoSymmetry<default_data_type<double>,FullPackerCM>> );
-static_assert(isSymmetry<    Symmetric<default_data_type<double>,FullPackerCM>> );
-static_assert(isSymmetry<AntiSymmetric<default_data_type<double>,FullPackerCM>> );
 
 //default_data_type is defined in vector.hpp.
 
@@ -367,129 +325,8 @@ auto operator*(const isVector auto& v,const isMatrix auto& m)
     return VectorView(std::move(vm), indices);
 }
 
-template <std::ranges::viewable_range R, std::ranges::viewable_range C, isPacker P, isShaper S> class MatrixProductView
-{
-public:
-    typedef std::ranges::range_value_t<R> Rv; //rows value type which is a column range.
-    typedef std::ranges::range_value_t<Rv> value_type; //column range value type which should be scalar (double etc.)
-    MatrixProductView(const R& _rows, const C& _cols,P _packer, S _shaper )
-    : a_rows(_rows), b_cols(_cols), itsPacker(_packer), itsShaper(_shaper)
-    {
-        assert(nr()==itsPacker.nr());
-        assert(nc()==itsPacker.nc());
-    }
-  
-    size_t size() const { return  nr()*nc(); }
-    size_t nr  () const { return std::ranges::size(a_rows); }
-    size_t nc  () const { return std::ranges::size(b_cols); }
 
-    value_type operator()(size_t i, size_t j) const
-    {
-        // assert(subsciptor.is_stored(i,j) && "Index out of range for MatrixView");
-        return a_rows[i]*b_cols[j]; //VectorView*VectorView
-    }
-   
 
-    auto rows() const
-    {
-        auto outerp=std::views::cartesian_product(a_rows,b_cols) | std::views::transform([](auto tuple) {return get<0>(tuple) * get<1>(tuple);}); // uses op*(const Vector<T>& v,const Matrix<T,S>& m)
-        return outerp | std::views::chunk(nc()) | std::views::transform([](auto chunk) {return VectorView(std::move(chunk));});
-    }
-
-    auto cols() const
-    {
-        auto outerp=std::views::cartesian_product(a_rows,b_cols) | std::views::transform([](auto tuple) {return get<0>(tuple) * get<1>(tuple);}); // uses op*(const Vector<T>& v,const Matrix<T,S>& m)
-        return  std::views::iota(size_t(0), nc()) | std::views::transform
-            ([outerp,this](size_t j) 
-                {
-                    auto colj = outerp | std::views::drop(j) | std::views::stride(nc());
-                    return VectorView(std::move(colj));
-                }
-            );
-    }
-    P packer() const {return itsPacker;}
-    S shaper() const {return itsShaper;}
-
-protected:
-    R a_rows; //a as a range fo rows.
-    C b_cols; //b as a range of cols.
-    P itsPacker; //packing for the product.
-    S itsShaper; // shape for the product
-};
-
-template <std::ranges::viewable_range R, std::ranges::viewable_range C> class FullMatrixCMProductView
-: MatrixProductView<R,C,FullPackerCM,FullShaper>
-{
-public:
-    using Base=MatrixProductView<R,C,FullPackerCM,FullShaper>;
-    // These are all required in order to statisfy the isMatrix concept. With template classes they don't
-    // automatically get pulled in from the base class :( 
-    using value_type=Base::value_type;
-    using Base::nr;
-    using Base::nc;
-    using Base::rows;
-    using Base::cols;
-    using Base::packer;
-    using Base::shaper;
-    //protected    
-    using Base::a_rows;
-    using Base::b_cols;
-
-   FullMatrixCMProductView(const R& rows, const C& cols,FullPackerCM packer, FullShaper shaper )
-    : Base(rows,cols,packer,shaper), i_cache(nr()) , ai_cache(0) {}
-    value_type operator()(size_t i, size_t j) const
-    {
-        if (i!=i_cache)
-        {
-            size_t anc=a_rows[i].size(); //# of stored values in this row.
-            if (ai_cache.size()!=anc) 
-                ai_cache=default_data_type<value_type>(anc);
-            i_cache=i;
-            auto aij_cache=std::ranges::begin(ai_cache);
-            for (auto aij:a_rows[i]) *aij_cache++=aij;
-        }
-        return inner_product(ai_cache,b_cols[j]); //Skip all indices intersections and checking
-    }
-
-private:
-    mutable size_t i_cache;
-    mutable default_data_type<value_type> ai_cache;
-};
-
-template <isPacker A, isPacker B> auto MatrixProductPacker(const A& a, const B& b)
-{
-    return typename MatrixProductPackerType<A,B>::packer_t(a.nr(),b.nc());
-}
-template <isShaper A, isShaper B> auto MatrixProductShaper(const A& a, const B& b)
-{
-    return typename MatrixProductShaperType<A,B>::shaper_t(a.nr(),b.nc());
-}
-template <> inline auto MatrixProductPacker(const SBandPacker& a, const SBandPacker& b)
-{
-    assert(a.nr()==b.nr());
-    return SBandPacker(a.nr(),a.bandwidth()+b.bandwidth());
-}
-template <> inline auto MatrixProductShaper(const SBandShaper& a, const SBandShaper& b)
-{
-    assert(a.nr()==b.nr());
-    return SBandShaper(a.nr(),b.nc(),a.bandwidth()+b.bandwidth());
-}
-
-auto operator*(const isMatrix auto& a,const isMatrix auto& b)
-{
-    assert(a.nc() == b.nr() && "Matrix dimensions do not match for multiplication");
-    auto p=MatrixProductPacker(a.packer(),b.packer());
-    auto s=MatrixProductShaper(a.shaper(),b.shaper());
-    return MatrixProductView(a.rows(),b.cols(),p,s);
-}
-
-template <class T> auto operator*(const FullMatrixCM<T>& a,const FullMatrixCM<T>& b)
-{
-    assert(a.nc() == b.nr() && "Matrix dimensions do not match for multiplication");
-    auto p=MatrixProductPacker(a.packer(),b.packer());
-    auto s=MatrixProductShaper(a.shaper(),b.shaper());
-    return FullMatrixCMProductView(a.rows(),b.cols(),p,s); //Cache friendly version
-}
 
 template <isMatrix M> bool operator==(const M& a,const std::initializer_list<std::initializer_list<double>>& b)
 {
@@ -558,3 +395,5 @@ auto operator-(const isMatrix auto& a,const isMatrix auto& b)
 
 
 } //namespace matrix23
+
+#include "matrix23/matmul.hpp"

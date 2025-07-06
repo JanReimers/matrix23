@@ -34,10 +34,12 @@ Design objectives:
 
 TODO priorities:
     -clean up
-        shapers.hpp, packers.hpp symmetry.hpp
+        Done shapers.hpp, packers.hpp symmetry.hpp
+        Done: matmul.hpp 
+        matops.hpp
         Done: GenVector and Data<>.  Use default template arguments like for matrix.
         move all static asserts into test source files.
-        
+        Make a common base class for symmetries.
     -Missing features:
         -op+ op- */ scalars, +=,-=,*=,/=;.
         -TransposeView
