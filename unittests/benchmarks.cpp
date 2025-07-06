@@ -74,7 +74,6 @@ double stdev(const std::valarray<double>& a)
     
 }
 
-#ifndef DEBUG
 
 TEST_F(Benchmarks, MatrixMultiply)
 {
@@ -82,8 +81,11 @@ TEST_F(Benchmarks, MatrixMultiply)
     cout << "  n       blas::gemm(ms)        ranges(ms)         std_mmul           mmul_wcopy" << endl;
     size_t N=10;
     const size_t iblas=0,iranges=1,imymul=2,imymul_wcopy=3;
-    // for ( size_t n:{100,200,300,400,500,600,700})
-    for ( size_t n:{100})
+#ifdef DEBUG
+    for ( size_t n:{10})
+#else
+    for ( size_t n:{100,200,300,400,500,600,700})
+#endif //DEBUG
     {
     std::valarray<std::valarray<double>> timings(4);
     for (auto& i:timings) i=std::valarray<double>(N);
@@ -134,4 +136,3 @@ TEST_F(Benchmarks, MatrixMultiply)
     cout << endl;
     } //for n
 }
-#endif //DEBUG

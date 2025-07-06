@@ -74,12 +74,12 @@ TEST_F(InitTests, VectorInitializations)
         EXPECT_EQ(m,(ilil{{3.14,3.14,3.14,3.14},{3.14,3.14,3.14,3.14},{3.14,3.14,3.14,3.14}}));
     }
      {
-        cout << "These should be random [0,1.0]:" << endl;
+        cout << "These should be random [0,1.0]:";
         FullMatrixCM<double> m(3,4,matrix23::random);
         m.print();
     }   
     {
-        cout << "These should be random [0,3.14]:" << endl;
+        cout << "These should be random [0,3.14]:";
         FullMatrixCM<double> m(3,4,matrix23::random,3.14);
         m.print();
     }

@@ -99,41 +99,15 @@ public:
         }
     }
 
-    Matrix(const il_t& init,P p) : Matrix(p)
-    {
-        load(init);
-    }
-    Matrix(const il_t& init,P p, S s) : Matrix(p,s)
-    {
-        load(init);
-    }
-    template <isMatrix M> Matrix(const M& m,P p, S s) 
-        : Matrix(p,s)
-    {
-        for (size_t i = 0; i < nr(); ++i)
-            for (size_t j = 0; j < nc(); ++j)
-                if (itsPacker.is_stored(i, j)) 
-                    (*this)(i,j) = m(i, j);
-                else
-                    assert(m(i,j)==itsSymmetry.apply(i,j)); //Make sure data support the symmetry.
-    }
-    template <isMatrix M, isPacker otherP> Matrix(const M& m,otherP p, S s) 
-        : Matrix(P(p.nr(),p.nc()),s)
-    {
-        for (size_t i = 0; i < nr(); ++i)
-            for (size_t j = 0; j < nc(); ++j)
-                if (itsPacker.is_stored(i, j)) 
-                    (*this)(i,j) = m(i, j);
-                else
-                    assert(m(i,j)==itsSymmetry.apply(i,j)); //Make sure data support the symmetry.
-    }
+    Matrix(const il_t& init,P p) : Matrix(p) {load(init);}
+    Matrix(const il_t& init,P p, S s) : Matrix(p,s) {load(init);}
+    template <isMatrix M> Matrix(const M& m,P p, S s) : Matrix(p,s) {load(m);}
+    template <isMatrix M, isPacker otherP> Matrix(const M& m,otherP p, S s)  : Matrix(P(p.nr(),p.nc()),s) {load(m);}
     //
     //  2D data access.
     //
     T  operator()(size_t i, size_t j) const
     {
-        // std::cout << "i,j=" << i << " " << j << "  offfset=" << itsPacker.offset(i,j) << std::endl;
-        // return itsPacker.is_stored(i,j) ? data[itsPacker.offset(i,j)] : T(0);
         return itsSymmetry.apply(i,j);
     }
     T& operator()(size_t i, size_t j)
@@ -215,6 +189,15 @@ protected:
             }
             ++i;
         }
+    }
+    template <isMatrix M> void load(const M& m)
+    {
+        for (size_t i = 0; i < nr(); ++i)
+            for (size_t j = 0; j < nc(); ++j)
+                if (itsPacker.is_stored(i, j)) 
+                    (*this)(i,j) = m(i, j);
+                else
+                    assert(m(i,j)==itsSymmetry.apply(i,j)); //Make sure data honours the symmetry.
     }
     void fillvalue(T v) {for (auto& i:data) i=v;}
     void fillrandom(T v) 
@@ -336,6 +319,10 @@ public:
     size_t bandwidth() const {return this->packer().bandwidth();}
 };
 
+//
+//  With the shaper/packer framework the definition of a Symmetric matrix is straight forward: Upper traiangular packing with full shape.
+//  The complexity only arises because for non-defualt symmetry we are now forced to specify the data type.
+//
 template <class T> class SymmetricMatrixCM 
 : public Matrix<T,
                 UpperTriangularPackerCM,
@@ -471,13 +458,11 @@ private:
 
 template <isPacker A, isPacker B> auto MatrixProductPacker(const A& a, const B& b)
 {
-    using packer_t=MatrixProductPackerType<A,B>::packer_t;
-    return packer_t(a.nr(),b.nc());
+    return typename MatrixProductPackerType<A,B>::packer_t(a.nr(),b.nc());
 }
 template <isShaper A, isShaper B> auto MatrixProductShaper(const A& a, const B& b)
 {
-    using shaper_t=MatrixProductShaperType<A,B>::shaper_t;
-    return shaper_t(a.nr(),b.nc());
+    return typename MatrixProductShaperType<A,B>::shaper_t(a.nr(),b.nc());
 }
 template <> inline auto MatrixProductPacker(const SBandPacker& a, const SBandPacker& b)
 {
@@ -493,8 +478,6 @@ template <> inline auto MatrixProductShaper(const SBandShaper& a, const SBandSha
 auto operator*(const isMatrix auto& a,const isMatrix auto& b)
 {
     assert(a.nc() == b.nr() && "Matrix dimensions do not match for multiplication");
-    // using packer_t=MatrixProductPackerType<decltype(a.packer()),decltype(b.packer())>::packer_t;
-    // using shaper_t=MatrixProductShaperType<decltype(a.shaper()),decltype(b.shaper())>::shaper_t;
     auto p=MatrixProductPacker(a.packer(),b.packer());
     auto s=MatrixProductShaper(a.shaper(),b.shaper());
     return MatrixProductView(a.rows(),b.cols(),p,s);
@@ -503,9 +486,8 @@ auto operator*(const isMatrix auto& a,const isMatrix auto& b)
 template <class T> auto operator*(const FullMatrixCM<T>& a,const FullMatrixCM<T>& b)
 {
     assert(a.nc() == b.nr() && "Matrix dimensions do not match for multiplication");
-    using shaper_t=MatrixProductShaperType<decltype(a.shaper()),decltype(b.shaper())>::shaper_t;
     auto p=MatrixProductPacker(a.packer(),b.packer());
-    shaper_t s=p.shaper();
+    auto s=MatrixProductShaper(a.shaper(),b.shaper());
     return FullMatrixCMProductView(a.rows(),b.cols(),p,s); //Cache friendly version
 }
 
