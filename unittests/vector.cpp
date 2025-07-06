@@ -62,6 +62,7 @@ TEST_F(VectorTests, Operators)
     EXPECT_EQ(v5,(il{62, 256.5, 451, 645.5, 840}));
 }
 
+#include <valarray>
 #include <numeric> // need to include <numeric> for std::ranges::iota! ?
 TEST_F(VectorTests, Intrsections)
 {

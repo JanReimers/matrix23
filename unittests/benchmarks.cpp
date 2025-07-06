@@ -3,6 +3,7 @@
 #include "matrix23/matrix1.hpp"
 #include "matrix23/blas.hpp"
 #include "gtest/gtest.h"
+#include <valarray>
 #include <iostream>
 #include <chrono>
 

@@ -61,11 +61,11 @@ private:
     const P& packer;
 };
 
-static_assert(isSymmetry<   NoSymmetry<std::valarray<double>,FullPackerCM>> );
-static_assert(isSymmetry<    Symmetric<std::valarray<double>,FullPackerCM>> );
-static_assert(isSymmetry<AntiSymmetric<std::valarray<double>,FullPackerCM>> );
+static_assert(isSymmetry<   NoSymmetry<default_data_type<double>,FullPackerCM>> );
+static_assert(isSymmetry<    Symmetric<default_data_type<double>,FullPackerCM>> );
+static_assert(isSymmetry<AntiSymmetric<default_data_type<double>,FullPackerCM>> );
 
-template <typename T> using default_data_type=std::valarray<T>;
+//default_data_type is defined in vector.hpp.
 
 template <typename T, isPacker P, isShaper S, typename D=default_data_type<T>, isSymmetry Sym=NoSymmetry<D,P> > class Matrix
 {
@@ -443,7 +443,7 @@ public:
         {
             size_t anc=a_rows[i].size(); //# of stored values in this row.
             if (ai_cache.size()!=anc) 
-                ai_cache=std::valarray<double>(anc);
+                ai_cache=default_data_type<value_type>(anc);
             i_cache=i;
             auto aij_cache=std::ranges::begin(ai_cache);
             for (auto aij:a_rows[i]) *aij_cache++=aij;
@@ -453,7 +453,7 @@ public:
 
 private:
     mutable size_t i_cache;
-    mutable std::valarray<double> ai_cache;
+    mutable default_data_type<value_type> ai_cache;
 };
 
 template <isPacker A, isPacker B> auto MatrixProductPacker(const A& a, const B& b)

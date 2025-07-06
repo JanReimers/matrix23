@@ -3,7 +3,7 @@ Design objectives:
         Add in FORTRAN 1 based (or arbitrary lower bounds) indexing.  Do this last so that all the internal work is done with zero
         based indexing.
     2) This allows us to use size_t for all indexing integers
-    3) Support the same matrix packing arrangements used by Lapack and Blas for full, triangular (U/L), band, tri-diagonal and diagonal matrices.
+    Done: 3) Support the same matrix packing arrangements used by Lapack and Blas for full, triangular (U/L), band, tri-diagonal and diagonal matrices.
         Done: Isolate all the packing and unpacking code into a isPacker and isShaper concepts and groups of classes.
         Done: The subscriptor really has two aspects:
             1) The shape which determines which indexes (i,j) are assumed to zero (regardes of weather or not those zeros are actually stored).
@@ -11,9 +11,10 @@ Design objectives:
         Usually packing follows from shape.  But Lapack and Blas support for example triangular shape with full storage.  i.e. part of matrix is allocated
         but unused.  There must be reasons for this.  Program complexity may be one of them.
         For each type we have a virtual size nr*nc and a packed size.  Packed size is probably only needed for data array construction.
-    4) Support symmetric and Hermitian symmetries using triangular packing.
+    Done: 4) Support symmetric symmetries using triangular packing.
         This adds a third aspect to matrix storage, symmetry.  
         only a certain subset of combinations make sense.  Each of these three aspects would have and agent in the Matrix class that does the required work.
+    4.1) Support Hermitian symmetries using triangular packing.
     5) Use std::vector<T> and std::valarray<T> interchangably for storing the raw data.  
         Also support a Copy-On-Write array?
     6) Support overloaded operators with lazy (delayed) evaluation
@@ -29,6 +30,36 @@ Design objectives:
     12) No traditional for loops like:  for (size_t i = 0; i < nrows; ++i)
     13) No new/delete
 
+TODO priorities:
+    -clean up
+        shapers.hpp, packers.hpp symmetry.hpp
+        GenVector and Data<>.  Use default template arguments like for matrix.
+
+    -Missing features:
+        -op+ op- */ scalars, +=,-=,*=,/=;.
+        -TransposeView
+        -SubMatrixView (this is not a slice row(i), col(j) and diagonal are slices, 2D->1D)
+        -op= code and tests.  i.e.  FullMatrixCM C;C=A*B;
+
+    -Test Triangular shape with full storage.
+        add blas support for full packing U*U L*L.
+    -Get cmake to handle optional dependencies first.  Optional for cereal, lapack, blas ...
+        https://cmake.org/cmake/help/latest/guide/using-dependencies/index.html
+        https://cmake.org/cmake/help/book/mastering-cmake/cmake/Help/guide/using-dependencies/
+Bugs:
+    -blas RM*RM not working.  
+        https://petewarden.com/2015/10/25/an-engineers-guide-to-gemm/
+
+
+Notes for documenting:
+    overloaded op are all delayed evaluation.  blas calls are all eager evaluation with posible construction of temporaries.
+        So we cannot put blas calls inside overloaded operators.  User must explicitely choose.
+    Code is generic accross all combos of packings/shapes/symmetris.  So will not be optimized for any given pair.
+
+
+
+
+---------------------------------------------------------------------------------------------------------------------------------------
 TODO priorities:
     Done: -Specialized MatrixFullCMProductView<R,C> for max performance.
           n       blas::gemm(ms)        ranges(ms)         std_mmul           mmul_wcopy
@@ -55,30 +86,6 @@ TODO priorities:
         Done: add nr(), nc() to shaper concept.
         Done: Remove stored_row_size/stored_col_size from packer concept?
         Done: One init loop for Matrix construction.
-        shapers.hpp, packers.hpp
-        
-    -Missing features:
-        -op+ op- */ scalars, +=,-=,*=,/=;.
-        -TransposeView
-        -SubMatrixView (this is not a slice row(i), col(j) and diagonal are slices, 2D->1D)
-        -op= code and tests.  i.e.  FullMatrixCM C;C=A*B;
-
-    -Test Triangular shape with full storage.
-        add blas support for full packing U*U L*L.
-    -Get cmake to handle optional dependencies first.  Optional for cereal, lapack, blas ...
-        https://cmake.org/cmake/help/latest/guide/using-dependencies/index.html
-        https://cmake.org/cmake/help/book/mastering-cmake/cmake/Help/guide/using-dependencies/
-Bugs:
-    -blas RM*RM not working.  
-        https://petewarden.com/2015/10/25/an-engineers-guide-to-gemm/
-
-
-Notes for documenting:
-    overloaded op are all delayed evaluation.  blas calls are all eager evaluation with posible construction of temporaries.
-        So we cannot put blas calls inside overloaded operators.  User must explicitely choose.
-    Code is generic accross all combos of packings/shapes/symmetris.  So will not be optimized for any given pair.
-
-
 
 Issues:
     
