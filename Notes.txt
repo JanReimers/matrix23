@@ -22,19 +22,22 @@ Design objectives:
         Matrix*Matrix should take advantage packing type.  For example DiagonalMatrix * DiagonalMatrix is O(N) not O(N^3)!
     7) Support float, double, std::complex<T> data types.
     Done: 8-1) Support various initialization type: none, zero, one, value, random
-    8-2) Support initialization diagonal=value, unit.
+    8-2) Support initialization diagonal=unit.
     Done: 9) Use c++23.  Huge convenience of zip, zip_transform view adaptors.
     Done: 10) Make some blasmm(Matrix,Matrix) functions for speed comparison
     11) Support ascii/binary io with the cereal header library.
         Need to learn how to get cmake to hanlde optional dependencies first.  Optional for cereal, lapack, blas ...
     12) No traditional for loops like:  for (size_t i = 0; i < nrows; ++i)
-    13) No new/delete
+        load functions need i,j loops.  But: we can do range based loops for (size_t i:A.row_indices())
+
+    Done: 13) No new/delete
 
 TODO priorities:
     -clean up
         shapers.hpp, packers.hpp symmetry.hpp
-        GenVector and Data<>.  Use default template arguments like for matrix.
-
+        Done: GenVector and Data<>.  Use default template arguments like for matrix.
+        move all static asserts into test source files.
+        
     -Missing features:
         -op+ op- */ scalars, +=,-=,*=,/=;.
         -TransposeView

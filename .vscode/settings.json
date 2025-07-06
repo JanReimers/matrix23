@@ -67,6 +67,7 @@
         "variant": "cpp",
         "text_encoding": "cpp",
         "ranges": "cpp",
-        "chrono": "cpp"
+        "chrono": "cpp",
+        "cassert": "cpp"
     }
 }
