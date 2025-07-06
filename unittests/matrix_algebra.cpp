@@ -562,7 +562,6 @@ TEST_F(MatrixAlgebraTests, MatrixMultiplySS)
 
     
 }
-
 TEST_F(MatrixAlgebraTests, MatrixMultiplySS_commute)
 {
     matrix23::SymmetricMatrixCM<double> A{
@@ -574,4 +573,20 @@ TEST_F(MatrixAlgebraTests, MatrixMultiplySS_commute)
     matrix23::SymmetricMatrixCM<double> C=A*A; //THis will do a run time check A*A is indeed symmetric.
     EXPECT_EQ(C,(ilil{{30,58,75,85},{58,114,147,167},{75,147,190,216},{85,167,216,246}}));
 }
+TEST_F(MatrixAlgebraTests, MatrixMultiplySU)
+{
+    matrix23::SymmetricMatrixCM<double> A{
+        {1,2,3,4},
+        {2,5,6,7},
+        {3,6,8,9},
+        {4,7,9,10}};
+    matrix23::UpperTriangularMatrixCM<double> B{
+        {11,12,13,14},
+        { 0,15,16,17},
+        { 0, 0,18,19},
+        { 0, 0, 0,20}};
 
+    matrix23::FullMatrixCM<double> C=A*B;
+    EXPECT_EQ(C,(ilil{{11,42,99,185},{22,99,214,367},{33,126,279,476},{44,153,326,546}}));
+    // matrix23::SymmetricMatrixCM<double> D=A*B; Run time fail, A*B is not symmetric.
+}
