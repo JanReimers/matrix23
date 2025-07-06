@@ -16,6 +16,7 @@ concept isVector = requires (V v)
     v.begin();
     v.end();
     v.indices();
+    v.size();
 };
 
 
