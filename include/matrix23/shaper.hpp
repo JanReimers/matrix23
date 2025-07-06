@@ -4,10 +4,13 @@
 #include <cstddef> //To get size_t
 #include <ranges>  //To get iota_view.
 
-// A matrix shape in concerned with what elements are non-zero. But a shape is unconcerned with if or how these elements are actually stored in memory.
-// For example an upper triangular matrix has all zeros below the diagonal.  It can implemented using efficient packed N*(N+1)/2) storage (where the zeros are not stored)
-// or full N*N storage (where all the zeros are stored).  In both cases the *shape* is upper triangular.
-
+//
+// A matrix shape in concerned with what elements are non-zero. But a shape is unconcerned
+// with if or how these elements are actually stored in memory. For example an upper triangular
+// matrix has all zeros below the diagonal.  It can implemented using efficient 
+// packed N*(N+1)/2) storage (where the zeros are not stored) or full N*N storage (where all 
+// the zeros are stored).  In both cases the *shape* is upper triangular.
+//
 namespace matrix23
 {
 typedef std::ranges::iota_view<size_t,size_t> iota_view; //Used for specifying index ranges.
