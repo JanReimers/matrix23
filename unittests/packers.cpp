@@ -31,10 +31,6 @@ TEST_F(PackerDeathTest, Full)
     EXPECT_EQ(fprm.nr(),3);
     EXPECT_EQ(fprm.nc(),4);
     EXPECT_EQ(fprm.stored_size(),12);
-    EXPECT_EQ(fprm.stored_row_size(0),4);
-    EXPECT_EQ(fprm.stored_col_size(0),3);
-    EXPECT_EQ(fprm.stored_row_size(2),4);
-    EXPECT_EQ(fprm.stored_col_size(3),3); 
     EXPECT_EQ(fprm.offset(0,0),0);
     EXPECT_EQ(fprm.offset(1,0),4);
     EXPECT_EQ(fprm.offset(2,0),8);
@@ -42,8 +38,6 @@ TEST_F(PackerDeathTest, Full)
     EXPECT_EQ(fprm.offset(1,1),5);
     EXPECT_EQ(fprm.offset(2,3),fprm.stored_size()-1);
 #ifdef DO_DEATH_TESTS
-    ASSERT_DEATH(fprm.stored_row_size(3),""); //row index 3 is out of bounds.
-    ASSERT_DEATH(fprm.stored_col_size(4),""); //col index 4 is out of bounds.
     ASSERT_DEATH(fprm.offset(3,0),"");
     ASSERT_DEATH(fprm.offset(0,4),"");
 #endif
@@ -51,10 +45,6 @@ TEST_F(PackerDeathTest, Full)
     EXPECT_EQ(fpcm.nr(),3);
     EXPECT_EQ(fpcm.nc(),4);
     EXPECT_EQ(fpcm.stored_size(),12);
-    EXPECT_EQ(fpcm.stored_row_size(0),4);
-    EXPECT_EQ(fpcm.stored_col_size(0),3);
-    EXPECT_EQ(fpcm.stored_row_size(2),4);
-    EXPECT_EQ(fpcm.stored_col_size(3),3); 
     EXPECT_EQ(fpcm.offset(0,0),0);
     EXPECT_EQ(fpcm.offset(1,0),1);
     EXPECT_EQ(fpcm.offset(2,0),2);
@@ -64,8 +54,6 @@ TEST_F(PackerDeathTest, Full)
 #ifdef DO_DEATH_TESTS
     ASSERT_DEATH(fpcm.offset(3,0),"");
     ASSERT_DEATH(fpcm.offset(0,4),"");
-    ASSERT_DEATH(fpcm.stored_row_size(3),""); //row index 3 is out of bounds.
-    ASSERT_DEATH(fpcm.stored_col_size(4),""); //col index 4 is out of bounds.
 #endif
 }
 TEST_F(PackerDeathTest, UpperTriangular3x4)
@@ -88,13 +76,6 @@ TEST_F(PackerDeathTest, UpperTriangular3x4)
     EXPECT_FALSE(utrm.is_stored(1,0));
     EXPECT_FALSE(utrm.is_stored(2,0));
     EXPECT_FALSE(utrm.is_stored(2,1));
-    EXPECT_EQ(utrm.stored_row_size(0),4);
-    EXPECT_EQ(utrm.stored_row_size(1),3);
-    EXPECT_EQ(utrm.stored_row_size(2),2);
-    EXPECT_EQ(utrm.stored_col_size(0),1);
-    EXPECT_EQ(utrm.stored_col_size(1),2);
-    EXPECT_EQ(utrm.stored_col_size(2),3);
-    EXPECT_EQ(utrm.stored_col_size(3),3); 
     EXPECT_EQ(utrm.offset(0,0),0);
     EXPECT_EQ(utrm.offset(0,1),1);
     EXPECT_EQ(utrm.offset(1,1),4);
@@ -105,8 +86,6 @@ TEST_F(PackerDeathTest, UpperTriangular3x4)
     EXPECT_EQ(utrm.offset(1,3),6);
     EXPECT_EQ(utrm.offset(2,3),utrm.stored_size()-1);
 #ifdef DO_DEATH_TESTS
-    ASSERT_DEATH(utrm.stored_row_size(3),""); //row index 3 is out of bounds.
-    ASSERT_DEATH(utrm.stored_col_size(4),""); //col index 4 is out of bounds.
     ASSERT_DEATH(utrm.offset(3,0),"");
     ASSERT_DEATH(utrm.offset(0,4),"");
 #endif
@@ -126,13 +105,6 @@ TEST_F(PackerDeathTest, UpperTriangular3x4)
     EXPECT_FALSE(utcm.is_stored(1,0));
     EXPECT_FALSE(utcm.is_stored(2,0));
     EXPECT_FALSE(utcm.is_stored(2,1));
-    EXPECT_EQ(utcm.stored_row_size(0),4);
-    EXPECT_EQ(utcm.stored_row_size(1),3);
-    EXPECT_EQ(utcm.stored_row_size(2),2);
-    EXPECT_EQ(utcm.stored_col_size(0),1);
-    EXPECT_EQ(utcm.stored_col_size(1),2);
-    EXPECT_EQ(utcm.stored_col_size(2),3);
-    EXPECT_EQ(utcm.stored_col_size(3),3); 
     EXPECT_EQ(utcm.offset(0,0),0);
     EXPECT_EQ(utcm.offset(0,1),1);
     EXPECT_EQ(utcm.offset(1,1),2);
@@ -145,8 +117,6 @@ TEST_F(PackerDeathTest, UpperTriangular3x4)
 #ifdef DO_DEATH_TESTS
     ASSERT_DEATH(utcm.offset(3,0),"");
     ASSERT_DEATH(utcm.offset(0,4),"");
-    ASSERT_DEATH(utcm.stored_row_size(3),""); //row index 3 is out of bounds.
-    ASSERT_DEATH(utcm.stored_col_size(4),""); //col index 4 is out of bounds.
 #endif
 }
 TEST_F(PackerDeathTest, UpperTriangular4x3)
@@ -169,12 +139,6 @@ TEST_F(PackerDeathTest, UpperTriangular4x3)
     EXPECT_FALSE(utrm.is_stored(3,0));
     EXPECT_FALSE(utrm.is_stored(3,1));
     EXPECT_FALSE(utrm.is_stored(3,2));
-    EXPECT_EQ(utrm.stored_row_size(0),3);
-    EXPECT_EQ(utrm.stored_row_size(1),2);
-    EXPECT_EQ(utrm.stored_row_size(2),1);
-    EXPECT_EQ(utrm.stored_col_size(0),1);
-    EXPECT_EQ(utrm.stored_col_size(1),2);
-    EXPECT_EQ(utrm.stored_col_size(2),3);
     EXPECT_EQ(utrm.offset(0,0),0);
     EXPECT_EQ(utrm.offset(0,1),1);
     EXPECT_EQ(utrm.offset(1,1),3);
@@ -199,13 +163,6 @@ TEST_F(PackerDeathTest, UpperTriangular4x3)
     EXPECT_FALSE(utcm.is_stored(3,1));
     EXPECT_FALSE(utcm.is_stored(3,2));
 
-    EXPECT_EQ(utcm.stored_row_size(0),3);
-    EXPECT_EQ(utcm.stored_row_size(1),2);
-    EXPECT_EQ(utcm.stored_row_size(2),1);
-    EXPECT_EQ(utcm.stored_row_size(3),0); 
-    EXPECT_EQ(utcm.stored_col_size(0),1);
-    EXPECT_EQ(utcm.stored_col_size(1),2);
-    EXPECT_EQ(utcm.stored_col_size(2),3);
     EXPECT_EQ(utcm.offset(0,0),0);
     EXPECT_EQ(utcm.offset(0,1),1);
     EXPECT_EQ(utcm.offset(1,1),2);
@@ -234,13 +191,6 @@ TEST_F(PackerDeathTest, LowerTriangular3x4)
     EXPECT_FALSE(ltrm.is_stored(1,3));
     EXPECT_FALSE(ltrm.is_stored(2,3));
 
-    EXPECT_EQ(ltrm.stored_row_size(0),1);
-    EXPECT_EQ(ltrm.stored_row_size(1),2);
-    EXPECT_EQ(ltrm.stored_row_size(2),3);
-    EXPECT_EQ(ltrm.stored_col_size(0),3);
-    EXPECT_EQ(ltrm.stored_col_size(1),2);
-    EXPECT_EQ(ltrm.stored_col_size(2),1);
-    EXPECT_EQ(ltrm.stored_col_size(3),0); 
     EXPECT_EQ(ltrm.offset(0,0),0);
     EXPECT_EQ(ltrm.offset(1,0),1);
     EXPECT_EQ(ltrm.offset(1,1),2);
@@ -265,13 +215,6 @@ TEST_F(PackerDeathTest, LowerTriangular3x4)
     EXPECT_FALSE(ltcm.is_stored(1,3));
     EXPECT_FALSE(ltcm.is_stored(2,3));
 
-    EXPECT_EQ(ltcm.stored_row_size(0),1);
-    EXPECT_EQ(ltcm.stored_row_size(1),2);
-    EXPECT_EQ(ltcm.stored_row_size(2),3);
-    EXPECT_EQ(ltcm.stored_col_size(0),3);
-    EXPECT_EQ(ltcm.stored_col_size(1),2);
-    EXPECT_EQ(ltcm.stored_col_size(2),1);
-    EXPECT_EQ(ltcm.stored_col_size(3),0); 
     EXPECT_EQ(ltcm.offset(0,0),0);
     EXPECT_EQ(ltcm.offset(1,0),1);
     EXPECT_EQ(ltcm.offset(1,1),3);
@@ -301,13 +244,6 @@ TEST_F(PackerDeathTest, LowerTriangular4x3)
     EXPECT_FALSE(ltrm.is_stored(0,2));
     EXPECT_FALSE(ltrm.is_stored(1,2));
 
-    EXPECT_EQ(ltrm.stored_row_size(0),1);
-    EXPECT_EQ(ltrm.stored_row_size(1),2);
-    EXPECT_EQ(ltrm.stored_row_size(2),3);
-    EXPECT_EQ(ltrm.stored_row_size(3),3); 
-    EXPECT_EQ(ltrm.stored_col_size(0),4);
-    EXPECT_EQ(ltrm.stored_col_size(1),3);
-    EXPECT_EQ(ltrm.stored_col_size(2),2);
     EXPECT_EQ(ltrm.offset(0,0),0);
     EXPECT_EQ(ltrm.offset(1,0),1);
     EXPECT_EQ(ltrm.offset(1,1),2);
@@ -336,13 +272,6 @@ TEST_F(PackerDeathTest, LowerTriangular4x3)
     EXPECT_FALSE(ltcm.is_stored(1,2));
     
 
-    EXPECT_EQ(ltcm.stored_row_size(0),1);
-    EXPECT_EQ(ltcm.stored_row_size(1),2);
-    EXPECT_EQ(ltcm.stored_row_size(2),3);
-    EXPECT_EQ(ltcm.stored_row_size(3),3);
-    EXPECT_EQ(ltcm.stored_col_size(0),4);
-    EXPECT_EQ(ltcm.stored_col_size(1),3);
-    EXPECT_EQ(ltcm.stored_col_size(2),2);
     EXPECT_EQ(ltcm.offset(0,0),0);
     EXPECT_EQ(ltcm.offset(1,0),1);
     EXPECT_EQ(ltcm.offset(2,0),2);
@@ -362,13 +291,6 @@ TEST_F(PackerDeathTest, DiagonalPacker3x4)
     EXPECT_EQ(d.nr(),3);
     EXPECT_EQ(d.nc(),4);
     EXPECT_EQ(d.stored_size(),3);
-    EXPECT_EQ(d.stored_row_size(0),1);
-    EXPECT_EQ(d.stored_row_size(1),1);
-    EXPECT_EQ(d.stored_row_size(2),1);
-    EXPECT_EQ(d.stored_col_size(0),1);
-    EXPECT_EQ(d.stored_col_size(1),1);
-    EXPECT_EQ(d.stored_col_size(2),1);
-    EXPECT_EQ(d.stored_col_size(3),0);
     EXPECT_TRUE(d.is_stored(0,0)); 
     EXPECT_TRUE(d.is_stored(1,1)); 
     EXPECT_TRUE(d.is_stored(2,2)); 
@@ -388,18 +310,6 @@ TEST_F(PackerDeathTest, SBandPacker6x6)
     EXPECT_EQ(sb.nr(),6);
     EXPECT_EQ(sb.nc(),6);
     EXPECT_EQ(sb.stored_size(),6*5);
-    EXPECT_EQ(sb.stored_row_size(0),3);
-    EXPECT_EQ(sb.stored_row_size(1),4);
-    EXPECT_EQ(sb.stored_row_size(2),5);
-    EXPECT_EQ(sb.stored_row_size(3),5);
-    EXPECT_EQ(sb.stored_row_size(4),4);
-    EXPECT_EQ(sb.stored_row_size(5),3);
-    EXPECT_EQ(sb.stored_col_size(0),3);
-    EXPECT_EQ(sb.stored_col_size(1),4);
-    EXPECT_EQ(sb.stored_col_size(2),5);
-    EXPECT_EQ(sb.stored_col_size(3),5);
-    EXPECT_EQ(sb.stored_col_size(4),4);
-    EXPECT_EQ(sb.stored_col_size(5),3);
     EXPECT_TRUE(sb.is_stored(0,0)); 
     EXPECT_TRUE(sb.is_stored(0,1)); 
     EXPECT_TRUE(sb.is_stored(0,2)); 

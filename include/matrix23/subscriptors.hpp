@@ -97,8 +97,6 @@ template <class P> concept isPacker = requires (P const p,size_t i, size_t j, bo
     b=p.is_stored(i,j);
     i=p.offset(i,j);
     i=p.stored_size();
-    i=p.stored_row_size(j);
-    i=p.stored_col_size(j);
 };
 
 #include <ranges>
@@ -123,8 +121,6 @@ public:
     using PackerCommon::PackerCommon; // Inherit constructors
     bool is_stored(size_t i, size_t j) const {range_check(i,j);return true;} // Full matrix, all elements are stored
     size_t stored_size() const {return nrows * ncols;} // Total number of elements
-    size_t stored_row_size(size_t row) const {assert(row<nrows);return ncols;}// Each row has nc elements
-    size_t stored_col_size(size_t col) const {assert(col<ncols);return nrows;}// Each col has nr elements
     FullShaper shaper() const {return FullShaper(nr(),nc());}
 };
 class FullPackerCM         : public FullPacker
@@ -160,18 +156,6 @@ public:
         size_t n=std::min(nrows,ncols);
         return n*(n+1)/2 + (ncols>nrows ? (ncols-nrows)*nrows : 0); // Total number of elements
     }
-    size_t stored_row_size(size_t row_index) const
-     {
-        assert(row_index < nrows);
-        if (row_index >= ncols) return 0; // No elements stored in this row
-        return ncols-row_index; // 
-    }
-    size_t stored_col_size(size_t col_index) const
-    {
-        assert(col_index < ncols);
-        if (col_index >= nrows) return nrows; // No elements stored in this row
-        return col_index+1; // 
-    }
     UpperTriangularShaper shaper() const {return UpperTriangularShaper(nr(),nc());}
 };
 class UpperTriangularPackerRM : public UpperTriangularPacker
@@ -205,18 +189,6 @@ public:
         size_t n=std::min(nrows,ncols);
         return n*(n+1)/2  + (nrows>ncols ?  (nrows-ncols)*ncols :  0); // Total number of elements
     }
-    size_t stored_row_size(size_t row_index) const
-    {
-        assert(row_index < nrows);
-        if (row_index >= ncols) return ncols; // full row below the triangle
-        return row_index+1; // in the triangle
-    }
-    size_t stored_col_size(size_t col_index) const
-    {
-        assert(col_index < ncols);
-        if (col_index >= nrows) return 0; // full row below the triangle
-        return nrows-col_index; // in the triangle
-    }
     LowerTriangularShaper shaper() const {return LowerTriangularShaper(nr(),nc());}
 };
 class LowerTriangularPackerRM : public LowerTriangularPacker
@@ -246,8 +218,6 @@ public:
     using PackerCommon::PackerCommon; // Inherit constructors
     bool is_stored(size_t i, size_t j) const {return i == j;}
     size_t stored_size() const {return std::min(nrows,ncols);}
-    size_t stored_row_size(size_t row) const {return row<ncols ? 1 : 0;}
-    size_t stored_col_size(size_t col) const {return col<nrows ? 1 : 0;}
     size_t offset(size_t i, size_t j) const
     {
         range_check(i,j);
@@ -268,18 +238,6 @@ public:
     SBandPacker(const size_t& n, size_t _k) : PackerCommon(n,n) , k(_k){};
     bool is_stored(size_t i, size_t j) const {range_check(i,j);return j<=i+k && i<=j+k;}
     size_t stored_size() const {return nrows * (2*k+1);}
-    size_t stored_row_size(size_t row) const 
-    {
-        if (row<k) return row+1+k;
-        if (row>nrows-k-1) return nrows-row+k;
-        return 2*k+1;  
-    }
-    size_t stored_col_size(size_t col) const //Don't need the col index.
-    {
-        if (col<k) return col+1+k;
-        if (col>ncols-k-1) return ncols-col+k;
-        return 2*k+1; 
-    }
     SBandShaper shaper() const {return SBandShaper(nr(),nc(),k);}
     size_t offset(size_t i, size_t j) const
     {

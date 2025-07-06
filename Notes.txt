@@ -53,8 +53,8 @@ TODO priorities:
     -clean up
         Done: value_t should be value_type to be consistent with std::vector and std::valarray.
         add nr(), nc() to shaper concept.
-        Remove stored_row_size/stored_col_size from packer concept?
-        One init loop for Matrix construction.
+        Done: Remove stored_row_size/stored_col_size from packer concept?
+        Done: One init loop for Matrix construction.
     -Missing features:
         -op+ op- */ scalars, +=,-=,*=,/=;.
         -TransposeView
