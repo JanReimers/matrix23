@@ -27,7 +27,6 @@ concept isMatrix = requires (M m,size_t i, size_t j, std::remove_cvref_t<M>::val
 
 template <typename T, isPacker P, isShaper S, typename D=default_data_type<T>, isSymmetry Sym=NoSymmetry<D,P> > class Matrix
 {
-
 public:
     typedef T value_type;
     using il_t = std::initializer_list<std::initializer_list<T>>;
@@ -36,6 +35,11 @@ public:
 
     Matrix(P p, S s) : itsPacker(p), itsShaper(s), data(itsPacker.stored_size()), itsSymmetry(data,itsPacker) {};
     Matrix(P p) : Matrix(p,p.shaper()) {};
+
+    Matrix(const il_t& init,P p) : Matrix(p) {load(init);}
+    Matrix(const il_t& init,P p, S s) : Matrix(p,s) {load(init);}
+    template <isMatrix M> Matrix(const M& m,P p, S s) : Matrix(p,s) {load(m);}
+    template <isMatrix M, isPacker otherP> Matrix(const M& m,otherP p, S s)  : Matrix(P(p.nr(),p.nc()),s) {load(m);}
     Matrix(P p, fill f, T v=T(1)) : Matrix(p)
     {
         switch (f)
@@ -43,10 +47,10 @@ public:
             case none:
                 break;
             case zero:
-                fillvalue(T(0.0));
+                fillvalue(T{0});
                 break;
             case one:
-                fillvalue(T(1.0));
+                fillvalue(T{1});
                 break;
             case value:
                 fillvalue(v);
@@ -54,13 +58,13 @@ public:
             case random:
                 fillrandom(v); //v is max abs
                 break;
+            case unit:
+                fillvalue(T{0});
+                filldiagonal(T{1});
+                break;
         }
     }
 
-    Matrix(const il_t& init,P p) : Matrix(p) {load(init);}
-    Matrix(const il_t& init,P p, S s) : Matrix(p,s) {load(init);}
-    template <isMatrix M> Matrix(const M& m,P p, S s) : Matrix(p,s) {load(m);}
-    template <isMatrix M, isPacker otherP> Matrix(const M& m,otherP p, S s)  : Matrix(P(p.nr(),p.nc()),s) {load(m);}
     //
     //  2D data access.
     //
@@ -164,6 +168,11 @@ protected:
             for (auto& i:data) i=OMLRandPos<T>();
         else
             for (auto& i:data) i=OMLRandPos<T>()*v;
+    }
+    void filldiagonal(T v) 
+    {
+        for (size_t i=0;i<nr()&&i<nc();i++)
+            (*this)(i,i)=v;
     }
     P itsPacker;
     S itsShaper;

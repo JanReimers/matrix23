@@ -83,5 +83,8 @@ TEST_F(InitTests, VectorInitializations)
         FullMatrixCM<double> m(3,4,matrix23::random,3.14);
         m.print();
     }
-
+    {
+        FullMatrixCM<double> m(3,4,matrix23::unit);
+        EXPECT_EQ(m,(ilil{{1,0,0,0},{0,1,0,0},{0,0,1,0}}));
+    }
 }

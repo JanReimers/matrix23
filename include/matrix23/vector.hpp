@@ -53,7 +53,7 @@ private:
     iota_view itsIndices;
 };
 
-enum fill {none, zero, one, value, random};
+enum fill {none, zero, one, value, random, unit};
 
 
 // template <typename T> using default_data_type=std::vector<T>;
@@ -75,6 +75,7 @@ public:
                 fillvalue(T(0.0));
                 break;
             case one:
+            case unit:
                 fillvalue(T(1.0));
                 break;
             case value:
@@ -83,6 +84,7 @@ public:
             case random:
                 fillrandom(v); //v is max abs
                 break;
+                
         }
     }
     Vector(const std::initializer_list<T>& init) : data(init.size()) {assign_from(init);}
