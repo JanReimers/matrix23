@@ -20,7 +20,9 @@ typedef std::ranges::iota_view<size_t,size_t> iota_view;
 template <class S> concept isShaper = requires (S const s,size_t i, size_t j, bool b)
 {
     s.nonzero_row_indexes(j);
-    s.nonzero_col_indexes(i);  
+    s.nonzero_col_indexes(i);
+    s.nr();
+    s.nc();
 };
 //--------------------------------------------------------------------------------------
 //

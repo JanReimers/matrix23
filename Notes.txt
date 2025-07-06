@@ -52,9 +52,11 @@ TODO priorities:
             No: to avoid all the Shaper pair rules?
     -clean up
         Done: value_t should be value_type to be consistent with std::vector and std::valarray.
-        add nr(), nc() to shaper concept.
+        Done: add nr(), nc() to shaper concept.
         Done: Remove stored_row_size/stored_col_size from packer concept?
         Done: One init loop for Matrix construction.
+        shapers.hpp, packers.hpp
+        
     -Missing features:
         -op+ op- */ scalars, +=,-=,*=,/=;.
         -TransposeView
