@@ -16,7 +16,78 @@ typedef std::ranges::iota_view<size_t,size_t> iota_view;
 //    [  (0,0),(1,0),(2,0)...(nr-1,0), (0,1),(1,1)...(nr-1,1) .....(nr-1,nc-1) ]
 //    col major is how Fortran, Lapack and Blas store a matrix.
 
-enum class Indexing {row_major, col_major};
+// enum class Indexing {row_major, col_major};
+template <class S> concept isShaper = requires (S const s,size_t i, size_t j, bool b)
+{
+    s.nonzero_row_indexes(j);
+    s.nonzero_col_indexes(i);  
+};
+//--------------------------------------------------------------------------------------
+//
+//  Shapers. These decide which part/range of a row or column is non-zero; *regardless* of whether or not
+//  thoses zeros are actually stored.  For example an upper triangular matrix can be will full packing/storage.
+//
+class ShaperCommon
+{
+public:
+    ShaperCommon(size_t nr, size_t nc) : nrows(nr), ncols(nc){};
+protected:
+    const size_t nrows,ncols;
+};
+class FullShaper            : public ShaperCommon
+{
+public:
+    using ShaperCommon::ShaperCommon; // Inherit constructors
+    iota_view nonzero_row_indexes(size_t col) const {return std::views::iota(size_t(0),nrows);}
+    iota_view nonzero_col_indexes(size_t row) const {return std::views::iota(size_t(0),ncols);}   
+};
+class UpperTriangularShaper : public ShaperCommon
+{
+public:
+    using ShaperCommon::ShaperCommon; // Inherit constructors
+    iota_view nonzero_row_indexes(size_t col) const {return std::views::iota(size_t(0),std::min(col+1,nrows));}
+    iota_view nonzero_col_indexes(size_t row) const {return std::views::iota(row      ,ncols);} 
+};
+class LowerTriangularShaper : public ShaperCommon
+{
+public:
+    using ShaperCommon::ShaperCommon; // Inherit constructors
+    iota_view nonzero_row_indexes(size_t col) const {return std::views::iota(col      ,nrows);}
+    iota_view nonzero_col_indexes(size_t row) const {return std::views::iota(size_t(0),std::min(row+1,ncols));}  
+};
+class DiagonalShaper        : public ShaperCommon
+{
+public:
+    using ShaperCommon::ShaperCommon; // Inherit constructors
+    iota_view nonzero_row_indexes(size_t col) const {return std::views::iota(col,std::min(col+1,nrows));}
+    iota_view nonzero_col_indexes(size_t row) const {return std::views::iota(row,std::min(row+1,ncols));}  
+};
+class SBandShaper           : public ShaperCommon
+{
+public:
+    SBandShaper(size_t nr, size_t nc, size_t _k) : ShaperCommon(nr,nc), k(_k) {};
+    iota_view nonzero_row_indexes(size_t col) const 
+    {
+        size_t i0=col<k ? 0 : col-k;
+        size_t i1=col+k>=nrows ? nrows : col+k+1;
+        return std::views::iota(i0 ,i1);
+    }
+    iota_view nonzero_col_indexes(size_t row) const 
+    {
+        size_t i0=row<k ? 0 : row-k;
+        size_t i1=row+k>=ncols ? ncols : row+k+1;
+        return std::views::iota(i0 ,i1);
+    }    
+    size_t k;
+};
+
+static_assert(isShaper<           FullShaper>);
+static_assert(isShaper<UpperTriangularShaper>);
+static_assert(isShaper<LowerTriangularShaper>);
+static_assert(isShaper<       DiagonalShaper>);
+static_assert(isShaper<          SBandShaper>);
+
+
 
 template <class P> concept isPacker = requires (P const p,size_t i, size_t j, bool b)
 {
@@ -25,11 +96,6 @@ template <class P> concept isPacker = requires (P const p,size_t i, size_t j, bo
     i=p.stored_size();
     i=p.stored_row_size(j);
     i=p.stored_col_size(j);
-};
-template <class S> concept isShaper = requires (S const s,size_t i, size_t j, bool b)
-{
-    s.nonzero_row_indexes(j);
-    s.nonzero_col_indexes(i);  
 };
 
 #include <ranges>
@@ -56,8 +122,8 @@ public:
     size_t stored_size() const {return nrows * ncols;} // Total number of elements
     size_t stored_row_size(size_t row) const {assert(row<nrows);return ncols;}// Each row has nc elements
     size_t stored_col_size(size_t col) const {assert(col<ncols);return nrows;}// Each col has nr elements
+    FullShaper shaper() const {return FullShaper(nr(),nc());}
 };
-
 class FullPackerCM         : public FullPacker
 {
 public:
@@ -103,8 +169,8 @@ public:
         if (col_index >= nrows) return nrows; // No elements stored in this row
         return col_index+1; // 
     }
+    UpperTriangularShaper shaper() const {return UpperTriangularShaper(nr(),nc());}
 };
-
 class UpperTriangularPackerRM : public UpperTriangularPacker
 {
 public:
@@ -148,6 +214,7 @@ public:
         if (col_index >= nrows) return 0; // full row below the triangle
         return nrows-col_index; // in the triangle
     }
+    LowerTriangularShaper shaper() const {return LowerTriangularShaper(nr(),nc());}
 };
 class LowerTriangularPackerRM : public LowerTriangularPacker
 {
@@ -183,6 +250,7 @@ public:
         range_check(i,j);
         return i;
     }
+    DiagonalShaper shaper() const {return DiagonalShaper(nr(),nc());}
 };
 class SBandPacker           : public PackerCommon
 {
@@ -209,7 +277,8 @@ public:
         if (col>ncols-k-1) return ncols-col+k;
         return 2*k+1; 
     }
-     size_t offset(size_t i, size_t j) const
+    SBandShaper shaper() const {return SBandShaper(nr(),nc(),k);}
+    size_t offset(size_t i, size_t j) const
     {
         range_check(i,j);
         return k+i-j+j*(2*k+1);
@@ -228,71 +297,6 @@ static_assert(isPacker<LowerTriangularPackerCM>);
 static_assert(isPacker<LowerTriangularPackerRM>);
 static_assert(isPacker<       DiagonalPacker  >);
 static_assert(isPacker<          SBandPacker  >);
-
-//--------------------------------------------------------------------------------------
-//
-//  Shapers. These decide which part/range of a row or column is non-zero; *regardless* of whether or not
-//  thoses zeros are actually stored.  For example an upper triangular matrix can be will full packing/storage.
-//
-class ShaperCommon
-{
-public:
-    ShaperCommon(const PackerCommon& p) : nrows(p.nr()), ncols(p.nc()){};
-protected:
-    const size_t nrows,ncols;
-};
-class FullShaper            : public ShaperCommon
-{
-public:
-    using ShaperCommon::ShaperCommon; // Inherit constructors
-    iota_view nonzero_row_indexes(size_t col) const {return std::views::iota(size_t(0),nrows);}
-    iota_view nonzero_col_indexes(size_t row) const {return std::views::iota(size_t(0),ncols);}   
-};
-class UpperTriangularShaper : public ShaperCommon
-{
-public:
-    using ShaperCommon::ShaperCommon; // Inherit constructors
-    iota_view nonzero_row_indexes(size_t col) const {return std::views::iota(size_t(0),std::min(col+1,nrows));}
-    iota_view nonzero_col_indexes(size_t row) const {return std::views::iota(row      ,ncols);} 
-};
-class LowerTriangularShaper : public ShaperCommon
-{
-public:
-    using ShaperCommon::ShaperCommon; // Inherit constructors
-    iota_view nonzero_row_indexes(size_t col) const {return std::views::iota(col      ,nrows);}
-    iota_view nonzero_col_indexes(size_t row) const {return std::views::iota(size_t(0),std::min(row+1,ncols));}  
-};
-class DiagonalShaper        : public ShaperCommon
-{
-public:
-    using ShaperCommon::ShaperCommon; // Inherit constructors
-    iota_view nonzero_row_indexes(size_t col) const {return std::views::iota(col,std::min(col+1,nrows));}
-    iota_view nonzero_col_indexes(size_t row) const {return std::views::iota(row,std::min(row+1,ncols));}  
-};
-class SBandShaper           : public ShaperCommon
-{
-public:
-    SBandShaper(const SBandPacker& p) : ShaperCommon(p), k(p.k) {};
-    iota_view nonzero_row_indexes(size_t col) const 
-    {
-        size_t i0=col<k ? 0 : col-k;
-        size_t i1=col+k>=nrows ? nrows : col+k+1;
-        return std::views::iota(i0 ,i1);
-    }
-    iota_view nonzero_col_indexes(size_t row) const 
-    {
-        size_t i0=row<k ? 0 : row-k;
-        size_t i1=row+k>=ncols ? ncols : row+k+1;
-        return std::views::iota(i0 ,i1);
-    }    
-    size_t k;
-};
-
-static_assert(isShaper<           FullShaper>);
-static_assert(isShaper<UpperTriangularShaper>);
-static_assert(isShaper<LowerTriangularShaper>);
-static_assert(isShaper<       DiagonalShaper>);
-static_assert(isShaper<          SBandShaper>);
 
 //
 //  Define what matrix shapes result from multiply two matricies.

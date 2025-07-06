@@ -77,7 +77,7 @@ public:
     static size_t nc(const il_t& il) {return il.begin()->size();}
 
     Matrix(P p, S s) : itsPacker(p), itsShaper(s), data(itsPacker.stored_size()), itsSymmetry(data,itsPacker) {};
-    Matrix(P p) : Matrix(p,S(p)) {};
+    Matrix(P p) : Matrix(p,p.shaper()) {};
     Matrix(P p, fill f, T v=T(1)) : Matrix(p)
     {
         switch (f)
@@ -345,7 +345,7 @@ public:
     using Base::nc;
     SymmetricMatrixCM(size_t n) : Base(UpperTriangularPackerCM(n,n)) {};
     SymmetricMatrixCM(size_t n, fill f, T v=T(1)) : Base(UpperTriangularPackerCM(n,n),f,v) {};
-    SymmetricMatrixCM(const il_t& il) : Base(il,UpperTriangularPackerCM(nr(il),nc(il))) {assert(nr()==nc());};
+    SymmetricMatrixCM(const il_t& il) : Base(il,UpperTriangularPackerCM(nr(il),nc(il)),FullShaper(nr(il),nc(il))) {assert(nr()==nc());};
     template <isMatrix M> SymmetricMatrixCM(const M& m) : Base(m,m.packer(), m.shaper()) {};
 };
 
@@ -475,7 +475,7 @@ auto operator*(const isMatrix auto& a,const isMatrix auto& b)
     // using packer_t=MatrixProductPackerType<decltype(a.packer()),decltype(b.packer())>::packer_t;
     using shaper_t=MatrixProductShaperType<decltype(a.shaper()),decltype(b.shaper())>::shaper_t;
     auto p=MatrixProductPacker(a.packer(),b.packer());
-    shaper_t s=shaper_t(p);
+    shaper_t s=p.shaper();
     return MatrixProductView(a.rows(),b.cols(),p,s);
 }
 
@@ -484,7 +484,7 @@ template <class T> auto operator*(const FullMatrixCM<T>& a,const FullMatrixCM<T>
     assert(a.nc() == b.nr() && "Matrix dimensions do not match for multiplication");
     using shaper_t=MatrixProductShaperType<decltype(a.shaper()),decltype(b.shaper())>::shaper_t;
     auto p=MatrixProductPacker(a.packer(),b.packer());
-    shaper_t s=shaper_t(p);
+    shaper_t s=p.shaper();
     return FullMatrixCMProductView(a.rows(),b.cols(),p,s); //Cache friendly version
 }
 

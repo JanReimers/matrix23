@@ -474,28 +474,28 @@ namespace std::ranges {
 TEST_F(PackerTests,FullShaper3x4)
 {
     size_t nr=3, nc=4;
-    FullPackerCM fp(nr,nc);
-    FullShaper fs(fp);
+    FullPackerCM p(nr,nc);
+    FullShaper s=p.shaper();
     for (size_t col=0;col<nc;col++)
-        EXPECT_EQ(fs.nonzero_row_indexes(col),iota_view(0,3));
+        EXPECT_EQ(s.nonzero_row_indexes(col),iota_view(0,3));
     for (size_t row=0;row<nr;row++)
-        EXPECT_EQ(fs.nonzero_col_indexes(row),iota_view(0,4));
+        EXPECT_EQ(s.nonzero_col_indexes(row),iota_view(0,4));
 }
 TEST_F(PackerTests,FullShaper4x3)
 {
     size_t nr=4, nc=3;
-    FullPackerCM fp(nr,nc);
-    FullShaper fs(fp);
+    FullPackerCM p(nr,nc);
+    FullShaper s=p.shaper();
     for (size_t col=0;col<nc;col++)
-        EXPECT_EQ(fs.nonzero_row_indexes(col),iota_view(0,4));
+        EXPECT_EQ(s.nonzero_row_indexes(col),iota_view(0,4));
     for (size_t row=0;row<nr;row++)
-        EXPECT_EQ(fs.nonzero_col_indexes(row),iota_view(0,3));
+        EXPECT_EQ(s.nonzero_col_indexes(row),iota_view(0,3));
 }
 TEST_F(PackerTests,UpperTriangularShaper3x4)
 {
     size_t nr=3, nc=4;
     UpperTriangularPackerCM p(nr,nc);
-    UpperTriangularShaper s(p);
+    UpperTriangularShaper s=p.shaper();
 
     EXPECT_EQ(s.nonzero_row_indexes(0),iota_view(0,1));
     EXPECT_EQ(s.nonzero_row_indexes(1),iota_view(0,2));
@@ -509,7 +509,7 @@ TEST_F(PackerTests,UpperTriangularShaper4x3)
 {
     size_t nr=4, nc=3;
     UpperTriangularPackerCM p(nr,nc);
-    UpperTriangularShaper s(p);
+    UpperTriangularShaper s=p.shaper();
 
     EXPECT_EQ(s.nonzero_row_indexes(0),iota_view(0,1));
     EXPECT_EQ(s.nonzero_row_indexes(1),iota_view(0,2));
@@ -523,7 +523,7 @@ TEST_F(PackerTests,LowerTriangularShaper3x4)
 {
     size_t nr=3, nc=4;
     LowerTriangularPackerCM p(nr,nc);
-    LowerTriangularShaper s(p);
+    LowerTriangularShaper s=p.shaper();
 
     EXPECT_EQ(s.nonzero_row_indexes(0),iota_view(0,3));
     EXPECT_EQ(s.nonzero_row_indexes(1),iota_view(1,3));
@@ -537,7 +537,7 @@ TEST_F(PackerTests,LowerTriangularShaper4x3)
 {
     size_t nr=4, nc=3;
     LowerTriangularPackerCM p(nr,nc);
-    LowerTriangularShaper s(p);
+    LowerTriangularShaper s=p.shaper();
 
     EXPECT_EQ(s.nonzero_row_indexes(0),iota_view(0,4));
     EXPECT_EQ(s.nonzero_row_indexes(1),iota_view(1,4));
@@ -553,7 +553,7 @@ TEST_F(PackerTests,DiagonalShaper3x4)
 {
     size_t nr=3, nc=4;
     DiagonalPacker p(nr,nc);
-    DiagonalShaper s(p);
+    DiagonalShaper s=p.shaper();
     EXPECT_EQ(s.nonzero_row_indexes(0),iota_view(0,1));
     EXPECT_EQ(s.nonzero_row_indexes(1),iota_view(1,2));
     EXPECT_EQ(s.nonzero_row_indexes(2),iota_view(2,3));
@@ -567,7 +567,7 @@ TEST_F(PackerTests,DiagonalShaper4x3)
 {
     size_t nr=4, nc=3;
     DiagonalPacker p(nr,nc);
-    DiagonalShaper s(p);
+    DiagonalShaper s=p.shaper();
     EXPECT_EQ(s.nonzero_row_indexes(0),iota_view(0,1));
     EXPECT_EQ(s.nonzero_row_indexes(1),iota_view(1,2));
     EXPECT_EQ(s.nonzero_row_indexes(2),iota_view(2,3));
@@ -581,7 +581,7 @@ TEST_F(PackerTests,SBandShaper6x6)
 {
     size_t n=6,k=2;
     SBandPacker p(n,k);
-    SBandShaper s(p);
+    SBandShaper s=p.shaper();
     EXPECT_EQ(s.nonzero_row_indexes(0),iota_view(0,3));
     EXPECT_EQ(s.nonzero_row_indexes(1),iota_view(0,4));
     EXPECT_EQ(s.nonzero_row_indexes(2),iota_view(0,5));

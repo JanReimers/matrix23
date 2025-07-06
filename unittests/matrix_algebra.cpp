@@ -335,9 +335,6 @@ TEST_F(MatrixAlgebraTests, SBandk5)
     EXPECT_EQ(v*A,(il{1367,1129,963,893,943,1137}));
     EXPECT_EQ(v*A*v,60215);
 }
-
-
-
 TEST_F(MatrixAlgebraTests, MatrixMultiplyFF)
 {
     {
@@ -372,7 +369,6 @@ TEST_F(MatrixAlgebraTests, MatrixMultiplyFF)
         EXPECT_EQ(C.row(2),(il{246,288,330}));
     }
 }
-
 TEST_F(MatrixAlgebraTests, MatrixMultiplyFL)
 {
     matrix23::FullMatrixCM<double> A({
@@ -405,7 +401,6 @@ TEST_F(MatrixAlgebraTests, MatrixMultiplyUF)
     EXPECT_EQ(C.row(1),(il{153,174,195}));
     EXPECT_EQ(C.row(2),(il{197,220,243}));
 }
-
 TEST_F(MatrixAlgebraTests, MatrixMultiplyDF)
 {
     matrix23::DiagonalMatrix<double> A({
@@ -422,7 +417,6 @@ TEST_F(MatrixAlgebraTests, MatrixMultiplyDF)
     EXPECT_EQ(C.row(1),(il{24,30,36}));
     EXPECT_EQ(C.row(2),(il{77,88,99}));
 }
-  
 TEST_F(MatrixAlgebraTests, MatrixMultiplyLL)
 {
     matrix23::LowerTriangularMatrixCM<double> A({
@@ -456,7 +450,6 @@ TEST_F(MatrixAlgebraTests, MatrixMultiplyUU)
     EXPECT_EQ(C.row(2),(il{99}));
   
 }
-
 TEST_F(MatrixAlgebraTests, MatrixMultiplyDL)
 {
     matrix23::DiagonalMatrix<double> A({
@@ -507,7 +500,6 @@ TEST_F(MatrixAlgebraTests, MatrixMultiplyDD)
     EXPECT_EQ(C.row(2),(il{99}));
   
 }
-
 TEST_F(MatrixAlgebraTests, MatrixMultiplyB1B2)
 {
     matrix23::SBandMatrix<double> A({
@@ -534,4 +526,21 @@ TEST_F(MatrixAlgebraTests, MatrixMultiplyB1B2)
     EXPECT_EQ(C.row(4),(il{330,325,399,351,421}));
     EXPECT_EQ(C.row(5),(il{368,384,176,212}));
 
+}
+
+
+TEST_F(MatrixAlgebraTests, MatrixMultiplySS)
+{
+    matrix23::SymmetricMatrixCM<double> A{
+        {1,2,3,4},
+        {2,5,6,7},
+        {3,6,8,9},
+        {4,7,9,10}};
+    matrix23::SymmetricMatrixCM<double> B{
+        {11,12,13,14},
+        {12,15,16,17},
+        {13,16,18,19},
+        {14,17,19,20}};
+
+    // matrix23::FullMatrixCM<double> C=A*B;
 }
