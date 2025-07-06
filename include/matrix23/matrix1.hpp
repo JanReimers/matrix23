@@ -115,7 +115,17 @@ public:
                 if (itsPacker.is_stored(i, j)) 
                     (*this)(i,j) = m(i, j);
                 else
-                    assert(m(i,j)==0.0); //Make sure we are not throwing away data.
+                    assert(m(i,j)==itsSymmetry.apply(i,j)); //Make sure data support the symmetry.
+    }
+    template <isMatrix M, isPacker otherP> Matrix(const M& m,otherP p, S s) 
+        : Matrix(P(p.nr(),p.nc()),s)
+    {
+        for (size_t i = 0; i < nr(); ++i)
+            for (size_t j = 0; j < nc(); ++j)
+                if (itsPacker.is_stored(i, j)) 
+                    (*this)(i,j) = m(i, j);
+                else
+                    assert(m(i,j)==itsSymmetry.apply(i,j)); //Make sure data support the symmetry.
     }
     //
     //  2D data access.
@@ -463,19 +473,29 @@ template <isPacker A, isPacker B> auto MatrixProductPacker(const A& a, const B& 
     using packer_t=MatrixProductPackerType<A,B>::packer_t;
     return packer_t(a.nr(),b.nc());
 }
+template <isShaper A, isShaper B> auto MatrixProductShaper(const A& a, const B& b)
+{
+    using shaper_t=MatrixProductShaperType<A,B>::shaper_t;
+    return shaper_t(a.nr(),b.nc());
+}
 template <> inline auto MatrixProductPacker(const SBandPacker& a, const SBandPacker& b)
 {
     assert(a.nr()==b.nr());
     return SBandPacker(a.nr(),a.bandwidth()+b.bandwidth());
+}
+template <> inline auto MatrixProductShaper(const SBandShaper& a, const SBandShaper& b)
+{
+    assert(a.nr()==b.nr());
+    return SBandShaper(a.nr(),b.nc(),a.bandwidth()+b.bandwidth());
 }
 
 auto operator*(const isMatrix auto& a,const isMatrix auto& b)
 {
     assert(a.nc() == b.nr() && "Matrix dimensions do not match for multiplication");
     // using packer_t=MatrixProductPackerType<decltype(a.packer()),decltype(b.packer())>::packer_t;
-    using shaper_t=MatrixProductShaperType<decltype(a.shaper()),decltype(b.shaper())>::shaper_t;
+    // using shaper_t=MatrixProductShaperType<decltype(a.shaper()),decltype(b.shaper())>::shaper_t;
     auto p=MatrixProductPacker(a.packer(),b.packer());
-    shaper_t s=p.shaper();
+    auto s=MatrixProductShaper(a.shaper(),b.shaper());
     return MatrixProductView(a.rows(),b.cols(),p,s);
 }
 

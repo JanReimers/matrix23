@@ -31,6 +31,8 @@ class ShaperCommon
 {
 public:
     ShaperCommon(size_t nr, size_t nc) : nrows(nr), ncols(nc){};
+    size_t nr() const {return nrows;}
+    size_t nc() const {return ncols;}
 protected:
     const size_t nrows,ncols;
 };
@@ -78,6 +80,7 @@ public:
         size_t i1=row+k>=ncols ? ncols : row+k+1;
         return std::views::iota(i0 ,i1);
     }    
+    size_t bandwidth() const {return k;}
     size_t k;
 };
 

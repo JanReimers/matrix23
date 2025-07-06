@@ -542,5 +542,36 @@ TEST_F(MatrixAlgebraTests, MatrixMultiplySS)
         {13,16,18,19},
         {14,17,19,20}};
 
-    // matrix23::FullMatrixCM<double> C=A*B;
+    matrix23::FullMatrixCM<double> C=A*B;
+    EXPECT_EQ(C(0,0),1*11+2*12+3*13+4*14);
+    EXPECT_EQ(C(1,0),2*11+5*12+6*13+7*14);
+    EXPECT_EQ(C(2,0),3*11+6*12+8*13+9*14);
+    EXPECT_EQ(C(3,0),4*11+7*12+9*13+10*14);
+    EXPECT_EQ(C(0,1),1*12+2*15+3*16+4*17);
+    EXPECT_EQ(C(1,1),2*12+5*15+6*16+7*17);
+    EXPECT_EQ(C(2,1),3*12+6*15+8*16+9*17);
+    EXPECT_EQ(C(3,1),4*12+7*15+9*16+10*17);
+    EXPECT_EQ(C(0,2),1*13+2*16+3*18+4*19);
+    EXPECT_EQ(C(1,2),2*13+5*16+6*18+7*19);
+    EXPECT_EQ(C(2,2),3*13+6*16+8*18+9*19);
+    EXPECT_EQ(C(3,2),4*13+7*16+9*18+10*19);
+    EXPECT_EQ(C(0,3),1*14+2*17+3*19+4*20);
+    EXPECT_EQ(C(1,3),2*14+5*17+6*19+7*20);
+    EXPECT_EQ(C(2,3),3*14+6*17+8*19+9*20);
+    EXPECT_EQ(C(3,3),4*14+7*17+9*19+10*20);
+
+    
 }
+
+TEST_F(MatrixAlgebraTests, MatrixMultiplySS_commute)
+{
+    matrix23::SymmetricMatrixCM<double> A{
+        {1,2,3,4},
+        {2,5,6,7},
+        {3,6,8,9},
+        {4,7,9,10}};
+
+    matrix23::SymmetricMatrixCM<double> C=A*A; //THis will do a run time check A*A is indeed symmetric.
+    EXPECT_EQ(C,(ilil{{30,58,75,85},{58,114,147,167},{75,147,190,216},{85,167,216,246}}));
+}
+
