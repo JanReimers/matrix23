@@ -1,7 +1,7 @@
 // File: matrix.cpp Unit tests for the Matrix<T> class.
 #include "gtest/gtest.h"
 #include <iostream>
-#include "matrix23/subscriptors.hpp"
+#include "matrix23/packer.hpp"
 
 using std::cout;
 using std::endl;
@@ -22,6 +22,22 @@ public:
 using PackerDeathTest=PackerTests;
 
 using namespace matrix23;
+
+static_assert(isPacker<           FullPackerCM>);
+static_assert(isPacker<           FullPackerRM>);
+static_assert(isPacker<UpperTriangularPackerCM>);
+static_assert(isPacker<UpperTriangularPackerRM>);
+static_assert(isPacker<LowerTriangularPackerCM>);
+static_assert(isPacker<LowerTriangularPackerRM>);
+static_assert(isPacker<       DiagonalPacker  >);
+static_assert(isPacker<          SBandPacker  >);
+
+static_assert(isShaper<           FullShaper>);
+static_assert(isShaper<UpperTriangularShaper>);
+static_assert(isShaper<LowerTriangularShaper>);
+static_assert(isShaper<       DiagonalShaper>);
+static_assert(isShaper<          SBandShaper>);
+
 
 TEST_F(PackerDeathTest, Full)
 {

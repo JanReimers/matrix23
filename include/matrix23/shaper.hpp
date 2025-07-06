@@ -82,11 +82,6 @@ public:
     size_t k;
 };
 
-static_assert(isShaper<           FullShaper>);
-static_assert(isShaper<UpperTriangularShaper>);
-static_assert(isShaper<LowerTriangularShaper>);
-static_assert(isShaper<       DiagonalShaper>);
-static_assert(isShaper<          SBandShaper>);
 
 }; //namespace matrix23
 

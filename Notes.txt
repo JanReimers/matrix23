@@ -38,7 +38,7 @@ TODO priorities:
         Done: matmul.hpp 
         matops.hpp
         Done: GenVector and Data<>.  Use default template arguments like for matrix.
-        move all static asserts into test source files.
+        Done: move all static asserts into test source files.
         Make a common base class for symmetries.
     -Missing features:
         -op+ op- */ scalars, +=,-=,*=,/=;.
@@ -159,6 +159,12 @@ Performance:
         Option 1 seems better because MatrixFullCMProductView<R,C> can inherit from MatrixProductView<R,C,P,S> and only need to overload op(i,j).
             It might help to have specialized concepts for FullCM and FullRM.  But what is the distinguishing function call (or attribute) then distinguished them?
             The specialization is the other way around.  Non full needs is_stored for the packer, full does not.
+            We can make more constrained concepts as follows https://youtu.be/pmdwAf6hCWg?t=1378
+                class RowMajor{};
+                class FullRM :: public RowMajor ...
+                and put in the concept for RM
+                    std::derived_from<M,RowMajor>;
+
         Tiling https://siboehm.com/articles/22/Fast-MMM-on-CPU
     https://github.com/flame/how-to-optimize-gemm/wiki#the-gotoblasblis-approach-to-optimizing-matrix-matrix-multiplication---step-by-step
 

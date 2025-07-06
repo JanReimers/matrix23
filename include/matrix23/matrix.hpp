@@ -141,7 +141,6 @@ auto operator*(const isMatrix auto& m, const isVector auto& v)
     auto indices=std::views::iota(size_t(0),rows.size());
     auto mv= indices | std::views::transform([rows,v](size_t i) {return rows[i] * v;});
     assert(mv.size()==rows.size());
-    static_assert(isVector<VectorView<decltype(mv)>>,"Matrix-vector multiplication should satisfy isVector concept requirements");
     return VectorView(std::move(mv), indices);
 }
 
@@ -151,7 +150,6 @@ auto operator*(const isVector auto& v,const isMatrix auto& m)
     auto indices=std::views::iota(size_t(0),cols.size());
     auto vm=indices | std::views::transform([cols,v](size_t j) {return v * cols[j];});
     assert(vm.size()==cols.size());
-    static_assert(isVector<VectorView<decltype(vm)>>,"Matrix-vector multiplication should satisfy isVector concept requirements");
     return VectorView(std::move(vm), indices);
 }
 
@@ -207,7 +205,6 @@ private:
 auto operator*(const isMatrix auto& a,const isMatrix auto& b)
 {
     assert(a.nc() == b.nr() && "Matrix dimensions do not match for multiplication");
-    static_assert(isMatrix<MatrixProductView<decltype(a.rows()),decltype(b.rows()),decltype(a.subscriptor())>>,"Matrix-Matrix multiplication should satisfy isMatrix concept requirements");
     return MatrixProductView(a.rows(),b.cols(),a.subscriptor());
 }
 

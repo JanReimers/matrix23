@@ -8,6 +8,13 @@ using std::cout;
 using std::endl;
 using matrix23::Vector;
 
+namespace matrix23
+{
+static_assert(isSymmetry<   NoSymmetry<default_data_type<double>,FullPackerCM>> );
+static_assert(isSymmetry<    Symmetric<default_data_type<double>,FullPackerCM>> );
+static_assert(isSymmetry<AntiSymmetric<default_data_type<double>,FullPackerCM>> );
+}
+
 class MatrixTests : public ::testing::Test
 {
 public:

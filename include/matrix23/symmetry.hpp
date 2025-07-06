@@ -52,9 +52,6 @@ private:
     const P& packer;
 };
 
-// static_assert(isSymmetry<   NoSymmetry<default_data_type<double>,FullPackerCM>> );
-// static_assert(isSymmetry<    Symmetric<default_data_type<double>,FullPackerCM>> );
-// static_assert(isSymmetry<AntiSymmetric<default_data_type<double>,FullPackerCM>> );
 
 
 } //namespace

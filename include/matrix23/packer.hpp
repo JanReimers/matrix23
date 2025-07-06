@@ -176,13 +176,5 @@ public:
     const size_t k;
 };
 
-static_assert(isPacker<           FullPackerCM>);
-static_assert(isPacker<           FullPackerRM>);
-static_assert(isPacker<UpperTriangularPackerCM>);
-static_assert(isPacker<UpperTriangularPackerRM>);
-static_assert(isPacker<LowerTriangularPackerCM>);
-static_assert(isPacker<LowerTriangularPackerRM>);
-static_assert(isPacker<       DiagonalPacker  >);
-static_assert(isPacker<          SBandPacker  >);
 
 } // namespace
