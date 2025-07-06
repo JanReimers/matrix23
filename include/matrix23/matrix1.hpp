@@ -185,15 +185,16 @@ public:
     {
         for (size_t i = 0; i < nr(); ++i)
         {
+            std::cout << "{";
             for (size_t j = 0; j < nc(); ++j)
             {
-                // if (itsPacker.is_stored(i, j))
-                    std::cout << (*this)(i, j) << " ";
-                // else
-                //     std::cout << "0 "; // Print 0 for non-stored elements
+                std::cout << (*this)(i, j);
+                if (j<nc()-1) std::cout << ",";
             }
-            std::cout << std::endl;
-        }   
+            std::cout << "}";
+            if (i<nr()-1) std::cout << ",";
+        }
+        std::cout << std::endl;
     }
 protected:
     void load(std::initializer_list<std::initializer_list<T>> init)
