@@ -588,8 +588,10 @@ TEST_F(MatrixAlgebraTests, MatrixMultiplySU)
     EXPECT_EQ(C,(ilil{{11,42,99,185},{22,99,214,367},{33,126,279,476},{44,153,326,546}}));
     // matrix23::SymmetricMatrixCM<double> D=A*B; Run time fail, A*B is not symmetric.
 }
+
 TEST_F(MatrixAlgebraTests, FullColMajor_ops)
 {
+    {
     matrix23::FullMatrixCM<double> A({
         {1,2,3,4},
         {5,6,7,8},
@@ -598,6 +600,22 @@ TEST_F(MatrixAlgebraTests, FullColMajor_ops)
 
     matrix23::FullMatrixCM<double> C=A*A*A-A+5*A-A*A/2;
     EXPECT_EQ(C,(ilil{{3099,3518,3937,4356},{7187,8142,9097,10052},{11275,12766,14257,15748},{15363,17390,19417,21444}}));
+    }
+    {
+        matrix23::FullMatrixCM<double> A{
+        {1,2,3},
+        {4,5,6},
+        {7,8,9}};
+        matrix23::UpperTriangularMatrixCM<double> B{
+        {1,2,3},
+        {0,5,6},
+        {0,0,9}};
+        matrix23::FullMatrixCM<double> C=A+B;
+        matrix23::FullMatrixCM<double> D=B+A;
+        EXPECT_EQ(C,(ilil{{2,4,6},{4,10,12},{7,8,18}}));
+        EXPECT_EQ(C,D);
+    }
+
 }
 
 TEST_F(MatrixAlgebraTests, ScalarSelfModOps)
@@ -627,7 +645,6 @@ TEST_F(MatrixAlgebraTests, ScalarSelfModOps)
     B/=-1;
     EXPECT_EQ(B,(ilil{{1,2,3},{5,6},{8}}));
 }
-
 TEST_F(MatrixAlgebraTests, MatrixSelfModOps)
 {
     matrix23::FullMatrixCM<double> Fcm{3,3,matrix23::one};

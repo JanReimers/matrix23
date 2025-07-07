@@ -54,8 +54,8 @@ public:
     size_t nc  () const {return a.nc(); }
     auto rows  () const {return std::views::zip_transform(op,a.rows(),b.rows());}
     auto cols  () const {return std::views::zip_transform(op,a.cols(),b.cols());}
-    auto packer() const {return a.packer();}
-    auto shaper() const {return a.shaper();}
+    auto packer() const {return MatrixProductPacker(a.packer(),b.packer());}
+    auto shaper() const {return MatrixProductShaper(a.shaper(),b.shaper());}
 private:
     Ma a; 
     Mb b; 
