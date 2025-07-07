@@ -314,93 +314,13 @@ public:
     template <isMatrix M> SymmetricMatrixCM(const M& m) : Base(m,m.packer(), m.shaper()) {};
 };
 
-auto operator*(const isMatrix auto& m, const isVector auto& v)
-{
-    assert(m.nc()==v.size());
-    auto rows=m.rows();
-    auto indices=std::views::iota(size_t(0),rows.size());
-    auto mv= indices | std::views::transform([rows,v](size_t i) {return rows[i] * v;});
-    assert(mv.size()==rows.size());
-    return VectorView(std::move(mv), indices);
-}
-auto operator*(const isVector auto& v,const isMatrix auto& m)
-{
-    auto cols=m.cols();
-    auto indices=std::views::iota(size_t(0),cols.size());
-    auto vm=indices | std::views::transform([cols,v](size_t j) {return v * cols[j];});
-    assert(vm.size()==cols.size());
-    return VectorView(std::move(vm), indices);
-}
 
 
-
-
-template <isMatrix M> bool operator==(const M& a,const std::initializer_list<std::initializer_list<double>>& b)
-{
-    for (const auto& [ia,ib] : std::views::zip(a.rows(),b)) 
-        if (ia != ib) return false;
-    return true;
-}
-template <isMatrix Ma, isMatrix Mb> bool operator==(const Ma& a,const Mb& b)
-{
-    for (const auto& [ia,ib] : std::views::zip(a.rows(),b.rows())) 
-        if (ia != ib) return false;
-    return true;
-}
- 
-
-template <isMatrix Ma, isMatrix Mb, class Op> class MatrixBinOpView
-{
-public:
-    typedef std::remove_cvref_t<Ma>::value_type value_type;
-    MatrixBinOpView(const Ma& _a, const Mb& _b, const Op& _op)
-    : a(_a), b(_b), op(_op)
-    {
-        assert(a.nr()==b.nr());
-        assert(a.nc()==b.nc());
-    }
-  
-    size_t size() const { return  nr()*nc(); }
-    size_t nr  () const { return a.nr(); }
-    size_t nc  () const { return a.nc(); }
-
-    value_type operator()(size_t i, size_t j) const
-    {
-        return op(a(i,j),b(i,j));
-    }
-
-    auto rows() const
-    {
-       return std::views::zip_transform(op,a.rows(),b.rows());
-    }
-
-    auto cols() const
-    {
-       return std::views::zip_transform(op,a.cols(),b.cols());
-    }
-    auto packer() const
-    {
-        return a.packer();;
-    }
-    auto shaper() const
-    {
-        return a.shaper();;
-    }
-private:
-    Ma a; 
-    Mb b; 
-    Op op; 
-};
-
-
-auto operator-(const isMatrix auto& a,const isMatrix auto& b)
-{
-    return MatrixBinOpView(a,b,[](const auto& ia, const auto& ib){return ia-ib;});                    
-}
 
 
 
 
 } //namespace matrix23
 
+#include "matrix23/matops.hpp"
 #include "matrix23/matmul.hpp"

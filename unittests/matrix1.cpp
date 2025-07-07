@@ -415,3 +415,4 @@ TEST_F(MatrixTests, SymmetricColMajor4x4)
     EXPECT_EQ(A.row(0),(il{1,2,0,4}));
     EXPECT_EQ(A.col(2),(il{0,6,8,9}));
 }
+

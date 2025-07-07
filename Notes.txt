@@ -36,13 +36,16 @@ TODO priorities:
     -clean up
         Done shapers.hpp, packers.hpp symmetry.hpp
         Done: matmul.hpp 
-        matops.hpp
+        Done: matops.hpp
         Done: GenVector and Data<>.  Use default template arguments like for matrix.
         Done: move all static asserts into test source files.
         Done: Make a common base class for symmetries.
     Done: -Support initialization diagonal=unit.
+    -MatrixBinOpView return packer/shaper from a.  needs to be more sophisticated.
+        Unit test F+U, U+F etc.
     -Missing features:
-        -op+ op- */ scalars, +=,-=,*=,/=;.
+        -Done: op+ op- */ scalars
+        - , +=,-=,*=,/=;.
         -TransposeView
         -SubMatrixView (this is not a slice row(i), col(j) and diagonal are slices, 2D->1D)
         -op= code and tests.  i.e.  FullMatrixCM C;C=A*B;
