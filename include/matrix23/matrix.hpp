@@ -220,11 +220,11 @@ auto operator*(const isMatrix auto& a,const isMatrix auto& b)
 //     return ???;
 // }
 
-template <isMatrix Ma, isMatrix Mb, class Op> class MatrixBinOpView
+template <isMatrix M, isMatrix Mb, class Op> class MatrixBinOpView
 {
 public:
-    typedef std::remove_cvref_t<Ma>::value_t value_t;
-    MatrixBinOpView(const Ma& _a, const Mb& _b, const Op& _op)
+    typedef std::remove_cvref_t<M>::value_t value_t;
+    MatrixBinOpView(const M& _a, const Mb& _b, const Op& _op)
     : a(_a), b(_b), op(_op)
     {
         assert(a.nr()==b.nr());
@@ -254,16 +254,16 @@ public:
         return a.subscriptor();;
     }
 private:
-    Ma a; 
+    M a; 
     Mb b; 
     Op op; 
 };
 
-template <isMatrix Ma, class Op> class MatrixOpView
+template <isMatrix M, class Op> class MatrixOpView
 {
 public:
-    typedef std::remove_cvref_t<Ma>::value_t value_t;
-    MatrixOpView(const Ma& _a, const Op& _op)
+    typedef std::remove_cvref_t<M>::value_t value_t;
+    MatrixOpView(const M& _a, const Op& _op)
     : a(_a), op(_op)
     {
        
@@ -292,7 +292,7 @@ public:
         return a.subscriptor();;
     }
 private:
-    Ma a; 
+    M a; 
     Op op; 
 };
 

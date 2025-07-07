@@ -617,7 +617,6 @@ TEST_F(MatrixAlgebraTests, FullColMajor_ops)
     }
 
 }
-
 TEST_F(MatrixAlgebraTests, ScalarSelfModOps)
 {
     matrix23::SymmetricMatrixCM<double> A{
@@ -698,3 +697,39 @@ TEST_F(MatrixAlgebraTests, MatrixSelfModOps)
     EXPECT_EQ(U,(ilil{{0,0,0},{0,0},{0}}));
 
 }
+
+
+TEST_F(MatrixAlgebraTests, MatrixTranspose)
+{
+    matrix23::FullMatrixCM<double> Fcm{
+    {1,2,3},
+    {4,5,6},
+    {7,8,9}};
+    matrix23::UpperTriangularMatrixCM<double> U{
+    {1,2,3},
+    {0,5,6},
+    {0,0,9}};
+    matrix23::LowerTriangularMatrixCM<double> L{
+    {1,0,0},
+    {4,5,0},
+    {7,8,9}};
+
+    {
+        matrix23::FullMatrixCM<double> At=Transpose(Fcm);
+        EXPECT_EQ(At,(ilil{{1,4,7},{2,5,8},{3,6,9}}));
+    }
+    {
+        matrix23::FullMatrixCM<double> At=~Fcm;
+        EXPECT_EQ(At,(ilil{{1,4,7},{2,5,8},{3,6,9}}));
+    }
+    {
+        matrix23::LowerTriangularMatrixCM<double> Ut=~U;
+        EXPECT_EQ(Ut,(ilil{{1},{2,5},{3,6,9}}));
+    }
+    {
+        matrix23::UpperTriangularMatrixCM<double> Lt=~L;
+        EXPECT_EQ(Lt,(ilil{{1,4,7},{5,8},{9}}));
+        
+    }
+}
+

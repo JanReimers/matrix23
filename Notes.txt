@@ -47,7 +47,7 @@ TODO priorities:
         Done: op+ op- */ scalars
         Done: Vector:  +=,-=,*=,/=
         Done: Matrix:  +=,-=,*=,/=
-        -TransposeView
+        Done: TransposeView
         -SubMatrixView (this is not a slice row(i), col(j) and diagonal are slices, 2D->1D)
             MAtrix A(10,10);
             auto s=A.subMatrix(iota_view(3,7),iota_view(1,10));

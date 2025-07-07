@@ -22,6 +22,7 @@ template <class S> concept isShaper = requires (S const s,size_t i, size_t j, bo
     s.nonzero_col_indexes(i); //range of column indices in row i that are non zero.
     s.nr(); // Total number of rows.
     s.nc(); // Total number of columns.
+    s.transpose();
 };
 
 // Common base class for all shapers.
@@ -40,6 +41,7 @@ public:
     using ShaperCommon::ShaperCommon; // Inherit constructors
     iota_view nonzero_row_indexes(size_t col) const {return std::views::iota(size_t(0),nrows);}
     iota_view nonzero_col_indexes(size_t row) const {return std::views::iota(size_t(0),ncols);}   
+    auto transpose() const {return FullShaper(nc(),nr());}
 };
 class UpperTriangularShaper : public ShaperCommon
 {
@@ -47,6 +49,7 @@ public:
     using ShaperCommon::ShaperCommon; // Inherit constructors
     iota_view nonzero_row_indexes(size_t col) const {return std::views::iota(size_t(0),std::min(col+1,nrows));}
     iota_view nonzero_col_indexes(size_t row) const {return std::views::iota(row      ,ncols);} 
+    auto transpose() const;
 };
 class LowerTriangularShaper : public ShaperCommon
 {
@@ -54,13 +57,18 @@ public:
     using ShaperCommon::ShaperCommon; // Inherit constructors
     iota_view nonzero_row_indexes(size_t col) const {return std::views::iota(col      ,nrows);}
     iota_view nonzero_col_indexes(size_t row) const {return std::views::iota(size_t(0),std::min(row+1,ncols));}  
+    auto transpose() const;
 };
+inline auto UpperTriangularShaper::transpose() const {return LowerTriangularShaper(nc(),nr());}
+inline auto LowerTriangularShaper::transpose() const {return UpperTriangularShaper(nc(),nr());}
+
 class DiagonalShaper        : public ShaperCommon
 {
 public:
     using ShaperCommon::ShaperCommon; // Inherit constructors
     iota_view nonzero_row_indexes(size_t col) const {return std::views::iota(col,std::min(col+1,nrows));}
     iota_view nonzero_col_indexes(size_t row) const {return std::views::iota(row,std::min(row+1,ncols));}  
+    auto transpose() const {return DiagonalShaper(nc(),nr());}
 };
 class SBandShaper           : public ShaperCommon
 {
@@ -78,6 +86,7 @@ public:
         size_t i1=row+k>=ncols ? ncols : row+k+1;
         return std::views::iota(i0 ,i1);
     }    
+    auto transpose() const {return SBandShaper(nc(),nr(),k);}
     size_t bandwidth() const {return k;}
     size_t k;
 };

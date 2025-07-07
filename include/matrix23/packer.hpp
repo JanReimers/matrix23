@@ -24,6 +24,7 @@ template <class P> concept isPacker = requires (P const p,size_t i, size_t j, bo
     i=p.offset(i,j);  // linear 1D offset for a 2D index pair.
     i=p.stored_size();
     p.shaper();
+    p.transpose();
 };
 
 // Common base class for all packers.
@@ -59,7 +60,7 @@ public:
         range_check(i,j);
         return i + j*nrows;
     }
-
+    auto transpose() const {return FullPackerCM(nc(),nr());}
 };
 class FullPackerRM         : public FullPacker
 {
@@ -70,7 +71,7 @@ public:
         range_check(i,j);
         return j + i*ncols;
     }
-
+    auto transpose() const {return FullPackerRM(nc(),nr());}
 };
 
 class UpperTriangularPacker : public PackerCommon
@@ -94,6 +95,7 @@ public:
         range_check(i,j);
         return j + i*(2*ncols-i-1)/2;
     }
+    auto transpose() const;
 };
 class UpperTriangularPackerCM : public UpperTriangularPacker
 {
@@ -104,6 +106,7 @@ public:
         range_check(i,j);
         return i + j*(        j+1)/2;
     }
+    auto transpose() const;
 };
 
 class LowerTriangularPacker : public PackerCommon
@@ -127,6 +130,7 @@ public:
         range_check(i,j);
         return j + i*(        i+1)/2;
     }
+    auto transpose() const;
 };
 class LowerTriangularPackerCM : public LowerTriangularPacker
 {
@@ -137,7 +141,13 @@ public:
         range_check(i,j);
         return i + j*(2*nrows-j-1)/2;
     }
+    auto transpose() const;
 };
+
+inline auto UpperTriangularPackerRM::transpose() const {return LowerTriangularPackerRM(nc(),nr());}
+inline auto UpperTriangularPackerCM::transpose() const {return LowerTriangularPackerCM(nc(),nr());}
+inline auto LowerTriangularPackerRM::transpose() const {return UpperTriangularPackerRM(nc(),nr());}
+inline auto LowerTriangularPackerCM::transpose() const {return UpperTriangularPackerCM(nc(),nr());}
 
 class DiagonalPacker        : public PackerCommon
 {
@@ -151,6 +161,7 @@ public:
         return i;
     }
     DiagonalShaper shaper() const {return DiagonalShaper(nr(),nc());}
+    auto transpose() const {return DiagonalPacker(nc(),nr());}
 };
 class SBandPacker           : public PackerCommon
 {
@@ -166,6 +177,7 @@ public:
     bool is_stored(size_t i, size_t j) const {range_check(i,j);return j<=i+k && i<=j+k;}
     size_t stored_size() const {return nrows * (2*k+1);}
     SBandShaper shaper() const {return SBandShaper(nr(),nc(),k);}
+    auto transpose() const {return SBandShaper(nc(),nr(),k);}
     size_t offset(size_t i, size_t j) const
     {
         range_check(i,j);

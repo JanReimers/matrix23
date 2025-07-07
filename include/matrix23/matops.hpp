@@ -30,7 +30,7 @@ template <isMatrix M> bool operator==(const M& a,const std::initializer_list<std
         if (ia != ib) return false;
     return true;
 }
-template <isMatrix Ma, isMatrix Mb> bool operator==(const Ma& a,const Mb& b)
+template <isMatrix M, isMatrix Mb> bool operator==(const M& a,const Mb& b)
 {
     for (const auto& [ia,ib] : std::views::zip(a.rows(),b.rows())) 
         if (ia != ib) return false;
@@ -38,11 +38,11 @@ template <isMatrix Ma, isMatrix Mb> bool operator==(const Ma& a,const Mb& b)
 }
  
 
-template <isMatrix Ma, isMatrix Mb, class Op> class MatrixBinOpView
+template <isMatrix M, isMatrix Mb, class Op> class MatrixBinOpView
 {
 public:
-    typedef std::remove_cvref_t<Ma>::value_type value_type;
-    MatrixBinOpView(const Ma& _a, const Mb& _b, const Op& _op) : a(_a), b(_b), op(_op)
+    typedef std::remove_cvref_t<M>::value_type value_type;
+    MatrixBinOpView(const M& _a, const Mb& _b, const Op& _op) : a(_a), b(_b), op(_op)
     {
         assert(a.nr()==b.nr());
         assert(a.nc()==b.nc());
@@ -57,16 +57,16 @@ public:
     auto packer() const {return MatrixProductPacker(a.packer(),b.packer());}
     auto shaper() const {return MatrixProductShaper(a.shaper(),b.shaper());}
 private:
-    Ma a; 
+    M a; 
     Mb b; 
     Op op; 
 };
 
-template <isMatrix Ma, class Op> class MatrixOpView
+template <isMatrix M, class Op> class MatrixOpView
 {
 public:
-    typedef std::remove_cvref_t<Ma>::value_type value_type;
-    MatrixOpView(const Ma& _a, const Op& _op) : a(_a), op(_op) {}
+    typedef std::remove_cvref_t<M>::value_type value_type;
+    MatrixOpView(const M& _a, const Op& _op) : a(_a), op(_op) {}
 
     value_type operator()(size_t i, size_t j) const {return op(a(i,j));}
     size_t size() const {return nr()*nc(); }
@@ -77,7 +77,7 @@ public:
     auto packer() const {return a.packer();}
     auto shaper() const {return a.shaper();}
 private:
-    Ma a; 
+    M a; 
     Op op; 
 };
 
@@ -164,6 +164,25 @@ auto& operator-=(Matrix<T,P,S,D,Sym>& a, const isMatrix auto& b)
     return a;
 }
 
+template <isMatrix M> class MatrixTransposeView
+{
+public:
+    typedef std::remove_cvref_t<M>::value_type value_type;
+    MatrixTransposeView(const M& _m) : m(_m) {}
 
+    value_type operator()(size_t i, size_t j) const {return m(j,i);}
+    size_t size() const {return nr()*nc(); }
+    size_t nr  () const {return m.nc(); }
+    size_t nc  () const {return m.nr(); }
+    auto rows  () const {return m.cols();}
+    auto cols  () const {return m.rows();}
+    auto packer() const {return m.packer().transpose();}
+    auto shaper() const {return m.shaper().transpose();}
+private:
+    M m; 
+};
+
+auto Transpose(isMatrix auto& m) {return MatrixTransposeView(m);}
+auto operator~(isMatrix auto& m) {return MatrixTransposeView(m);}
 
 } // namespace
