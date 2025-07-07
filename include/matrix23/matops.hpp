@@ -105,8 +105,27 @@ auto operator/(const isMatrix auto& a,const arithmetic auto& b)
     return MatrixOpView(a,[b](const auto& ia){return ia/b;}); 
 }
 
-
-
+// isMatrix cannot support these because it does not store data or have 1D linear iterators..
+template <typename T, isPacker P, isShaper S, typename D, isSymmetry Sym> auto& operator+=(Matrix<T,P,S,D,Sym>& a, const arithmetic auto& b)
+{
+    for (auto& ia:a) ia+=b;
+    return a;
+}
+template <typename T, isPacker P, isShaper S, typename D, isSymmetry Sym> auto& operator-=(Matrix<T,P,S,D,Sym>& a, const arithmetic auto& b)
+{
+    for (auto& ia:a) ia-=b;
+    return a;
+}
+template <typename T, isPacker P, isShaper S, typename D, isSymmetry Sym> auto& operator*=(Matrix<T,P,S,D,Sym>& a, const arithmetic auto& b)
+{
+    for (auto& ia:a) ia*=b;
+    return a;
+}
+template <typename T, isPacker P, isShaper S, typename D, isSymmetry Sym> auto& operator/=(Matrix<T,P,S,D,Sym>& a, const arithmetic auto& b)
+{
+    for (auto& ia:a) ia/=b;
+    return a;
+}
 
 
 
