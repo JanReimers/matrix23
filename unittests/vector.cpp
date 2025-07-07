@@ -60,6 +60,19 @@ TEST_F(VectorTests, Operators)
 
     Vector<double> v5=v4*2+v2-v1*v4*v2+8*v1*v4*v1;
     EXPECT_EQ(v5,(il{62, 256.5, 451, 645.5, 840}));
+    v5+=v4;
+    EXPECT_EQ(v5,(il{62.5, 257.5, 452.5, 647.5, 842.5}));
+    v5-=v4;
+    EXPECT_EQ(v5,(il{62, 256.5, 451, 645.5, 840}));
+    v5+=1;
+    EXPECT_EQ(v5,(il{63, 257.5, 452, 646.5, 841}));
+    v5-=1;
+    EXPECT_EQ(v5,(il{62, 256.5, 451, 645.5, 840}));
+    v5*=-1;
+    EXPECT_EQ(v5,(il{-62, -256.5, -451, -645.5, -840}));
+    v5/=-1;
+    EXPECT_EQ(v5,(il{62, 256.5, 451, 645.5, 840}));
+
 }
 
 #include <valarray>

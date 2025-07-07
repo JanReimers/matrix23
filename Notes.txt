@@ -45,7 +45,8 @@ TODO priorities:
         Unit test F+U, U+F etc.
     -Missing features:
         -Done: op+ op- */ scalars
-        - , +=,-=,*=,/=;.
+        -Done: Vector:  +=,-=,*=,/=
+        -Matrix:  +=,-=,*=,/=
         -TransposeView
         -SubMatrixView (this is not a slice row(i), col(j) and diagonal are slices, 2D->1D)
         -op= code and tests.  i.e.  FullMatrixCM C;C=A*B;

@@ -214,6 +214,19 @@ auto operator-(const isVector auto& a, const isVector auto& b)
     return VectorView(std::views::zip_transform([](const auto& ia, const auto& ib) { return ia - ib; },a,b));
 }
 
+auto& operator+=(isVector auto& a, const isVector auto& b)
+{
+    auto ib=b.begin();
+    for (auto& ia:a) ia+=*ib++;
+    return a;
+}
+auto& operator-=(isVector auto& a, const isVector auto& b)
+{
+    auto ib=b.begin();
+    for (auto& ia:a) ia-=*ib++;
+    return a;
+}
+
 // This obviously useful concept should be in the std:: but it is not!
 template <typename T> concept arithmetic = std::integral<T> || std::floating_point<T>;
 
@@ -229,6 +242,28 @@ auto operator/(const isVector auto& a, const arithmetic auto& b)
 {
     return VectorView(std::views::transform(a,[b](const auto& ia) { return ia/b; }));
 }
+
+auto& operator+=(isVector auto& a, const arithmetic auto& b)
+{
+    for (auto& ia:a) ia+=b;
+    return a;
+}
+auto& operator-=(isVector auto& a, const arithmetic auto& b)
+{
+    for (auto& ia:a) ia-=b;
+    return a;
+}
+auto& operator*=(isVector auto& a, const arithmetic auto& b)
+{
+    for (auto& ia:a) ia*=b;
+    return a;
+}
+auto& operator/=(isVector auto& a, const arithmetic auto& b)
+{
+    for (auto& ia:a) ia/=b;
+    return a;
+}
+
 
 
 template <isVector V> bool operator==(const V& a,const std::initializer_list<double>& b)

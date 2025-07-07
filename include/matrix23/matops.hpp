@@ -108,4 +108,6 @@ auto operator/(const isMatrix auto& a,const arithmetic auto& b)
 
 
 
+
+
 } // namespace
