@@ -23,6 +23,7 @@ template <class P> concept isPacker = requires (P const p,size_t i, size_t j, bo
     b=p.is_stored(i,j); 
     i=p.offset(i,j);  // linear 1D offset for a 2D index pair.
     i=p.stored_size();
+    p.shaper();
 };
 
 // Common base class for all packers.

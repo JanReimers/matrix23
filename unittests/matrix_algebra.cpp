@@ -630,12 +630,54 @@ TEST_F(MatrixAlgebraTests, ScalarSelfModOps)
 
 TEST_F(MatrixAlgebraTests, MatrixSelfModOps)
 {
-    matrix23::SymmetricMatrixCM<double> A{
-        {1,2,3},
-        {2,5,6},
-        {3,6,8}};
-    matrix23::UpperTriangularMatrixCM<double> B{
-        {1,2,3},
-        {0,5,6},
-        {0,0,8}};
+    matrix23::FullMatrixCM<double> Fcm{3,3,matrix23::one};
+    matrix23::FullMatrixRM<double> Frm{3,3,matrix23::one};
+    matrix23::SymmetricMatrixCM<double> S{3,matrix23::one};
+    matrix23::UpperTriangularMatrixCM<double> U{3,3,matrix23::one};
+
+    Fcm+=Fcm; //use linear iterator
+    EXPECT_EQ(Fcm,(ilil{{2,2,2},{2,2,2},{2,2,2}}));
+    Fcm-=Fcm;
+    EXPECT_EQ(Fcm,(ilil{{0,0,0},{0,0,0},{0,0,0}}));
+    Fcm+=Frm; //use op(i,j) or col by col or row by row.
+    EXPECT_EQ(Fcm,(ilil{{1,1,1},{1,1,1},{1,1,1}}));
+    Fcm-=Frm;
+    EXPECT_EQ(Fcm,(ilil{{0,0,0},{0,0,0},{0,0,0}}));
+    Fcm+=S; //use op(i,j) or col by col or row by row.
+    EXPECT_EQ(Fcm,(ilil{{1,1,1},{1,1,1},{1,1,1}}));
+    Fcm-=S;
+    EXPECT_EQ(Fcm,(ilil{{0,0,0},{0,0,0},{0,0,0}}));
+    Fcm+=U; //use op(i,j) or col by col or row by row.
+    EXPECT_EQ(Fcm,(ilil{{1,1,1},{0,1,1},{0,0,1}}));
+    Fcm-=U;
+    EXPECT_EQ(Fcm,(ilil{{0,0,0},{0,0,0},{0,0,0}}));
+    Fcm+=U; //restore
+
+    S+=S;
+    EXPECT_EQ(S,(ilil{{2,2,2},{2,2,2},{2,2,2}}));
+    S-=S;
+    EXPECT_EQ(S,(ilil{{0,0,0},{0,0,0},{0,0,0}}));
+    S+=Fcm;
+    EXPECT_EQ(S,(ilil{{1,1,1},{1,1,1},{1,1,1}}));
+    S-=Fcm;
+    EXPECT_EQ(S,(ilil{{0,0,0},{0,0,0},{0,0,0}}));
+    S+=U; //use op(i,j) or col by col or row by row.
+    EXPECT_EQ(S,(ilil{{1,1,1},{1,1,1},{1,1,1}}));
+    S-=U;
+    EXPECT_EQ(S,(ilil{{0,0,0},{0,0,0},{0,0,0}}));
+    S+=U; //restore
+
+    U+=U;
+    EXPECT_EQ(U,(ilil{{2,2,2},{2,2},{2}}));
+    U-=U;
+    EXPECT_EQ(U,(ilil{{0,0,0},{0,0},{0}}));
+    U+=Fcm;
+    EXPECT_EQ(U,(ilil{{1,1,1},{1,1},{1}}));
+    U-=Fcm;
+    EXPECT_EQ(U,(ilil{{0,0,0},{0,0},{0}}));
+    U+=S;
+    EXPECT_EQ(U,(ilil{{1,1,1},{1,1},{1}}));
+    U-=S;
+    EXPECT_EQ(U,(ilil{{0,0,0},{0,0},{0}}));
+
 }

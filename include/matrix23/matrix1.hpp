@@ -64,6 +64,30 @@ public:
                 break;
         }
     }
+    Matrix(P p, S s, fill f, T v=T(1)) : Matrix(p,s)
+    {
+        switch (f)
+        {
+            case none:
+                break;
+            case zero:
+                fillvalue(T{0});
+                break;
+            case one:
+                fillvalue(T{1});
+                break;
+            case value:
+                fillvalue(v);
+                break;
+            case random:
+                fillrandom(v); //v is max abs
+                break;
+            case unit:
+                fillvalue(T{0});
+                filldiagonal(T{1});
+                break;
+        }
+    }
 
     //
     //  2D data access.
@@ -308,8 +332,8 @@ public:
     using il_t=Base::il_t;
     using Base::nr;
     using Base::nc;
-    SymmetricMatrixCM(size_t n) : Base(UpperTriangularPackerCM(n,n)) {};
-    SymmetricMatrixCM(size_t n, fill f, T v=T(1)) : Base(UpperTriangularPackerCM(n,n),f,v) {};
+    SymmetricMatrixCM(size_t n) : Base(UpperTriangularPackerCM(n,n),FullShaper(n,n)) {};
+    SymmetricMatrixCM(size_t n, fill f, T v=T{1}) : Base(UpperTriangularPackerCM(n,n),FullShaper(n,n),f,v) {};
     SymmetricMatrixCM(const il_t& il) : Base(il,UpperTriangularPackerCM(nr(il),nc(il)),FullShaper(nr(il),nc(il))) {assert(nr()==nc());};
     template <isMatrix M> SymmetricMatrixCM(const M& m) : Base(m,m.packer(), m.shaper()) {};
 };

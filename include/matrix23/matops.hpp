@@ -128,5 +128,42 @@ template <typename T, isPacker P, isShaper S, typename D, isSymmetry Sym> auto& 
 }
 
 
+template <typename Ta, typename Tb,isPacker P, isShaper S, typename D, isSymmetry Sym> 
+auto& operator+=(Matrix<Ta,P,S,D,Sym>& a, const Matrix<Tb,P,S,D,Sym>& b)
+{
+    auto ib=b.begin();
+    for (auto& ia:a) ia+=*ib++;
+    return a;
+}
+template <typename Ta, typename Tb,isPacker P, isShaper S, typename D, isSymmetry Sym> 
+auto& operator-=(Matrix<Ta,P,S,D,Sym>& a, const Matrix<Tb,P,S,D,Sym>& b)
+{
+    auto ib=b.begin();
+    for (auto& ia:a) ia+=*ib++;
+    return a;
+}
+
+template <typename T,isPacker P, isShaper S, typename D, isSymmetry Sym> 
+auto& operator+=(Matrix<T,P,S,D,Sym>& a, const isMatrix auto& b)
+{
+    assert(a.nr()==b.nr());
+    assert(a.nc()==b.nc());
+    for (auto i:iota_view(size_t(0),a.nr()))
+        for (auto j:a.shaper().nonzero_col_indexes(i))
+            if (a.packer().is_stored(i,j)) a(i,j)+=b(i,j);
+    return a;
+}
+template <typename T,isPacker P, isShaper S, typename D, isSymmetry Sym> 
+auto& operator-=(Matrix<T,P,S,D,Sym>& a, const isMatrix auto& b)
+{
+    assert(a.nr()==b.nr());
+    assert(a.nc()==b.nc());
+    for (auto i:iota_view(size_t(0),a.nr()))
+        for (auto j:a.shaper().nonzero_col_indexes(i))
+            if (a.packer().is_stored(i,j)) a(i,j)-=b(i,j);
+    return a;
+}
+
+
 
 } // namespace
