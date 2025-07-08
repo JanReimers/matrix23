@@ -251,51 +251,42 @@ protected:
 
 
 
-template <class T> class FullMatrixRM : public Matrix<T,FullPackerRM,FullShaper>
+template <class T> struct FullMatrixRM : public Matrix<T,FullPackerRM,FullShaper>
 {
-public:
     using Matrix<T,FullPackerRM,FullShaper>::Matrix; //Inherit base constructors.
 };
-template <class T> class FullMatrixCM : public Matrix<T,FullPackerCM,FullShaper>
+template <class T> struct FullMatrixCM : public Matrix<T,FullPackerCM,FullShaper>
 {
-public:
     using Matrix<T,FullPackerCM,FullShaper>::Matrix; //Inherit base constructors.
 };
-
-template <class T> class UpperTriangularMatrixCM : public Matrix<T,UpperTriangularPackerCM,UpperTriangularShaper>
+template <class T> struct UpperTriangularMatrixCM : public Matrix<T,UpperTriangularPackerCM,UpperTriangularShaper>
 {
-public:
     using Matrix<T,UpperTriangularPackerCM,UpperTriangularShaper>::Matrix; //Inherit base constructors.
 };
-template <class T> class UpperTriangularMatrixRM : public Matrix<T,UpperTriangularPackerRM,UpperTriangularShaper>
+template <class T> struct UpperTriangularMatrixRM : public Matrix<T,UpperTriangularPackerRM,UpperTriangularShaper>
 {
-public:
     using Matrix<T,UpperTriangularPackerRM,UpperTriangularShaper>::Matrix; //Inherit base constructors.
 };
-
-template <class T> class LowerTriangularMatrixCM : public Matrix<T,LowerTriangularPackerCM,LowerTriangularShaper>
+template <class T> struct LowerTriangularMatrixCM : public Matrix<T,LowerTriangularPackerCM,LowerTriangularShaper>
 {
-public:
     using Matrix<T,LowerTriangularPackerCM,LowerTriangularShaper>::Matrix; //Inherit base constructors.
 };
-template <class T> class LowerTriangularMatrixRM : public Matrix<T,LowerTriangularPackerRM,LowerTriangularShaper>
+template <class T> struct LowerTriangularMatrixRM : public Matrix<T,LowerTriangularPackerRM,LowerTriangularShaper>
 {
-public:
     using Matrix<T,LowerTriangularPackerRM,LowerTriangularShaper>::Matrix; //Inherit base constructors.
 };
-template <class T> class DiagonalMatrix : public Matrix<T,DiagonalPacker,DiagonalShaper>
+template <class T> struct DiagonalMatrix : public Matrix<T,DiagonalPacker,DiagonalShaper>
 {
-public:
     using Matrix<T,DiagonalPacker,DiagonalShaper>::Matrix;  //Inherit base constructors.
 };
-template <class T> class SBandMatrix : public Matrix<T,SBandPacker,SBandShaper>
+template <class T> struct SBandMatrix : public Matrix<T,SBandPacker,SBandShaper>
 {
 public:
     using Base = Matrix<T,SBandPacker,SBandShaper>;
     using il_t=Base::il_t;
     using Base::nr;
     using Base::nc;
-    SBandMatrix(                  ) : SBandMatrix(0,0) {};
+    SBandMatrix(                  ) : SBandMatrix(0,0) {}; //nr=nc=n=0, k=0
     SBandMatrix(size_t n, size_t k) : SBandMatrix(n,k,none) {};
     SBandMatrix(size_t n, size_t k, fill_t f, T v=T(1)) : Base(SBandPacker(n,k),f,v) {};
     SBandMatrix(const il_t& il,size_t k) : Base(il,SBandPacker(nr(il),k))
@@ -311,7 +302,7 @@ public:
 //  With the shaper/packer framework the definition of a Symmetric matrix is straight forward: Upper traiangular packing with full shape.
 //  The complexity only arises because for non-defualt symmetry we are now forced to specify the data type.
 //
-template <class T> class SymmetricMatrixCM 
+template <class T> struct SymmetricMatrixCM 
 : public Matrix<T,
                 UpperTriangularPackerCM,
                 FullShaper,
@@ -319,7 +310,6 @@ template <class T> class SymmetricMatrixCM
                 Symmetric<default_data_type<T>,UpperTriangularPackerCM>
                 >
 {
-public:
     using Matrix<T,
                 UpperTriangularPackerCM,
                 FullShaper,
