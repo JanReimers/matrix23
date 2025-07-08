@@ -2,7 +2,7 @@
 #include "gtest/gtest.h"
 #include <iostream>
 #include <ranges>
-#include "matrix23/matrix1.hpp"
+#include "matrix23/matrix.hpp"
 
 using std::cout;
 using std::endl;

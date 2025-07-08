@@ -1,7 +1,7 @@
 // File: matmul.hpp  Infrastructure required for general matrix pultiplication.
 #pragma once
 
-#include "matrix23/matrix1.hpp"
+#include "matrix23/matrix.hpp"
 
 //
 //  The requirements we want to meet are:

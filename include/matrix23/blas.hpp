@@ -1,7 +1,7 @@
 // File: blas.hpp  Interface for calling blass using matrix23 containers
 #pragma once
 
-#include "matrix23/matrix1.hpp"
+#include "matrix23/matrix.hpp"
 namespace matrix23 {
 
 // https://www.netlib.org/lapack/explore-html/d7/dda/group__gemv_ga4ac1b675072d18f902db8a310784d802.html#ga4ac1b675072d18f902db8a310784d802

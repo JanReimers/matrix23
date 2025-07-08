@@ -1,7 +1,7 @@
 // File: matops.hpp  Define operators other than matrix*matrix multiplication for matrices.
 #pragma once
 
-#include "matrix23/matrix1.hpp"
+#include "matrix23/matrix.hpp"
 
 namespace matrix23
 {

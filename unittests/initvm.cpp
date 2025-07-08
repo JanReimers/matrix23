@@ -1,7 +1,7 @@
 // File: initvm.cpp  Test initialization functions for Vector and Matrix.
 #include "gtest/gtest.h"
 #include <iostream>
-#include "matrix23/matrix1.hpp"
+#include "matrix23/matrix.hpp"
 
 using std::cout;
 using std::endl;

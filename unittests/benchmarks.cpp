@@ -1,6 +1,6 @@
 // File: benchmarks.cpp run some timing tests against libblas
 
-#include "matrix23/matrix1.hpp"
+#include "matrix23/matrix.hpp"
 #include "matrix23/blas.hpp"
 #include "gtest/gtest.h"
 #include <valarray>

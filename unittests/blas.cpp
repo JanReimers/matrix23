@@ -2,7 +2,7 @@
 
 #include "gtest/gtest.h"
 #include <iostream>
-#include "matrix23/matrix1.hpp"
+#include "matrix23/matrix.hpp"
 #include "matrix23/blas.hpp"
 
 using std::cout;
