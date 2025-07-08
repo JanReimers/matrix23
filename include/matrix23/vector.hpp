@@ -19,6 +19,7 @@ concept isVector = requires (V v)
     v.size();
 };
 
+typedef std::ranges::iota_view<size_t,size_t> iota_view;
 
 
 
@@ -53,7 +54,7 @@ private:
     iota_view itsIndices;
 };
 
-enum fill {none, zero, one, value, random, unit};
+enum fill_t {none, zero, one, value, random, unit};
 
 
 // template <typename T> using default_data_type=std::vector<T>;
@@ -63,9 +64,9 @@ template <typename T> using default_data_type=std::valarray<T>;
 template <class T, typename Data=default_data_type<T>> class Vector
 {
 public:
-    Vector() : data(0) {};
-    Vector(size_t n) : data(n) {}
-    Vector(size_t n, fill f, T v=T(1)) : data(n) 
+    Vector() : Vector(0) {};
+    Vector(size_t n) : Vector(n,none) {}
+    Vector(size_t n, fill_t f, T v=T(1)) : data(n) 
     {
         switch (f)
         {
@@ -91,10 +92,7 @@ public:
     template <std::ranges::range R> 
     Vector(const R& range) : data(range.size()) {assign_from(range);}
     template <std::ranges::range R> 
-    Vector(const VectorView<R> view) : data(view.size()) 
-    {
-        assign_from(view);
-    }
+    Vector(const VectorView<R>& view) : data(view.size()) {assign_from(view);}
     template <isVector V> Vector& operator=(const V& v)
     {
         assign_from(v);
@@ -111,14 +109,13 @@ public:
         assert(i < size());
         return data[i];
     }
-    size_t size() const { return data.size(); }
+    size_t size () const { return data.size(); }
     auto   begin()       { return std::begin(data); }
     auto   end  ()       { return std::end  (data); }
     auto   begin() const { return std::begin(data); }
     auto   end  () const { return std::end  (data); }
-    typedef std::ranges::iota_view<size_t,size_t> iota_view;
     iota_view indices() const { return iota_view(size_t(0), size()); } //Full view of indices
-    protected:
+protected:
     template <std::ranges::range R> void assign_from(const R& range)
     {
         size_t i=0;
@@ -133,7 +130,6 @@ public:
             for (auto& i:data) i=OMLRandPos<T>()*v;
     }
     
-
     Data data;
 };
 

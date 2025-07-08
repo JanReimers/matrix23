@@ -40,7 +40,7 @@ public:
     Matrix(const il_t& init,P p, S s) : Matrix(p,s) {load(init);}
     template <isMatrix M> Matrix(const M& m,P p, S s) : Matrix(p,s) {load(m);}
     template <isMatrix M, isPacker otherP> Matrix(const M& m,otherP p, S s)  : Matrix(P(p.nr(),p.nc()),s) {load(m);}
-    Matrix(P p, fill f, T v=T(1)) : Matrix(p)
+    Matrix(P p, fill_t f, T v=T(1)) : Matrix(p)
     {
         switch (f)
         {
@@ -64,7 +64,7 @@ public:
                 break;
         }
     }
-    Matrix(P p, S s, fill f, T v=T(1)) : Matrix(p,s)
+    Matrix(P p, S s, fill_t f, T v=T(1)) : Matrix(p,s)
     {
         switch (f)
         {
@@ -226,8 +226,8 @@ public:
     using Base::nr;
     using Base::nc;
     FullMatrixRM(                    ) : FullMatrixRM( 0, 0) {};
-    FullMatrixRM(size_t nr, size_t nc) : Base(FullPackerRM(nr,nc)) {};
-    FullMatrixRM(size_t nr, size_t nc, fill f, T v=T(1)) : Base(FullPackerRM(nr,nc),f,v) {};
+    FullMatrixRM(size_t nr, size_t nc) : FullMatrixRM(nr,nc,none) {};
+    FullMatrixRM(size_t nr, size_t nc, fill_t f, T v=T(1)) : Base(FullPackerRM(nr,nc),f,v) {};
     FullMatrixRM(const il_t& il) : Base(il,FullPackerRM(nr(il),nc(il))) {};
     template <isMatrix M> FullMatrixRM(const M& m) : Base(m,m.packer(), m.shaper()) {};
     
@@ -240,8 +240,8 @@ public:
     using Base::nr;
     using Base::nc;
     FullMatrixCM(                    ) : FullMatrixCM( 0, 0) {};
-    FullMatrixCM(size_t nr, size_t nc) : Base(FullPackerCM(nr,nc)) {};
-    FullMatrixCM(size_t nr, size_t nc, fill f, T v=T(1)) : Base(FullPackerCM(nr,nc),f,v)  {};
+    FullMatrixCM(size_t nr, size_t nc) : FullMatrixCM(nr,nc,none) {};
+    FullMatrixCM(size_t nr, size_t nc, fill_t f, T v=T(1)) : Base(FullPackerCM(nr,nc),f,v)  {};
     FullMatrixCM(const il_t& il) : Base(il,FullPackerCM(nr(il),nc(il)))  {};
     template <isMatrix M> FullMatrixCM(const M& m) : Base(m,m.packer(), m.shaper()) {};
 
@@ -255,8 +255,8 @@ public:
     using Base::nr;
     using Base::nc;
     UpperTriangularMatrixCM(                    ) : UpperTriangularMatrixCM( 0, 0) {};
-    UpperTriangularMatrixCM(size_t nr, size_t nc) : Base(UpperTriangularPackerCM(nr,nc)) {};
-    UpperTriangularMatrixCM(size_t nr, size_t nc, fill f, T v=T(1)) : Base(UpperTriangularPackerCM(nr,nc),f,v) {};
+    UpperTriangularMatrixCM(size_t nr, size_t nc) : UpperTriangularMatrixCM(nr,nc,none) {};
+    UpperTriangularMatrixCM(size_t nr, size_t nc, fill_t f, T v=T(1)) : Base(UpperTriangularPackerCM(nr,nc),f,v) {};
     UpperTriangularMatrixCM(const il_t& il) : Base(il,UpperTriangularPackerCM(nr(il),nc(il))) {};
     template <isMatrix M> UpperTriangularMatrixCM(const M& m) : Base(m,m.packer(), m.shaper()) {};
 };
@@ -268,8 +268,8 @@ public:
     using Base::nr;
     using Base::nc;
     UpperTriangularMatrixRM(                    ) : UpperTriangularMatrixRM( 0, 0) {};
-    UpperTriangularMatrixRM(size_t nr, size_t nc) : Base(UpperTriangularPackerRM(nr,nc)) {};
-    UpperTriangularMatrixRM(size_t nr, size_t nc, fill f, T v=T(1)) : Base(UpperTriangularPackerRM(nr,nc),f,v) {};
+    UpperTriangularMatrixRM(size_t nr, size_t nc) : UpperTriangularMatrixRM(nr,nc,none) {};
+    UpperTriangularMatrixRM(size_t nr, size_t nc, fill_t f, T v=T(1)) : Base(UpperTriangularPackerRM(nr,nc),f,v) {};
     UpperTriangularMatrixRM(const il_t& il) : Base(il,UpperTriangularPackerRM(nr(il),nc(il))) {};
     template <isMatrix M> UpperTriangularMatrixRM(const M& m) : Base(m,m.packer(), m.shaper()) {};
 };
@@ -282,8 +282,8 @@ public:
     using Base::nr;
     using Base::nc;
     LowerTriangularMatrixCM(                    ) : LowerTriangularMatrixCM( 0, 0) {};
-    LowerTriangularMatrixCM(size_t nr, size_t nc) : Base(LowerTriangularPackerCM(nr,nc)) {};
-    LowerTriangularMatrixCM(size_t nr, size_t nc, fill f, T v=T(1)) : Base(LowerTriangularPackerCM(nr,nc),f,v) {};
+    LowerTriangularMatrixCM(size_t nr, size_t nc) : LowerTriangularMatrixCM(nr,nc,none) {};
+    LowerTriangularMatrixCM(size_t nr, size_t nc, fill_t f, T v=T(1)) : Base(LowerTriangularPackerCM(nr,nc),f,v) {};
     LowerTriangularMatrixCM(const il_t& il) : Base(il,LowerTriangularPackerCM(nr(il),nc(il))) {};
     template <isMatrix M> LowerTriangularMatrixCM(const M& m) : Base(m,m.packer(), m.shaper()) {};
 };
@@ -295,8 +295,8 @@ public:
     using Base::nr;
     using Base::nc;
     LowerTriangularMatrixRM(                    ) : LowerTriangularMatrixRM( 0, 0) {};
-    LowerTriangularMatrixRM(size_t nr, size_t nc) : Base(LowerTriangularPackerRM(nr,nc)) {};
-    LowerTriangularMatrixRM(size_t nr, size_t nc, fill f, T v=T(1)) : Base(LowerTriangularPackerRM(nr,nc),f,v) {};
+    LowerTriangularMatrixRM(size_t nr, size_t nc) : LowerTriangularMatrixRM(nr,nc,none) {};
+    LowerTriangularMatrixRM(size_t nr, size_t nc, fill_t f, T v=T(1)) : Base(LowerTriangularPackerRM(nr,nc),f,v) {};
     LowerTriangularMatrixRM(const il_t& il) : Base(il,LowerTriangularPackerRM(nr(il),nc(il))) {};
     template <isMatrix M> LowerTriangularMatrixRM(const M& m) : Base(m,m.packer(), m.shaper()) {};
 };
@@ -308,7 +308,8 @@ public:
     using Base::nr;
     using Base::nc;
     DiagonalMatrix(                    ) : DiagonalMatrix( 0, 0) {};
-    DiagonalMatrix(size_t nr, size_t nc) : Base(DiagonalPacker(nr,nc)) {};
+    DiagonalMatrix(size_t nr, size_t nc) : DiagonalMatrix(nr,nc,none) {};
+    DiagonalMatrix(size_t nr, size_t nc, fill_t f, T v=T(1)) : Base(DiagonalPacker(nr,nc),f,v) {};
     DiagonalMatrix(const il_t& il) : Base(il,DiagonalPacker(nr(il),nc(il))) {};
     template <isMatrix M> DiagonalMatrix(const M& m) : Base(m,m.packer(), m.shaper()) {};
 };
@@ -320,8 +321,8 @@ public:
     using Base::nr;
     using Base::nc;
     SBandMatrix(                  ) : SBandMatrix(0,0) {};
-    SBandMatrix(size_t n, size_t k) : Base(SBandPacker(n,k)) {};
-    SBandMatrix(size_t n, size_t k, fill f, T v=T(1)) : Base(SBandPacker(n,k),f,v) {};
+    SBandMatrix(size_t n, size_t k) : SBandMatrix(n,k,none) {};
+    SBandMatrix(size_t n, size_t k, fill_t f, T v=T(1)) : Base(SBandPacker(n,k),f,v) {};
     SBandMatrix(const il_t& il,size_t k) : Base(il,SBandPacker(nr(il),k))
     {
         assert(nr(il)==nc(il)); //SBand only supports square matricies.
@@ -354,8 +355,8 @@ public:
     using Base::nr;
     using Base::nc;
     SymmetricMatrixCM(        ) : SymmetricMatrixCM(0) {};
-    SymmetricMatrixCM(size_t n) : Base(UpperTriangularPackerCM(n,n),FullShaper(n,n)) {};
-    SymmetricMatrixCM(size_t n, fill f, T v=T{1}) : Base(UpperTriangularPackerCM(n,n),FullShaper(n,n),f,v) {};
+    SymmetricMatrixCM(size_t n) : SymmetricMatrixCM(n,none) {};
+    SymmetricMatrixCM(size_t n, fill_t f, T v=T{1}) : Base(UpperTriangularPackerCM(n,n),FullShaper(n,n),f,v) {};
     SymmetricMatrixCM(const il_t& il) : Base(il,UpperTriangularPackerCM(nr(il),nc(il)),FullShaper(nr(il),nc(il))) {assert(nr()==nc());};
     template <isMatrix M> SymmetricMatrixCM(const M& m) : Base(m,m.packer(), m.shaper()) {};
 };
