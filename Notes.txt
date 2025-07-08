@@ -45,6 +45,10 @@ TODO priorities:
             Idea fails for SBand which need k.
         -COncepts can define return types:
             {v.size()} -> std::convertible_to<size_t>;
+    -Design:
+        What if SbandPaker had k as a template paramater?
+            More consistent construction.
+            More code generation.
     Done: -Support initialization diagonal=unit.
     Done: -MatrixBinOpView returns packer/shaper from a.  needs to be more sophisticated.
         Unit test F+U, U+F etc.
