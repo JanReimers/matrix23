@@ -101,17 +101,6 @@ public:
         return *this;
     }
 
-    // template <std::ranges::view V> GenVector& operator=(const VectorView<V>&& view) //const won't work for views.
-    // {   
-    //     if (data.size() == 0)
-    //         data.resize(view.size());
-    //     else
-    //         assert(size()==view.size());
-
-    //     assign_from(view);
-    //     return *this;
-    // }
-
     T operator()(size_t i) const
     {
         assert(i < size());
@@ -129,23 +118,7 @@ public:
     auto   end  () const { return std::end  (data); }
     typedef std::ranges::iota_view<size_t,size_t> iota_view;
     iota_view indices() const { return iota_view(size_t(0), size()); } //Full view of indices
-
-    // auto view() const
-    // {
-    //     return VectorView<decltype(data)>(data,iota_view(size_t(0), size())); //Full view
-    // }
-    // auto view(const iota_view& indices) const //possibly a partial view
-    // {
-    //     auto v =indices | std::views::transform([this](size_t i){ return data[i]; });
-    //     return VectorView<decltype(v)>(std::move(v), indices);
-    // }
-    // template <std::ranges::viewable_range R> operator VectorView<R>() const
-    // {
-    //     return VectorView<R>(data, iota_view(size_t(0), size()));
-    // }
-
-    
-protected:
+    protected:
     template <std::ranges::range R> void assign_from(const R& range)
     {
         size_t i=0;

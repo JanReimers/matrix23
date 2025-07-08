@@ -16,8 +16,9 @@ namespace matrix23
 typedef std::ranges::iota_view<size_t,size_t> iota_view; //Used for specifying index ranges.
 
 // c++20 concept definition for a shaper.
-template <class S> concept isShaper = requires (S const s,size_t i, size_t j, bool b)
+template <class S> concept isShaper = requires (S const s,S snc, size_t i, size_t j, bool b)
 {
+    snc.resize(i,j); //nr nc
     s.nonzero_row_indexes(j); //range of row indices in column j that are non zero.
     s.nonzero_col_indexes(i); //range of column indices in row i that are non zero.
     s.nr(); // Total number of rows.
@@ -30,10 +31,11 @@ class ShaperCommon
 {
 public:
     ShaperCommon(size_t nr, size_t nc) : nrows(nr), ncols(nc){};
+    void resize(size_t nr, size_t nc) {nrows=nr;ncols=nc;}
     size_t nr() const {return nrows;}
     size_t nc() const {return ncols;}
 protected:
-    const size_t nrows,ncols;
+    size_t nrows,ncols;
 };
 class FullShaper            : public ShaperCommon
 {

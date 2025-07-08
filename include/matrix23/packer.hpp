@@ -18,8 +18,9 @@
 namespace matrix23
 {
 // c++20 concept definition for a shaper.
-template <class P> concept isPacker = requires (P const p,size_t i, size_t j, bool b)
+template <class P> concept isPacker = requires (P const p,P pnc,size_t i, size_t j, bool b)
 {
+    pnc.resize(i,j); //nr nc
     b=p.is_stored(i,j); 
     i=p.offset(i,j);  // linear 1D offset for a 2D index pair.
     i=p.stored_size();
@@ -32,6 +33,7 @@ class PackerCommon
 {
 public:
     PackerCommon(const size_t& _nrows, const size_t& _ncols) : nrows(_nrows), ncols(_ncols) {};
+    void resize(size_t nr, size_t nc) {nrows=nr;ncols=nc;}
     size_t nr() const {return nrows;}
     size_t nc() const {return ncols;}
     void range_check(size_t i, size_t j) const
@@ -40,7 +42,7 @@ public:
         assert(j<ncols && "Column index ot of bounds");
     }
 protected:
-    const size_t nrows,ncols;
+    size_t nrows,ncols;
 };
 
 class FullPacker           : public PackerCommon

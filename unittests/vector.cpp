@@ -44,6 +44,7 @@ TEST_F(VectorTests, Operators)
     // Vector dot product.
     Vector<double> v2{6, 7, 8, 9, 10};
     EXPECT_EQ(v1*v2, 1*6 + 2*7 + 3*8 + 4*9 + 5*10);
+  
 
     Vector<double> v3 = v1 | std::views::drop(1) | std::views::take(3);
     // print(v3); // [2 3 4 ]
@@ -72,7 +73,12 @@ TEST_F(VectorTests, Operators)
     EXPECT_EQ(v5,(il{-62, -256.5, -451, -645.5, -840}));
     v5/=-1;
     EXPECT_EQ(v5,(il{62, 256.5, 451, 645.5, 840}));
-
+// Make sure op= is working.  All constructors above.
+    Vector<double> v6;
+    v6=v2;
+    EXPECT_EQ(v6,(il{6, 7, 8, 9, 10}));
+    v6=v2+v4;
+    EXPECT_EQ(v6,(il{6.5, 8, 9.5, 11, 12.5}));
 }
 
 #include <valarray>
