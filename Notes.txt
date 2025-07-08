@@ -40,9 +40,10 @@ TODO priorities:
         Done: GenVector and Data<>.  Use default template arguments like for matrix.
         Done: move all static asserts into test source files.
         Done: Make a common base class for symmetries.
-        -Tighten up constructors with more chaining.
-        -Matrix ... why not make packers in the base class constructors?
+        Done: Tighten up constructors with more chaining.
+        Done: -Matrix ... why not make packers in the base class constructors?
             Idea fails for SBand which need k.
+            Works great for all the other matrix type.  Onle line struct definitions!!
         -COncepts can define return types:
             {v.size()} -> std::convertible_to<size_t>;
     -Design:
