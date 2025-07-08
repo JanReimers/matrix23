@@ -33,15 +33,10 @@ public:
     static size_t nr(const il_t& il) {return il.size();}
     static size_t nc(const il_t& il) {return il.begin()->size();}
 
-    Matrix(P p, S s) : itsPacker(p), itsShaper(s), data(itsPacker.stored_size()), itsSymmetry(data,itsPacker) {};
-    Matrix(P p) : Matrix(p,p.shaper()) {};
-
-    Matrix(const il_t& init) : Matrix(P(nr(init),nc(init)),S(nr(init),nc(init))) {load(init);}
-    Matrix(const il_t& init,P p) : Matrix(p) {load(init);}
-    Matrix(const il_t& init,P p, S s) : Matrix(p,s) {load(init);}
-    template <isMatrix M> Matrix(const M& m) : Matrix(P(m.nr(),m.nc()),m.shaper()) {load(m);}
-    template <isMatrix M> Matrix(const M& m,P p, S s) : Matrix(p,s) {load(m);}
-    // template <isMatrix M, isPacker otherP> Matrix(const M& m,otherP p, S s)  : Matrix(P(p.nr(),p.nc()),s) {load(m);}
+    Matrix(                    ) : Matrix( 0) {}; //Empty matrix.
+    Matrix(size_t n            ) : Matrix(n,n) {}; //Square matrix.
+    Matrix(size_t nr, size_t nc) : Matrix(nr,nc,none) {};
+    Matrix(size_t n            , fill_t f, T v=T(1)) : Matrix(n,n,f,v) {}; //Square matrix with fill.
     Matrix(size_t nr, size_t nc, fill_t f, T v=T(1)) : Matrix(P(nr,nc),S(nr,nc))
     {
         switch (f)
@@ -66,6 +61,9 @@ public:
                 break;
         }
     }
+    Matrix(const il_t& init) : Matrix(P(nr(init),nc(init)),S(nr(init),nc(init))) {load(init);}
+    template <isMatrix M> Matrix(const M& m) : Matrix(P(m.nr(),m.nc()),m.shaper()) {load(m);}
+
     Matrix(P p, fill_t f, T v=T(1)) : Matrix(p)
     {
         switch (f)
@@ -90,6 +88,14 @@ public:
                 break;
         }
     }
+    Matrix(const il_t& init,P p) : Matrix(p) {load(init);} //SBand needs this, only p knows k.
+    template <isMatrix M> Matrix(const M& m,P p) : Matrix(p,m.shaper()) {load(m);} //SBand needs this, only p knows k.
+
+private:
+    Matrix(P p, S s) : itsPacker(p), itsShaper(s), data(itsPacker.stored_size()), itsSymmetry(data,itsPacker) {};
+    Matrix(P p) : Matrix(p,p.shaper()) {};
+
+    Matrix(const il_t& init,P p, S s) : Matrix(p,s) {load(init);}
     Matrix(P p, S s, fill_t f, T v=T(1)) : Matrix(p,s)
     {
         switch (f)
@@ -114,6 +120,7 @@ public:
                 break;
         }
     }
+public:
     template <isMatrix M> auto& operator=(M&& m)
     {
         if (nr()!=m.nr() || nc()!=m.nc())
@@ -247,97 +254,39 @@ protected:
 template <class T> class FullMatrixRM : public Matrix<T,FullPackerRM,FullShaper>
 {
 public:
-    using Base = Matrix<T,FullPackerRM,FullShaper>;
-    using il_t=Base::il_t;
-    using Base::nr;
-    using Base::nc;
-    FullMatrixRM(                    ) : FullMatrixRM( 0, 0) {};
-    FullMatrixRM(size_t nr, size_t nc) : FullMatrixRM(nr,nc,none) {};
-    FullMatrixRM(size_t nr, size_t nc, fill_t f, T v=T(1)) : Base(nr,nc,f,v) {};
-    FullMatrixRM(const il_t& il) : Base(il) {};
-    template <isMatrix M> FullMatrixRM(const M& m) : Base(m) {};
-    
+    using Matrix<T,FullPackerRM,FullShaper>::Matrix; //Inherit base constructors.
 };
 template <class T> class FullMatrixCM : public Matrix<T,FullPackerCM,FullShaper>
 {
 public:
-    using Base = Matrix<T,FullPackerCM,FullShaper>;
-    using il_t=Base::il_t;
-    using Base::nr;
-    using Base::nc;
-    FullMatrixCM(                    ) : FullMatrixCM( 0, 0) {};
-    FullMatrixCM(size_t nr, size_t nc) : FullMatrixCM(nr,nc,none) {};
-    FullMatrixCM(size_t nr, size_t nc, fill_t f, T v=T(1)) : Base(nr,nc,f,v)  {};
-    FullMatrixCM(const il_t& il) : Base(il)  {};
-    template <isMatrix M> FullMatrixCM(const M& m) : Base(m) {};
-
+    using Matrix<T,FullPackerCM,FullShaper>::Matrix; //Inherit base constructors.
 };
 
 template <class T> class UpperTriangularMatrixCM : public Matrix<T,UpperTriangularPackerCM,UpperTriangularShaper>
 {
 public:
-    using Base = Matrix<T,UpperTriangularPackerCM,UpperTriangularShaper>;
-    using il_t=Base::il_t;
-    using Base::nr;
-    using Base::nc;
-    UpperTriangularMatrixCM(                    ) : UpperTriangularMatrixCM( 0, 0) {};
-    UpperTriangularMatrixCM(size_t nr, size_t nc) : UpperTriangularMatrixCM(nr,nc,none) {};
-    UpperTriangularMatrixCM(size_t nr, size_t nc, fill_t f, T v=T(1)) : Base(nr,nc,f,v) {};
-    UpperTriangularMatrixCM(const il_t& il) : Base(il) {};
-    template <isMatrix M> UpperTriangularMatrixCM(const M& m) : Base(m) {};
+    using Matrix<T,UpperTriangularPackerCM,UpperTriangularShaper>::Matrix; //Inherit base constructors.
 };
 template <class T> class UpperTriangularMatrixRM : public Matrix<T,UpperTriangularPackerRM,UpperTriangularShaper>
 {
 public:
-    using Base = Matrix<T,UpperTriangularPackerRM,UpperTriangularShaper>;
-    using il_t=Base::il_t;
-    using Base::nr;
-    using Base::nc;
-    UpperTriangularMatrixRM(                    ) : UpperTriangularMatrixRM( 0, 0) {};
-    UpperTriangularMatrixRM(size_t nr, size_t nc) : UpperTriangularMatrixRM(nr,nc,none) {};
-    UpperTriangularMatrixRM(size_t nr, size_t nc, fill_t f, T v=T(1)) : Base(nr,nc,f,v) {};
-    UpperTriangularMatrixRM(const il_t& il) : Base(il) {};
-    template <isMatrix M> UpperTriangularMatrixRM(const M& m) : Base(m) {};
+    using Matrix<T,UpperTriangularPackerRM,UpperTriangularShaper>::Matrix; //Inherit base constructors.
 };
 
 template <class T> class LowerTriangularMatrixCM : public Matrix<T,LowerTriangularPackerCM,LowerTriangularShaper>
 {
 public:
-    using Base = Matrix<T,LowerTriangularPackerCM,LowerTriangularShaper>;
-    using il_t=Base::il_t;
-    using Base::nr;
-    using Base::nc;
-    LowerTriangularMatrixCM(                    ) : LowerTriangularMatrixCM( 0, 0) {};
-    LowerTriangularMatrixCM(size_t nr, size_t nc) : LowerTriangularMatrixCM(nr,nc,none) {};
-    LowerTriangularMatrixCM(size_t nr, size_t nc, fill_t f, T v=T(1)) : Base(nr,nc,f,v) {};
-    LowerTriangularMatrixCM(const il_t& il) : Base(il) {};
-    template <isMatrix M> LowerTriangularMatrixCM(const M& m) : Base(m) {};
+    using Matrix<T,LowerTriangularPackerCM,LowerTriangularShaper>::Matrix; //Inherit base constructors.
 };
 template <class T> class LowerTriangularMatrixRM : public Matrix<T,LowerTriangularPackerRM,LowerTriangularShaper>
 {
 public:
-    using Base = Matrix<T,LowerTriangularPackerRM,LowerTriangularShaper>;
-    using il_t=Base::il_t;
-    using Base::nr;
-    using Base::nc;
-    LowerTriangularMatrixRM(                    ) : LowerTriangularMatrixRM( 0, 0) {};
-    LowerTriangularMatrixRM(size_t nr, size_t nc) : LowerTriangularMatrixRM(nr,nc,none) {};
-    LowerTriangularMatrixRM(size_t nr, size_t nc, fill_t f, T v=T(1)) : Base(nr,nc,f,v) {};
-    LowerTriangularMatrixRM(const il_t& il) : Base(il) {};
-    template <isMatrix M> LowerTriangularMatrixRM(const M& m) : Base(m) {};
+    using Matrix<T,LowerTriangularPackerRM,LowerTriangularShaper>::Matrix; //Inherit base constructors.
 };
 template <class T> class DiagonalMatrix : public Matrix<T,DiagonalPacker,DiagonalShaper>
 {
 public:
-    using Base = Matrix<T,DiagonalPacker,DiagonalShaper>;
-    using il_t=Base::il_t;
-    using Base::nr;
-    using Base::nc;
-    DiagonalMatrix(                    ) : DiagonalMatrix( 0, 0) {};
-    DiagonalMatrix(size_t nr, size_t nc) : DiagonalMatrix(nr,nc,none) {};
-    DiagonalMatrix(size_t nr, size_t nc, fill_t f, T v=T(1)) : Base(nr,nc,f,v) {};
-    DiagonalMatrix(const il_t& il) : Base(il) {};
-    template <isMatrix M> DiagonalMatrix(const M& m) : Base(m) {};
+    using Matrix<T,DiagonalPacker,DiagonalShaper>::Matrix;  //Inherit base constructors.
 };
 template <class T> class SBandMatrix : public Matrix<T,SBandPacker,SBandShaper>
 {
@@ -353,7 +302,7 @@ public:
     {
         assert(nr(il)==nc(il)); //SBand only supports square matricies.
     };
-    template <isMatrix M> SBandMatrix(const M& m) : Base(m,m.packer(), m.shaper()) {};
+    template <isMatrix M> SBandMatrix(const M& m) : Base(m,m.packer()) {}; //Only m.packer() knows the bandwidth k for the expression m
 
     size_t bandwidth() const {return this->packer().bandwidth();}
 };
@@ -371,20 +320,12 @@ template <class T> class SymmetricMatrixCM
                 >
 {
 public:
-    using Base = Matrix<T,
+    using Matrix<T,
                 UpperTriangularPackerCM,
                 FullShaper,
                 default_data_type<T>,
                 Symmetric<default_data_type<T>,UpperTriangularPackerCM>
-                >;
-    using il_t=Base::il_t;
-    using Base::nr;
-    using Base::nc;
-    SymmetricMatrixCM(        ) : SymmetricMatrixCM(0) {};
-    SymmetricMatrixCM(size_t n) : SymmetricMatrixCM(n,none) {};
-    SymmetricMatrixCM(size_t n, fill_t f, T v=T{1}) : Base(n,n,f,v) {};
-    SymmetricMatrixCM(const il_t& il) : Base(il) {assert(nr()==nc());};
-    template <isMatrix M> SymmetricMatrixCM(const M& m) : Base(m) {};
+                >::Matrix;  //Inherit base constructors.
 };
 
 
