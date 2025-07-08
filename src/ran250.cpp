@@ -60,8 +60,8 @@ public:
 
 
 
-double INorm=1.0/LONG_MAX;
-double LNorm=1.0/LONG_MAX;
+double INorm=1.0/static_cast<double>(LONG_MAX);
+double LNorm=1.0/static_cast<double>(LONG_MAX);
 
 TwoTap::TwoTap(unsigned int tap1,unsigned int tap2)
   : Next(0)
@@ -83,11 +83,11 @@ TwoTap::~TwoTap()
   delete [] itsArray;
 }
 
-const char* TwoTap::Name()
+std::string TwoTap::Name()
 {
     std::ostringstream os;
     os << "R(" << Tap1 << "," << Tap2 << ",*)";
-    return os.str().c_str();
+    return os.str();
 }
 
 FourTap::FourTap(unsigned int tap1,unsigned int tap2,unsigned int tap3,unsigned int tap4)
@@ -112,11 +112,11 @@ FourTap::~FourTap()
   delete [] itsArray;
 }
 
-const char* FourTap::Name()
+std::string FourTap::Name()
 {
     std::ostringstream os;
     os << "R(" << Tap1 << "," << Tap2 << "," << Tap3 << "," << Tap4 << ")";
-    return os.str().c_str();
+    return os.str();
 }
 
 FourTap GlobalRandomNumberGenerator(471,1586,6988,9869);

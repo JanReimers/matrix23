@@ -88,7 +88,7 @@ class TwoTap
 public:
   TwoTap(unsigned int tap1,unsigned int tap2);
  ~TwoTap();
-  const char* Name();
+  std::string Name();
 
   long GetNext()
   {
@@ -119,7 +119,7 @@ class FourTap
 public:
   FourTap(unsigned int tap1,unsigned int tap2,unsigned int tap3,unsigned int tap4);
  ~FourTap();
-  const char* Name();
+  std::string Name();
 
   long GetNext()
   {
