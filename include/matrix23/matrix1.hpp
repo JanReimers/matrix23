@@ -35,67 +35,21 @@ public:
 
     Matrix(                    ) : Matrix( 0) {}; //Empty matrix.
     Matrix(size_t n            ) : Matrix(n,n) {}; //Square matrix.
-    Matrix(size_t nr, size_t nc) : Matrix(nr,nc,none) {};
+    Matrix(size_t nr, size_t nc) : Matrix(nr,nc,none) {}; //Default to no fill.
     Matrix(size_t n            , fill_t f, T v=T(1)) : Matrix(n,n,f,v) {}; //Square matrix with fill.
-    Matrix(size_t nr, size_t nc, fill_t f, T v=T(1)) : Matrix(P(nr,nc),S(nr,nc))
-    {
-        switch (f)
-        {
-            case none:
-                break;
-            case zero:
-                fillvalue(T{0});
-                break;
-            case one:
-                fillvalue(T{1});
-                break;
-            case value:
-                fillvalue(v);
-                break;
-            case random:
-                fillrandom(v); //v is max abs
-                break;
-            case unit:
-                fillvalue(T{0});
-                filldiagonal(T{1});
-                break;
-        }
-    }
-    Matrix(const il_t& init) : Matrix(P(nr(init),nc(init)),S(nr(init),nc(init))) {load(init);}
-    template <isMatrix M> Matrix(const M& m) : Matrix(P(m.nr(),m.nc()),m.shaper()) {load(m);}
+    Matrix(size_t nr, size_t nc, fill_t f, T v=T(1)) : Matrix(P(nr,nc),S(nr,nc),f,v) {} //Rect matrix with fill
+    Matrix(const il_t& init) : Matrix(P(nr(init),nc(init)),S(nr(init),nc(init)),init) {} //Fill from std::initial_list
+    template <isMatrix M>  Matrix(const M& m) : Matrix(P(m.nr(),m.nc()),m.shaper(),m) {} //assign from an expression.
 
-    Matrix(P p, fill_t f, T v=T(1)) : Matrix(p)
-    {
-        switch (f)
-        {
-            case none:
-                break;
-            case zero:
-                fillvalue(T{0});
-                break;
-            case one:
-                fillvalue(T{1});
-                break;
-            case value:
-                fillvalue(v);
-                break;
-            case random:
-                fillrandom(v); //v is max abs
-                break;
-            case unit:
-                fillvalue(T{0});
-                filldiagonal(T{1});
-                break;
-        }
-    }
-    Matrix(const il_t& init,P p) : Matrix(p) {load(init);} //SBand needs this, only p knows k.
-    template <isMatrix M> Matrix(const M& m,P p) : Matrix(p,m.shaper()) {load(m);} //SBand needs this, only p knows k.
+    // Banded matricies have extra paramater(s) k,ku,kl etc. As such they need to pass down already created
+    // packers in order to handle these extra parameters.
+    Matrix(P p, fill_t f, T v=T(1)) : Matrix(p,p.shaper(),f,v) {}
+    Matrix(P p,const il_t& init) : Matrix(p,p.shaper(),init) {} //SBand needs this, only p knows k.
+    template <isMatrix M> Matrix(P p,const M& m) : Matrix(p,m.shaper(),m) {} //SBand needs this, only p knows k.
 
 private:
-    Matrix(P p, S s) : itsPacker(p), itsShaper(s), data(itsPacker.stored_size()), itsSymmetry(data,itsPacker) {};
-    Matrix(P p) : Matrix(p,p.shaper()) {};
-
-    Matrix(const il_t& init,P p, S s) : Matrix(p,s) {load(init);}
+    // All of the public constructors should lead to these generic versions
+    Matrix(P p, S s,const il_t& init) : Matrix(p,s) {load(init);}
     Matrix(P p, S s, fill_t f, T v=T(1)) : Matrix(p,s)
     {
         switch (f)
@@ -120,6 +74,9 @@ private:
                 break;
         }
     }
+    template <isMatrix M> Matrix(P p, S s, const M& m) : Matrix(p,s) {load(m);} //assign from an expression.
+    // All of the private generic versions should lead to this root constructor.
+    Matrix(P p, S s) : itsPacker(p), itsShaper(s), data(itsPacker.stored_size()), itsSymmetry(data,itsPacker) {};
 public:
     template <isMatrix M> auto& operator=(M&& m)
     {
@@ -289,11 +246,11 @@ public:
     SBandMatrix(                  ) : SBandMatrix(0,0) {}; //nr=nc=n=0, k=0
     SBandMatrix(size_t n, size_t k) : SBandMatrix(n,k,none) {};
     SBandMatrix(size_t n, size_t k, fill_t f, T v=T(1)) : Base(SBandPacker(n,k),f,v) {};
-    SBandMatrix(const il_t& il,size_t k) : Base(il,SBandPacker(nr(il),k))
+    SBandMatrix(const il_t& il,size_t k) : Base(SBandPacker(nr(il),k),il)
     {
         assert(nr(il)==nc(il)); //SBand only supports square matricies.
     };
-    template <isMatrix M> SBandMatrix(const M& m) : Base(m,m.packer()) {}; //Only m.packer() knows the bandwidth k for the expression m
+    template <isMatrix M> SBandMatrix(const M& m) : Base(m.packer(),m) {}; //Only m.packer() knows the bandwidth k for the expression m
 
     size_t bandwidth() const {return this->packer().bandwidth();}
 };
