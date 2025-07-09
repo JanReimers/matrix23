@@ -185,4 +185,13 @@ private:
 auto Transpose(isMatrix auto& m) {return MatrixTransposeView(m);}
 auto operator~(isMatrix auto& m) {return MatrixTransposeView(m);}
 
+template <isMatrix M> auto fnorm(const M& m)
+{
+    typename M::value_type fn{0};
+    for (const auto& row:m.rows())
+        for (const auto& ic:row)
+            fn+=ic*ic;
+    return sqrt(fn);
+}
+
 } // namespace
