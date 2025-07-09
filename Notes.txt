@@ -69,14 +69,27 @@ TODO priorities:
 
         Done: -op= code and tests.  i.e.  FullMatrixCM C;C=A*B;
 
-    -Test Triangular shape with full storage.
-        add blas support for full packing U*U L*L.
+    Done: -Test Triangular shape with full storage.
+        add blas support for full packing U*F, L*F F*U F*L.
+    fillvalue, fillrandom need to be intercepted when packing>shape.
+        We need a way to detect this as the filling is more epxnsive.
     -Get cmake to handle optional dependencies first.  Optional for cereal, lapack, blas ...
         https://cmake.org/cmake/help/latest/guide/using-dependencies/index.html
         https://cmake.org/cmake/help/book/mastering-cmake/cmake/Help/guide/using-dependencies/
 Bugs:
     -blas RM*RM not working.  
         https://petewarden.com/2015/10/25/an-engineers-guide-to-gemm/
+
+    -MatrixBinOpView::rows  fails/crashes for this simple function
+        template <isMatrix M> auto fnorm(const M& m)
+        {
+            typename M::value_type fn{0};
+            for (const auto& row:m.rows())
+                for (const auto& ic:row)
+                    fn+=ic*ic;
+            return sqrt(fn);
+        }
+        fnrom(A-B);
 
 
 Notes for documenting:

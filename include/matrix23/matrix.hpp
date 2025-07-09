@@ -154,9 +154,9 @@ public:
                 if (j<nc()-1) std::cout << ",";
             }
             std::cout << "}";
-            if (i<nr()-1) std::cout << ",";
+            if (i<nr()-1) std::cout << "," << std::endl;;
         }
-        std::cout << std::endl;
+        std::cout << std::endl << std::endl;
     }
 protected:
     void load(std::initializer_list<std::initializer_list<T>> init)
@@ -275,6 +275,23 @@ template <class T> struct SymmetricMatrixCM
                 >::Matrix;  //Inherit base constructors.
 };
 
+// Triangular with full packing. Wast of space, but that is what blas level 3 supports.
+template <class T> struct UpperTriangularMatrixFCM : public Matrix<T,FullPackerCM,UpperTriangularShaper>
+{
+    using Matrix<T,FullPackerCM,UpperTriangularShaper>::Matrix; //Inherit base constructors.
+};
+template <class T> struct UpperTriangularMatrixFRM : public Matrix<T,FullPackerRM,UpperTriangularShaper>
+{
+    using Matrix<T,FullPackerRM,UpperTriangularShaper>::Matrix; //Inherit base constructors.
+};
+template <class T> struct LowerTriangularMatrixFCM : public Matrix<T,FullPackerCM,LowerTriangularShaper>
+{
+    using Matrix<T,FullPackerCM,LowerTriangularShaper>::Matrix; //Inherit base constructors.
+};
+template <class T> struct LowerTriangularMatrixFRM : public Matrix<T,FullPackerRM,LowerTriangularShaper>
+{
+    using Matrix<T,FullPackerRM,LowerTriangularShaper>::Matrix; //Inherit base constructors.
+};
 
 
 

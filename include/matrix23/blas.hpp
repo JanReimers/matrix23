@@ -28,7 +28,11 @@ template <class T> void tpmv(const LowerTriangularMatrixRM<T>& A, Vector<T>& x);
 
 template <class T> void gemm(T alpha, const FullMatrixCM<T>& A, const FullMatrixCM<T>& B, T beta, FullMatrixCM<T>& C);
 // template <class T> void gemm(T alpha, const FullMatrixRM<T>& A, const FullMatrixRM<T>& B, T beta, FullMatrixRM<T>& C);
-
+//                                                                       A has to square
+template <class T> void trmm(T alpha, const UpperTriangularMatrixFCM<T>& A, FullMatrixCM<T>& B);
+template <class T> void trmm(T alpha, const LowerTriangularMatrixFCM<T>& A, FullMatrixCM<T>& B);
+template <class T> void trmm(T alpha, FullMatrixCM<T>& B, const UpperTriangularMatrixFCM<T>& A);
+template <class T> void trmm(T alpha, FullMatrixCM<T>& B, const LowerTriangularMatrixFCM<T>& A);
 //
 //  Convenience helper functions so users don't need to worry about alpha.beta and constructing the return container.
 //

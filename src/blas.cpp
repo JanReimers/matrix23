@@ -8,7 +8,7 @@ void dgbmv_(char* trans,int* m,int* n,int* kl,int* ku,double* alpha,const double
 
 void dgemm_( char* transa,char* transb,int* m,int* n,int* k,double* alpha,const double* A,int* lda,const double* B,int* ldb,double* beta, double* C,int* ldc );
 // dtrmm_ would be for full packing and triangular shape.  i.e. lower zeros are stored but not refrenced.
-// void dtrmm_( char* side,char* uplo,char* transa,char* diag,int* m,int* n,double* alpha,const double*A,int* lda,const double*B,int* ldb );
+void dtrmm_( char* side,char* uplo,char* transa,char* diag,int* m,int* n,double* alpha,const double*A,int* lda,const double*B,int* ldb );
 }
 
 namespace matrix23 {
@@ -117,5 +117,43 @@ template <> void gemm(double alpha, const FullMatrixCM<double>& A, const FullMat
 //     std::cout << "m,k,n=" << m << " " << k << " " << n << std::endl;
 //     dgemm_(&transa,&transb,&m,&n,&k,&alpha,A.begin(),&k,B.begin(),&n,&beta,C.begin(),&m);
 // }
+
+template <> void trmm(double alpha, const UpperTriangularMatrixFCM<double>& A, FullMatrixCM<double>& B)
+{
+    assert(A.nc()==B.nr());
+    assert(A.nc()==A.nr()); //A has to square.
+    
+    char side='L',uplo='U',transa='N', diag='N'; //A*B, A upper, don't tranpose A, A is not diagonal.
+    int m=B.nr(),lda=A.nr(),n=B.nc();
+    dtrmm_(&side, &uplo,&transa,&diag,&m,&n,&alpha,&*A.begin(),&lda,&*B.begin(),&m);
+}
+template <> void trmm(double alpha, FullMatrixCM<double>& B, const UpperTriangularMatrixFCM<double>& A)
+{
+    assert(A.nr()==B.nc());
+    assert(A.nc()==A.nr()); //A has to square.
+    
+    char side='R',uplo='U',transa='N', diag='N'; //B*A, A upper, don't tranpose A, A is not diagonal.
+    int m=B.nr(),lda=A.nr(),n=B.nc();
+    dtrmm_(&side, &uplo,&transa,&diag,&m,&n,&alpha,&*A.begin(),&lda,&*B.begin(),&m);
+}
+template <> void trmm(double alpha, const LowerTriangularMatrixFCM<double>& A, FullMatrixCM<double>& B)
+{
+    assert(A.nc()==B.nr());
+    assert(A.nc()==A.nr()); //A has to square.
+    
+    char side='L',uplo='L',transa='N', diag='N'; //A*B, A lower, don't tranpose A, A is not diagonal.
+    int m=B.nr(),lda=A.nr(),n=B.nc();
+    dtrmm_(&side, &uplo,&transa,&diag,&m,&n,&alpha,&*A.begin(),&lda,&*B.begin(),&m);
+}
+template <> void trmm(double alpha, FullMatrixCM<double>& B, const LowerTriangularMatrixFCM<double>& A)
+{
+    assert(A.nr()==B.nc());
+    assert(A.nc()==A.nr()); //A has to square.
+    
+    char side='R',uplo='L',transa='N', diag='N'; //B*A, A upper, don't tranpose A, A is not diagonal.
+    int m=B.nr(),lda=A.nr(),n=B.nc();
+    dtrmm_(&side, &uplo,&transa,&diag,&m,&n,&alpha,&*A.begin(),&lda,&*B.begin(),&m);
+}
+
 
 } //namespace matrix23

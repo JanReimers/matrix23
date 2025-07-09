@@ -416,3 +416,63 @@ TEST_F(MatrixTests, SymmetricColMajor4x4)
     EXPECT_EQ(A.col(2),(il{0,6,8,9}));
 }
 
+TEST_F(MatrixTests, UpperTriangularColMajor3x4_FullPaking)
+{
+    matrix23::UpperTriangularMatrixFCM<double> A{
+        {1,2,3,4},
+        {0,6,7,8},
+        {0,0,11,12}};
+    EXPECT_EQ(A.row(0),(il{1,2,3,4}));
+    EXPECT_EQ(A.row(1),(il{6,7,8}));
+    EXPECT_EQ(A.row(2),(il{11,12}));
+    EXPECT_EQ(A.col(0),(il{1}));
+    EXPECT_EQ(A.col(1),(il{2,6}));
+    EXPECT_EQ(A.col(2),(il{3,7,11}));
+    EXPECT_EQ(A.col(3),(il{4,8,12}));
+}
+TEST_F(MatrixTests, UpperTriangularRowMajor3x4_FullPaking)
+{
+    matrix23::UpperTriangularMatrixFRM<double> A({
+        {1,2,3,4},
+        {0,6,7,8},
+        {0,0,11,12}});
+    EXPECT_EQ(A.row(0),(il{1,2,3,4}));
+    EXPECT_EQ(A.row(1),(il{6,7,8}));
+    EXPECT_EQ(A.row(2),(il{11,12}));
+    EXPECT_EQ(A.col(0),(il{1}));
+    EXPECT_EQ(A.col(1),(il{2,6}));
+    EXPECT_EQ(A.col(2),(il{3,7,11}));
+    EXPECT_EQ(A.col(3),(il{4,8,12}));
+}
+TEST_F(MatrixTests, UpperTriangularColMajor4x3_FullPaking)
+{
+    matrix23::UpperTriangularMatrixFCM<double> A{
+        {1,2,3},
+        {0,5,6},
+        {0,0,9},
+        {0,0,0}};
+    EXPECT_EQ(A.row(0),(il{1,2,3}));
+    EXPECT_EQ(A.row(1),(il{5,6}));
+    EXPECT_EQ(A.row(2),(il{9}));
+    EXPECT_EQ(A.row(3),(il{}));
+    EXPECT_EQ(A.col(0),(il{1}));
+    EXPECT_EQ(A.col(1),(il{2,5}));
+    EXPECT_EQ(A.col(2),(il{3,6,9}));
+   
+}
+TEST_F(MatrixTests, UpperTriangularRowajor4x3_FullPaking)
+{
+    matrix23::UpperTriangularMatrixFRM<double> A({
+        {1,2,3},
+        {0,5,6},
+        {0,0,9},
+        {0,0,0}});
+    EXPECT_EQ(A.row(0),(il{1,2,3}));
+    EXPECT_EQ(A.row(1),(il{5,6}));
+    EXPECT_EQ(A.row(2),(il{9}));
+    EXPECT_EQ(A.row(3),(il{}));
+    EXPECT_EQ(A.col(0),(il{1}));
+    EXPECT_EQ(A.col(1),(il{2,5}));
+    EXPECT_EQ(A.col(2),(il{3,6,9}));
+   
+}

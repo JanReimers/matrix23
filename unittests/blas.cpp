@@ -180,3 +180,50 @@ TEST_F(BlasTests,ColMajor_gemm)
 //     //     EXPECT_EQ(A*B,blasmm(A,B));
 //     // }
 // }
+
+TEST_F(BlasTests,ColMajor_trmm)
+{
+    using F=matrix23::FullMatrixCM<double>;
+    using UF=matrix23::UpperTriangularMatrixFCM<double>;
+    using U=matrix23::UpperTriangularMatrixCM<double>;
+    size_t nr=30,nc=40;
+    {
+        UF A=U(nr,nr,matrix23::random); //Do the fill on upper triagular packing and then copy into full packing.
+        F B(nr,nc,matrix23::random);
+        F AB=A*B; //Save the ranges answer before B gets modified.
+        matrix23::trmm(1.0,A,B); //B=A*B
+        EXPECT_EQ(AB,B);
+    }
+    {
+        UF A=U(nc,nc,matrix23::random); //Do the fill on upper triagular packing and then copy into full packing.
+        F B(nr,nc,matrix23::random);
+        F BA=B*A; //Save the ranges answer before B gets modified.
+        matrix23::trmm(1.0,B,A); //B=B*A
+        F delta=BA-B;
+        double d=fnorm(delta)/(nr*nc);
+        EXPECT_LT(d,3e-16);
+        cout << "d=" <<  d << endl;
+    }
+    using LF=matrix23::LowerTriangularMatrixFCM<double>;
+    using L=matrix23::LowerTriangularMatrixCM<double>;
+    {
+        // nr=3;nc=4;
+        LF A=L(nr,nr,matrix23::random); //Do the fill on lower triagular packing and then copy into full packing.
+        F B(nr,nc,matrix23::random);
+        F AB=A*B; //Save the ranges answer before B gets modified.
+        matrix23::trmm(1.0,A,B); //B=A*B
+        F delta=AB-B;
+        double d=fnorm(delta)/(nr*nc);
+        EXPECT_LT(d,3e-16);
+        cout << "d=" <<  d << endl;
+        // EXPECT_EQ(AB,B);
+    }
+    {
+        LF A=L(nc,nc,matrix23::random); //Do the fill on lower triagular packing and then copy into full packing.
+        F B(nr,nc,matrix23::random);
+        F BA=B*A; //Save the ranges answer before B gets modified.
+        matrix23::trmm(1.0,B,A); //B=A*B
+        EXPECT_EQ(BA,B);
+    }
+   
+}
